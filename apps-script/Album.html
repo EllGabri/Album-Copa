@@ -71,17 +71,7 @@
       100% { transform: translate(1px, -1px) rotate(0deg); }
     }
 
-    /* ==================== NOVO: Inventário Expansível ==================== */
-    .inventario-bar {
-      max-height: 60px;
-      overflow: hidden;
-      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .inventario-bar:hover {
-      max-height: 180px;
-    }
-
+    /* ==================== Inventário ==================== */
     .card-inventario {
       position: relative;
     }
@@ -96,7 +86,7 @@
       opacity: 1;
       visibility: visible;
     }
-    /* ==================== FIM NOVO ==================== */
+    /* ==================== FIM ==================== */
   </style>
   <?!= include('SlotMap'); ?>
 </head>
@@ -149,7 +139,11 @@
           <h1 class="text-2xl md:text-3xl font-sport tracking-wider text-yellow-400 uppercase leading-none">Álbum Oficial</h1>
           <p class="text-[10px] text-green-100 font-bold tracking-widest uppercase">Seleção: <span id="header-agencia-nome" class="text-white">...</span></p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="voltarDashboard()" class="bg-white/10 hover:bg-white/20 text-white border border-slate-600 h-10 px-4 rounded-full flex items-center gap-2 transition-colors" title="Voltar ao Dashboard da Copa">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"></path></svg>
+            <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Dashboard</span>
+          </button>
           <div class="bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 flex items-center gap-3">
             <span class="text-2xl">📦</span>
             <div>
@@ -165,9 +159,9 @@
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+    <div class="flex-1 min-h-0 overflow-hidden p-3 md:p-5 flex flex-col items-center gap-3 md:gap-4">
 
-      <div class="w-full max-w-7xl flex justify-between items-center mb-6 bg-slate-900/40 p-2 rounded-2xl backdrop-blur-sm border border-slate-700/50">
+      <div class="w-full max-w-7xl shrink-0 flex justify-between items-center bg-slate-900/40 p-2 rounded-2xl backdrop-blur-sm border border-slate-700/50">
         <button onclick="mudarPagina(-1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
@@ -180,23 +174,25 @@
         </button>
       </div>
 
-      <!-- Página do álbum: fundo = template Canva (aspect-ratio 2000:1414), figurinhas coladas em overlay posicionado por SLOT_MAP -->
-      <div id="pagina-container" class="w-full max-w-5xl mx-auto pb-32 flex items-center justify-center">
+      <!-- Página do álbum: fundo = template Canva (aspect-ratio 2000:1414),
+           figurinhas coladas em overlay posicionado por SLOT_MAP. O tamanho
+           é calculado por JS (dimensionarPaginaAtual) para caber inteiro na
+           área disponível em qualquer resolução (HD a 4k), sem scroll. -->
+      <div id="pagina-container" class="flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden">
       </div>
     </div>
 
     <!-- ==================== AJUSTE 5: Inventário Expansível ==================== -->
     <div class="shrink-0 bg-slate-900 border-t-4 border-slate-700 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-40">
       <div class="max-w-[1400px] mx-auto">
-        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-2 flex items-center gap-2">
           <span>🎒 O Seu Inventário (Figurinhas por Colar)</span>
           <span class="bg-slate-800 px-2 py-0.5 rounded-md text-white border border-slate-600" id="inventario-count">0</span>
+          <span class="text-[10px] text-slate-500 font-medium normal-case tracking-normal">Arraste a figurinha e largue na silhueta correta da página.</span>
         </h3>
-        <p class="text-[10px] text-slate-500 mb-2">Dica: Passe o mouse para expandir. Arraste a figurinha e largue na silhueta correta da página.</p>
 
-        <!-- Barra expansível com hover -->
         <div class="inventario-bar bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-3 backdrop-blur-sm">
-          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[50px] items-center px-2">
+          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[180px] items-center px-2">
             <div class="text-slate-600 text-xs italic py-2" id="inventario-vazio">Sem figurinhas novas. Abra um pacote!</div>
           </div>
         </div>
@@ -346,6 +342,14 @@
       document.getElementById('loader').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
     };
+
+    // Redimensiona a página do álbum quando a janela muda de tamanho
+    // (debounce leve) para manter o encaixe em qualquer resolução.
+    let _resizeTimer = null;
+    window.addEventListener('resize', function() {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(dimensionarPaginaAtual, 100);
+    });
 
     function marcarCarregamentoConcluido(chave) {
       CARGAS_PENDENTES.delete(chave);
@@ -678,6 +682,26 @@
         if (pagina.propria) rotulo += ' — SUA AGÊNCIA';
         renderizarPaginaComSlots(container, pagina.template, rotulo);
       }
+      dimensionarPaginaAtual();
+    }
+
+    // Dimensiona a página do álbum para caber INTEIRA na área disponível
+    // (largura E altura), mantendo o aspect-ratio do template, em qualquer
+    // resolução (HD a 4k). Limita pela dimensão mais restritiva.
+    function dimensionarPaginaAtual() {
+      const container = document.getElementById('pagina-container');
+      if (!container) return;
+      const wrapper = container.firstElementChild;
+      if (!wrapper) return;
+      const dim = SLOT_MAP.dimensaoReferencia;
+      const R = dim[0] / dim[1];
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      if (cw <= 0 || ch <= 0) return;
+      let largura = cw;
+      if (largura / R > ch) largura = ch * R; // estouraria a altura -> limita
+      wrapper.style.width = Math.floor(largura) + 'px';
+      wrapper.style.maxWidth = 'none';
     }
 
     function renderizarInventario() {
@@ -704,31 +728,40 @@
 
         const card = document.createElement('div');
         // Sem overflow-hidden aqui: o selo "DUP" e o tooltip usam posições
-        // fora da caixa (top/bottom negativos) e seriam cortados. Quem
-        // recorta a imagem é o wrapper interno (imgWrapper) só.
-        card.className = "card-inventario shrink-0 w-20 h-24 bg-white rounded-lg border-2 border-slate-300 shadow-md cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
+        // fora da caixa e seriam cortados. Quem recorta a imagem é o
+        // imgWrapper interno.
+        card.className = "card-inventario shrink-0 w-28 flex flex-col cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
         card.draggable = true;
         card.id = `inv_${numero}_${index}`;
         card.setAttribute('ondragstart', `dragStart(event, ${numero}, '${index}')`);
 
+        // Imagem com aspect-ratio de cromo (2:3), grande o suficiente para
+        // ler nome/número impressos na arte da figurinha.
         const imgWrapper = document.createElement('div');
-        imgWrapper.className = "w-full h-full rounded-md overflow-hidden";
-        imgWrapper.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg bg-slate-100">👤</div>`;
+        imgWrapper.className = "w-28 h-40 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md bg-slate-100";
+        imgWrapper.innerHTML = `<div class="w-full h-full flex items-center justify-center text-3xl text-slate-400">👤</div>`;
         card.appendChild(imgWrapper);
         if (fig) {
           resolverImagemFigurinha(fig, (src) => {
-            if (src) imgWrapper.innerHTML = `<img src="${src}" alt="${nomeExibicao}" class="w-full h-full object-cover">`;
+            if (src) imgWrapper.innerHTML = `<img src="${src}" alt="${nomeExibicao}" class="w-full h-full object-cover" draggable="false">`;
           });
         }
 
+        // Legenda de nome sob o card (a arte impressa é pequena; o texto
+        // garante leitura mesmo antes de colar).
+        const legenda = document.createElement('div');
+        legenda.className = "w-28 text-center mt-1 leading-tight";
+        legenda.innerHTML = `<p class="text-[11px] font-bold text-slate-100 truncate">${nomeExibicao}</p><p class="text-[9px] text-yellow-400 font-black tracking-widest">Nº ${numero}</p>`;
+        card.appendChild(legenda);
+
         if (isRepetida) {
-          card.insertAdjacentHTML('beforeend', `<div class="absolute -top-1 -right-1 bg-slate-700 text-white text-[7px] font-black px-1 py-0.5 rounded shadow z-10">DUP</div>`);
+          card.insertAdjacentHTML('beforeend', `<div class="absolute top-1 right-1 bg-slate-900/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow z-10">DUP</div>`);
         }
 
         card.insertAdjacentHTML('beforeend', `
-          <div class="tooltip-name absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-50">
+          <div class="tooltip-name absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-50 shadow-lg">
             <div class="font-bold">${nomeExibicao}</div>
-            <div class="text-slate-300 text-[8px]">Nº ${numero}</div>
+            <div class="text-slate-300 text-[9px]">Nº ${numero}</div>
           </div>
         `);
 
