@@ -240,7 +240,7 @@
       figurinhasComImagem: [], // [{id:numero, nome, agencia, fileId, imageUrl}]
       templates: {},           // { nomeTemplate: urlDaImagem }
       paginasDoAlbum: [],      // [{tipo:'capa'|'contracapa'|'pagina', template?}]
-      poolDaAgencia: [],       // numeros sorteáveis em pacote (própria página + Comissão Técnica)
+      poolDaAgencia: [],       // numeros sorteáveis em pacote (pool GLOBAL: todas as agências + Comissão Técnica)
       paginaAtualIndex: 0
     };
 
@@ -389,24 +389,34 @@
       return SLOT_MAP.paginasPorAgencia[agencia] || [agencia];
     }
 
-    function construirPaginasDoAlbum(agencia) {
+    // O álbum é ÚNICO e igual para todas as 15 agências: toda agência
+    // logada colecionar as 15 páginas de agência + Comissão Técnica, não
+    // só a própria (ver spec.md seção 5 - decisão confirmada com o
+    // usuário em 2026-07-03). "agenciaPropria" só é usada para marcar/
+    // destacar a página de origem do login, não para filtrar quais
+    // páginas aparecem.
+    function construirPaginasDoAlbum(agenciaPropria) {
       const paginas = [{ tipo: 'capa' }];
-      obterTemplatesDaAgencia(agencia).forEach(t => paginas.push({ tipo: 'pagina', template: t }));
+      Object.keys(SLOT_MAP.paginasPorAgencia).sort().forEach(ag => {
+        obterTemplatesDaAgencia(ag).forEach(t => paginas.push({ tipo: 'pagina', template: t, propria: ag === agenciaPropria }));
+      });
       paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica' });
       paginas.push({ tipo: 'contracapa' });
       return paginas;
     }
 
-    // Pool de sorteio de pacote: numeros da(s) pagina(s) da propria agencia
-    // UNIAO com o pool global da Comissao Tecnica (spec.md secao 6).
-    function construirPoolDaAgencia(agencia) {
+    // Pool de sorteio de pacote: GLOBAL - união de todos os números de
+    // TODAS as agências + Comissão Técnica (ver spec.md seção 6, decisão
+    // confirmada com o usuário em 2026-07-03: como o álbum de cada
+    // agência precisa ser preenchido com as 15 agências, o pacote precisa
+    // poder sortear qualquer uma das 161 figurinhas, não só as da própria
+    // agência).
+    function construirPoolGlobal() {
       const numeros = new Set();
-      obterTemplatesDaAgencia(agencia).forEach(t => {
-        const tpl = SLOT_MAP.templates[t];
+      Object.keys(SLOT_MAP.templates).forEach(nomeTemplate => {
+        const tpl = SLOT_MAP.templates[nomeTemplate];
         (tpl && tpl.slots ? tpl.slots : []).forEach(s => numeros.add(s.numero));
       });
-      const comissao = SLOT_MAP.templates['Comissao Tecnica'];
-      (comissao && comissao.slots ? comissao.slots : []).forEach(s => numeros.add(s.numero));
       return Array.from(numeros);
     }
 
@@ -417,9 +427,14 @@
       ESTADO.coladas = (dadosSalvos.coladas || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
 
       ESTADO.paginasDoAlbum = construirPaginasDoAlbum(ESTADO.agenciaAtual);
-      ESTADO.poolDaAgencia = construirPoolDaAgencia(ESTADO.agenciaAtual);
-      // Pula a Capa por padrão, abre direto na primeira página da agência.
-      ESTADO.paginaAtualIndex = ESTADO.paginasDoAlbum.length > 1 ? 1 : 0;
+      ESTADO.poolDaAgencia = construirPoolGlobal();
+      // Abre direto na primeira página da própria agência (não na Capa).
+      const indexPropria = ESTADO.paginasDoAlbum.findIndex(p => p.propria);
+      if (indexPropria !== -1) {
+        ESTADO.paginaAtualIndex = indexPropria;
+      } else {
+        ESTADO.paginaAtualIndex = ESTADO.paginasDoAlbum.length > 1 ? 1 : 0;
+      }
 
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('album-screen').classList.remove('hidden');
@@ -579,7 +594,8 @@
       } else if (pagina.tipo === 'contracapa') {
         renderizarPaginaEstatica(container, 'Contra Capa', 'Contracapa');
       } else {
-        const rotulo = (pagina.template === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.template;
+        let rotulo = (pagina.template === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.template;
+        if (pagina.propria) rotulo += ' — SUA AGÊNCIA';
         renderizarPaginaComSlots(container, pagina.template, rotulo);
       }
     }

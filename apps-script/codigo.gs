@@ -855,6 +855,23 @@ function parseNomeArquivoFigurinha(nomeArquivo) {
 }
 
 /**
+ * Garante que um arquivo do Drive esteja acessível via link público
+ * ("Qualquer pessoa com o link" - somente leitura). Sem isso, a URL
+ * https://drive.google.com/uc?id=... usada como <img>/background-image no
+ * WebApp retorna a tela de login/permissão do Google em vez do PNG, e a
+ * página do álbum aparece em branco (sem imagem, sem erro visível). Idempotente.
+ */
+function garantirCompartilhamentoPublico(arquivo) {
+  try {
+    if (arquivo.getSharingAccess() !== DriveApp.Access.ANYONE_WITH_LINK) {
+      arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    }
+  } catch (e) {
+    Logger.log("Não foi possível ajustar compartilhamento de " + arquivo.getName() + ": " + e);
+  }
+}
+
+/**
  * Varre a pasta do Drive (FIGURINHAS_FOLDER_ID) e popula/atualiza a aba
  * "Figurinhas" (ID | Nome | Equipe | FileID | Info) a partir do padrão de
  * nome de cada arquivo. Idempotente: roda 2x sem duplicar linhas (casa por
@@ -886,6 +903,7 @@ function reconciliarFigurinhas() {
         naoParseados.push(arquivo.getName());
         continue;
       }
+      garantirCompartilhamentoPublico(arquivo);
       var fileId = arquivo.getId();
       parsed.numeros.forEach(function (numero) {
         registros[numero] = { nome: parsed.nome, fileId: fileId };
@@ -996,6 +1014,7 @@ function reconciliarTemplates() {
     while (arquivos.hasNext()) {
       var arquivo = arquivos.next();
       var nomeChave = arquivo.getName().replace(/\.png$/i, "").trim();
+      garantirCompartilhamentoPublico(arquivo);
       var fileId = arquivo.getId();
 
       if (nomesReconhecidos.indexOf(nomeChave) === -1) {

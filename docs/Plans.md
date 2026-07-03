@@ -115,7 +115,27 @@ Avisar as agências afetadas antes de fazer isso.
   já consolidado em uma única definição de cada durante a Fase 0.
 - Testar sempre via Apps Script deployment de teste (`doGet`) antes de
   publicar nova versão do WebApp para as agências.
-- `_test-harness.html` (raiz do projeto) é um arquivo de teste local usado
+- `_test-harness.html` (agora em `apps-script/`) é um arquivo de teste local usado
   durante o desenvolvimento (mocka `google.script.run` com dados/imagens
   locais) — não faz parte do WebApp real e pode ser apagado ou mantido como
   ferramenta de QA futura.
+
+---
+
+## Fase 6: Correções pós-teste em produção (2026-07-03)
+
+Encontradas pelo usuário ao rodar a task 5.1/5.2 no ambiente real.
+
+| Task | Conteúdo | DoD | Status |
+|------|------|-----|--------|
+| 6.1 | Corrigir "Reconciliar Figurinhas do Drive" reportando 0 criadas/atualizadas com "arquivos não reconhecidos" batendo com nomes de TEMPLATE (`Capa.png`, `Comissao Tecnica.png`, `Pac *.png`) | Causa raiz não era bug de código: `FIGURINHAS_FOLDER_ID` estava apontando para a pasta de TEMPLATES em vez da pasta das figurinhas individuais — correção é o usuário trocar o ID pela pasta certa | cc:完了 (orientação dada ao usuário) |
+| 6.2 | Corrigir página de template aparecendo em branco (fundo verde, sem imagem, sem mensagem de erro) após "Reconciliar Templates do Drive" ter rodado com sucesso | Causa raiz: arquivos do Drive não estavam compartilhados como "Qualquer pessoa com o link", então a URL `drive.google.com/uc?id=...` usada em `background-image`/`<img>` retornava a tela de permissão do Google em vez do PNG. Adicionada `garantirCompartilhamentoPublico()` em `codigo.gs`, chamada por `reconciliarFigurinhas()` e `reconciliarTemplates()` para cada arquivo processado `[tdd:required]` | cc:完了 |
+| 6.3 | **(Mudança de escopo confirmada com o usuário)** Álbum deixa de ser "1 agência = 1 página própria" e passa a ser um álbum ÚNICO com as 15 agências + Comissão Técnica + Capa/Contracapa, igual para todos os logins (usuário: "Lages não vai preencher só a agência de Lages, vai preencher as outras 14 também") | `construirPaginasDoAlbum()` em `Album.html` lista todas as 15 agências (ordem alfabética das chaves de `paginasPorAgencia`) + Comissão Técnica, com a(s) página(s) da própria agência marcada (`propria: true`, rótulo "— SUA AGÊNCIA") e sendo a página inicial ao logar `[tdd:required]` | cc:完了 |
+| 6.4 | Pool de sorteio do pacote passa a ser GLOBAL (todos os 161 números), não mais restrito à própria agência + Comissão Técnica — consequência direta da 6.3, confirmado com o usuário (opção "Pool global" nas 2 alternativas apresentadas) | `construirPoolGlobal()` substitui `construirPoolDaAgencia()` em `Album.html`, unindo os slots de todos os templates do `SLOT_MAP` `[tdd:required]` | cc:完了 |
+| 6.5 | Reorganizar repositório: arquivos soltos na raiz movidos para `apps-script/` (fonte do WebApp: `.gs`+`.html`+`sheet.css`), `scripts/` (Python/PowerShell) e `docs/` (specs/relatórios); artefatos de sessão de outra ferramenta (`session.json`, `plans-state.json`, `*-notification.md` etc.) removidos do versionamento via `.gitignore` | Raiz do repo só tem `apps-script/`, `scripts/`, `docs/`, `slotMap.json` e configs de projeto (`.gitignore`); scripts Python voltam a resolver `../slotMap.json` e `../TEMPLATE - ALBUM/` corretamente (antes resolviam para fora do repo, pois assumiam viver em `scripts/`) | cc:完了 |
+
+### Pendente pós Fase 6
+
+- Rodar novamente **🧩 Reconciliar Figurinhas do Drive** com o `FIGURINHAS_FOLDER_ID` correto (task 6.1) e **🖼️ Reconciliar Templates do Drive** de novo (para aplicar o compartilhamento público retroativamente aos arquivos já reconciliados, task 6.2).
+- Testar no navegador: login em pelo menos 2 agências diferentes e confirmar que a navegação mostra as 15 páginas de agência + Comissão Técnica + Capa/Contracapa, com a própria agência destacada, e que a imagem de fundo de cada template carrega.
+- Colar o `codigo.gs` e os `.html` atualizados (agora em `apps-script/`) no editor do Apps Script, já que os arquivos-fonte se moveram de lugar no repositório (o conteúdo colado no Apps Script continua sendo o mesmo, só o caminho local mudou).
