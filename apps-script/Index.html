@@ -109,7 +109,7 @@
             </div>
             <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo1" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -122,7 +122,7 @@
             </div>
             <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo2" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -135,7 +135,7 @@
             </div>
             <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo3" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -265,11 +265,11 @@
            <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th class="px-4 py-4 text-center w-14">Pos</th>
-                  <th class="px-4 py-4">Agência (Seleção)</th>
-                  <th class="px-2 py-4 text-center w-24">Gols Feitos</th>
-                  <th class="px-2 py-4 text-center w-24">Meta Gols</th>
-                  <th class="px-4 py-4 text-right w-28">Atingimento</th>
+                  <th class="px-3 py-4 text-center w-12">Pos</th>
+                  <th class="px-3 py-4">Agência (Seleção)</th>
+                  <th class="px-2 py-4 text-center w-28">Gols Feitos</th>
+                  <th class="px-2 py-4 text-center w-28">Meta Gols</th>
+                  <th class="px-3 py-4 text-right w-24">Atingimento</th>
                 </tr>
               </thead>
               <tbody id="tabela-ranking-agencias" class="divide-y divide-slate-100">
@@ -641,10 +641,11 @@
       return Number(gols.toFixed(2));
     }
 
+    // Formata gols em PT-BR: inteiro, com ponto (.) como separador de
+    // milhar e SEM casas decimais (ex.: 15138304 -> "15.138.304").
     function formatGols(g) {
       if (!g || isNaN(g)) return "0";
-      if (g % 1 === 0) return Math.floor(g).toString();
-      return g.toFixed(1).replace('.', ',');
+      return Math.round(g).toLocaleString('pt-BR');
     }
 
     function renderizarAbaSelecoes(gerentesRank, agenciasRank, isForaDaJanela) {
@@ -684,14 +685,14 @@
 
           return `
           <tr class="hover:bg-green-50/50 transition-colors border-b border-slate-100 last:border-0 h-14">
-            <td class="px-4 py-3 text-center ${posColor} align-middle whitespace-nowrap">${i + 1}º</td>
-            <td class="px-4 py-3 font-semibold text-slate-700 align-middle">
+            <td class="px-3 py-3 text-center ${posColor} align-middle whitespace-nowrap">${i + 1}º</td>
+            <td class="px-3 py-3 font-semibold text-slate-700 align-middle">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="truncate">${nomeTime} <span class="text-xs text-slate-400 font-normal">(${ag.nome})</span></span>
                 <span class="text-xs drop-shadow-sm shrink-0">${medalha}</span>
               </div>
             </td>
-            <td class="px-2 py-3 text-right font-black text-green-700 text-base whitespace-nowrap align-middle tabular-nums">${formatGols(ag.gols)}</td>
+            <td class="px-3 py-3 text-right font-black text-green-700 text-sm whitespace-nowrap align-middle tabular-nums">${formatGols(ag.gols)}</td>
           </tr>`}).join('');
       });
 
@@ -828,16 +829,16 @@
 
               return `
               <tr class="${bgRow} transition-colors border-b border-slate-100 last:border-0">
-                <td class="px-4 py-4 text-center ${posColor}">${i + 1}º</td>
-                <td class="px-4 py-4 font-semibold text-slate-700">
+                <td class="px-3 py-4 text-center ${posColor}">${i + 1}º</td>
+                <td class="px-3 py-4 font-semibold text-slate-700">
                   <div class="flex items-center gap-2 min-w-0">
                     <span class="truncate">${nomeTime} <span class="text-xs text-slate-500 font-normal">(${ag.nome})</span></span>
                     <span class="text-sm drop-shadow-sm shrink-0">${medalha}</span>
                   </div>
                 </td>
-                <td class="px-2 py-4 text-center text-slate-600 tabular-nums">${formatGols(ag.gols)}</td>
-                <td class="px-2 py-4 text-center text-slate-500 tabular-nums">${formatGols(ag.metaGols)}</td>
-                <td class="px-4 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px] tabular-nums">${ag.perc.toFixed(1)}%</td>
+                <td class="px-2 py-4 text-center text-slate-600 text-sm tabular-nums">${formatGols(ag.gols)}</td>
+                <td class="px-2 py-4 text-center text-slate-500 text-sm tabular-nums">${formatGols(ag.metaGols)}</td>
+                <td class="px-3 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px] tabular-nums">${ag.perc.toFixed(1)}%</td>
               </tr>`;
           }).join('');
       }

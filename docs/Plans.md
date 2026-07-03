@@ -150,7 +150,7 @@ Encontradas pelo usuário ao rodar a task 5.1/5.2 no ambiente real.
 ### Álbum (`Album.html`)
 | Task | Conteúdo | Status |
 |------|------|--------|
-| 7.1 | Layout responsivo HD→4k: página dimensionada por JS (`dimensionarPaginaAtual`) para caber inteira na área disponível (largura E altura), reaplicando no resize | cc:完了 |
+| 7.1 | ~~Layout responsivo HD→4k por JS (`dimensionarPaginaAtual`)~~ **REVERTIDO** (7.12): deixava o álbum pequeno demais e quebrava o arrastar/colar. Voltou ao layout original (scroll vertical, `max-w-5xl`, `pb-32`) | revertido |
 | 7.2 | Inventário legível: cards maiores com aspect-ratio de cromo (2:3), imagem nítida e legenda de nome + número sob cada figurinha; removido o "expandir no hover" | cc:完了 |
 | 7.3 | Botão "Dashboard" no header do álbum (volta ao painel), espelhando o botão de ir ao álbum no dashboard | cc:完了 |
 
@@ -165,6 +165,9 @@ Encontradas pelo usuário ao rodar a task 5.1/5.2 no ambiente real.
 | 7.9 | Removida a função morta `converterParaGols` (nunca chamada, com divisores que não batiam com a planilha — fonte de confusão) | cc:完了 |
 | 7.10 | Multiplicador de julho (1.5x, "O MATA-MATA") aplicado aos gols (o badge já anunciava, mas o cálculo vigente não aplicava) | cc:完了 |
 | 7.11 | Backend lia exclusões em `A1:A15` (pegava o cabeçalho e perdia o 15º nome em A16); corrigido para `A2:A16` | cc:完了 |
+| 7.12 | Reverter o dimensionamento por JS do álbum (7.1): tamanho voltou ao original; mantidas apenas as mudanças de inventário (7.2) e o botão Dashboard (7.3) | cc:完了 |
+| 7.13 | Figurinhas do inventário aparecendo só como ícone 👤 ao reabrir o álbum: o inventário era pintado antes de `ESTADO.figurinhasComImagem` carregar e nunca era repintado. `marcarCarregamentoConcluido` agora também chama `renderizarInventario()` quando as figurinhas chegam | cc:完了 |
+| 7.14 | Números de gols em PT-BR: `formatGols` passa a arredondar para inteiro e usar ponto (.) como separador de milhar, sem decimal (`toLocaleString('pt-BR')`). Coluna de gols dos grupos alargada (`w-32`, padding menor, `text-sm`) para não cortar/esconder números grandes | cc:完了 |
 
 ### ⚠️ Premissas dos cálculos que precisam de confirmação (afetam premiação real)
 
