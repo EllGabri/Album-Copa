@@ -855,23 +855,6 @@ function parseNomeArquivoFigurinha(nomeArquivo) {
 }
 
 /**
- * Garante que um arquivo do Drive esteja acessível via link público
- * ("Qualquer pessoa com o link" - somente leitura). Sem isso, a URL
- * https://drive.google.com/uc?id=... usada como <img>/background-image no
- * WebApp retorna a tela de login/permissão do Google em vez do PNG, e a
- * página do álbum aparece em branco (sem imagem, sem erro visível). Idempotente.
- */
-function garantirCompartilhamentoPublico(arquivo) {
-  try {
-    if (arquivo.getSharingAccess() !== DriveApp.Access.ANYONE_WITH_LINK) {
-      arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    }
-  } catch (e) {
-    Logger.log("Não foi possível ajustar compartilhamento de " + arquivo.getName() + ": " + e);
-  }
-}
-
-/**
  * Varre a pasta do Drive (FIGURINHAS_FOLDER_ID) e popula/atualiza a aba
  * "Figurinhas" (ID | Nome | Equipe | FileID | Info) a partir do padrão de
  * nome de cada arquivo. Idempotente: roda 2x sem duplicar linhas (casa por
@@ -903,7 +886,6 @@ function reconciliarFigurinhas() {
         naoParseados.push(arquivo.getName());
         continue;
       }
-      garantirCompartilhamentoPublico(arquivo);
       var fileId = arquivo.getId();
       parsed.numeros.forEach(function (numero) {
         registros[numero] = { nome: parsed.nome, fileId: fileId };
@@ -1014,7 +996,6 @@ function reconciliarTemplates() {
     while (arquivos.hasNext()) {
       var arquivo = arquivos.next();
       var nomeChave = arquivo.getName().replace(/\.png$/i, "").trim();
-      garantirCompartilhamentoPublico(arquivo);
       var fileId = arquivo.getId();
 
       if (nomesReconhecidos.indexOf(nomeChave) === -1) {
@@ -1069,10 +1050,42 @@ function obterTemplatesDoAlbum() {
       var nome = (dados[i][0] || "").toString().trim();
       var fileId = (dados[i][1] || "").toString().trim();
       if (nome && fileId) {
-        templates[nome] = "https://drive.google.com/uc?id=" + fileId;
+        // Devolve o FileID (não uma URL de drive.google.com): o cliente
+        // busca os bytes via obterImagemBase64() para funcionar em rede
+        // interna que bloqueia hosts externos (ver obterImagemBase64).
+        templates[nome] = fileId;
       }
     }
     return JSON.stringify({ status: "success", templates: templates });
+  } catch (e) {
+    return JSON.stringify({ status: "error", message: e.toString() });
+  }
+}
+
+/**
+ * Devolve os bytes de um arquivo do Drive como data URI base64
+ * (data:image/png;base64,...). Usado pelo Álbum Virtual para exibir
+ * figurinhas e templates SEM o browser precisar acessar
+ * drive.google.com diretamente.
+ *
+ * Motivo: em rede interna corporativa (ex.: Cresol) o acesso a hosts
+ * externos costuma ser bloqueado — o browser não carrega
+ * https://drive.google.com/uc?id=... nem Dropbox/etc., e a imagem (e o
+ * layout do template de fundo) fica em branco. Aqui é o próprio WebApp
+ * (mesma origem *.googleusercontent.com que já está liberada, pois o
+ * app abre) que lê o arquivo com a permissão do dono do script e
+ * repassa os bytes ao cliente. Não depende de compartilhamento público.
+ *
+ * Chamado sob demanda (uma imagem por vez, com cache no cliente) para
+ * manter cada resposta pequena.
+ */
+function obterImagemBase64(fileId) {
+  try {
+    if (!fileId) return JSON.stringify({ status: "error", message: "fileId vazio" });
+    var blob = DriveApp.getFileById(fileId).getBlob();
+    var mime = blob.getContentType() || "image/png";
+    var b64 = Utilities.base64Encode(blob.getBytes());
+    return JSON.stringify({ status: "success", dataUri: "data:" + mime + ";base64," + b64 });
   } catch (e) {
     return JSON.stringify({ status: "error", message: e.toString() });
   }

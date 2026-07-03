@@ -146,13 +146,20 @@ coordenadas).
 - Capa e Contra Capa entram como primeira/última "página" da navegação.
 - Resolução de imagem da figurinha passa a ser por **número do slot**
   (chave determinística), não mais por fuzzy match de nome.
-- Os PNGs de figurinhas e de templates precisam estar compartilhados no
-  Drive como "Qualquer pessoa com o link" (somente leitura) para que a URL
-  `https://drive.google.com/uc?id=...` usada como `<img src>` /
-  `background-image` no WebApp realmente carregue a imagem (em vez de
-  retornar a tela de permissão do Google e a página aparecer em branco).
-  As rotinas `reconciliarFigurinhas()` e `reconciliarTemplates()` já
-  garantem isso automaticamente a cada execução (`garantirCompartilhamentoPublico`).
+- **As imagens (figurinhas e templates) NÃO são carregadas por hotlink a
+  `drive.google.com`.** Em rede interna corporativa (ex.: Cresol) o acesso
+  a hosts externos costuma ser bloqueado — o browser não carrega
+  `https://drive.google.com/uc?id=...` (nem Dropbox/outros), então o
+  layout do template e as figurinhas ficam em branco. Solução: o próprio
+  backend (`obterImagemBase64(fileId)`) lê o arquivo do Drive com a
+  permissão do dono do script e devolve os bytes em base64
+  (`data:image/png;base64,...`); o cliente injeta como `data URI`. Todo o
+  tráfego fica na mesma origem `*.googleusercontent.com`/`script.google.com`
+  que o WebApp já usa (e que a rede interna libera, pois o app abre). As
+  imagens são buscadas sob demanda (uma por vez, com cache por `fileId` no
+  cliente) para manter cada resposta pequena. Consequência: os arquivos do
+  Drive **não precisam** (e não devem) ser públicos — as fotos de
+  funcionários ficam acessíveis só via o script, não por link aberto.
 
 ## 6. Abertura de pacote (mecânica e visual)
 

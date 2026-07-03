@@ -246,6 +246,66 @@
 
     const CARGAS_PENDENTES = new Set();
 
+    // ---------------------------------------------------------------
+    // Cache/resolução de imagens por FileID (base64 servido pelo WebApp).
+    //
+    // Em rede interna que bloqueia hosts externos, o browser NÃO carrega
+    // https://drive.google.com/uc?id=... (nem Dropbox/etc.). Então cada
+    // imagem (figurinha ou template de fundo) é pedida ao backend
+    // (obterImagemBase64) e injetada como data URI. Cache por fileId
+    // evita repedir a mesma imagem; requisições concorrentes pra um
+    // mesmo fileId são agrupadas.
+    // ---------------------------------------------------------------
+    const IMG_CACHE = {};       // fileId -> dataUri
+    const IMG_PENDENTES = {};   // fileId -> [callbacks]
+
+    function resolverImagemPorFileId(fileId, callback) {
+      if (!fileId) { callback(null); return; }
+      if (IMG_CACHE[fileId]) { callback(IMG_CACHE[fileId]); return; }
+      if (IMG_PENDENTES[fileId]) { IMG_PENDENTES[fileId].push(callback); return; }
+      IMG_PENDENTES[fileId] = [callback];
+
+      const entregar = (dataUri) => {
+        if (dataUri) IMG_CACHE[fileId] = dataUri;
+        (IMG_PENDENTES[fileId] || []).forEach(cb => cb(dataUri || null));
+        delete IMG_PENDENTES[fileId];
+      };
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            let dataUri = null;
+            try { const r = JSON.parse(jsonRes); if (r.status === 'success') dataUri = r.dataUri; } catch (e) {}
+            entregar(dataUri);
+          })
+          .withFailureHandler(function(erro) {
+            console.error("Erro ao carregar imagem", fileId, erro);
+            entregar(null);
+          })
+          .obterImagemBase64(fileId);
+      } else {
+        entregar(null);
+      }
+    }
+
+    // Resolve a imagem de uma figurinha: prefere base64 por fileId (rede
+    // interna); cai pra imageUrl (ex.: harness local) quando não há fileId.
+    function resolverImagemFigurinha(fig, callback) {
+      if (!fig) { callback(null); return; }
+      if (fig.fileId) { resolverImagemPorFileId(fig.fileId, (d) => callback(d || fig.imageUrl || null)); return; }
+      callback(fig.imageUrl || null);
+    }
+
+    // Resolve o fundo (template) pelo valor guardado em ESTADO.templates.
+    // Hoje esse valor é um fileId; aceita também URL/data-URI já pronta
+    // (compat com mocks locais).
+    function resolverImagemTemplate(nomeTemplate, callback) {
+      const valor = ESTADO.templates[nomeTemplate];
+      if (!valor) { callback(null); return; }
+      if (/^(data:|https?:)/.test(valor)) { callback(valor); return; }
+      resolverImagemPorFileId(valor, callback);
+    }
+
     // Escapa texto vindo da planilha (aba Figurinhas, coluna Nome) antes de
     // interpolar em innerHTML - defesa contra HTML/script injetado por
     // engano numa célula da planilha.
@@ -398,12 +458,27 @@
     function construirPaginasDoAlbum(agenciaPropria) {
       const paginas = [{ tipo: 'capa' }];
       Object.keys(SLOT_MAP.paginasPorAgencia).sort().forEach(ag => {
-        obterTemplatesDaAgencia(ag).forEach(t => paginas.push({ tipo: 'pagina', template: t, propria: ag === agenciaPropria }));
+        // O rótulo da página vem da AGÊNCIA (nome do login), não do nome
+        // do arquivo de template: os arquivos "Pac Lages" e "Pac Lages Ii"
+        // têm nome/conteúdo trocados (ver generate_slot_map.py), então
+        // mostrar o nome do arquivo confundia (login "Pac Lages" exibia
+        // "Pac Lages Ii"). "parte" numera as páginas quando a agência tem
+        // mais de um template (ex.: São Joaquim I e II).
+        const templates = obterTemplatesDaAgencia(ag);
+        templates.forEach((t, i) => paginas.push({
+          tipo: 'pagina',
+          template: t,
+          agencia: ag,
+          parte: templates.length > 1 ? (i + 1) : null,
+          propria: ag === agenciaPropria
+        }));
       });
-      paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica' });
+      paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica', agencia: 'Comissao Tecnica' });
       paginas.push({ tipo: 'contracapa' });
       return paginas;
     }
+
+    const ROMANOS = ['', 'I', 'II', 'III', 'IV', 'V'];
 
     // Pool de sorteio de pacote: GLOBAL - união de todos os números de
     // TODAS as agências + Comissão Técnica (ver spec.md seção 6, decisão
@@ -496,7 +571,7 @@
 
     function renderizarImagemNoSlot(slotDiv, slot, numero) {
       const fig = obterFigurinhaPorNumero(numero);
-      if (!fig || !fig.imageUrl) return;
+      if (!fig) return;
 
       const img = document.createElement('img');
       img.alt = `Figurinha ${numero}`;
@@ -505,7 +580,6 @@
         // Imagem panorâmica compartilhada: renderiza em largura dobrada e
         // desloca pra mostrar só a metade correta (técnica de sprite).
         slotDiv.style.overflow = 'hidden';
-        img.src = fig.imageUrl;
         img.className = "absolute h-full object-cover";
         // Tailwind preflight aplica "max-width: 100%" em <img>; sem
         // sobrescrever, a largura de 200% usada pra sprite fica limitada a
@@ -515,30 +589,42 @@
         img.style.top = "0";
         img.style.left = (slot.ladoPar === 'esquerda') ? "0" : "-100%";
       } else {
-        img.src = fig.imageUrl;
         img.className = "w-full h-full object-cover";
       }
       slotDiv.appendChild(img);
+      resolverImagemFigurinha(fig, (src) => { if (src) img.src = src; });
+    }
+
+    // Aplica o PNG do template como imagem de fundo, resolvendo os bytes
+    // via base64 (rede interna). Mostra um aviso de carregando/erro
+    // enquanto não chega (ou se o template não estiver reconciliado).
+    function aplicarFundoTemplate(wrapper, nomeTemplate) {
+      const aviso = document.createElement('div');
+      aviso.className = "absolute inset-0 flex items-center justify-center text-white/50 text-sm pointer-events-none";
+      aviso.innerText = `Carregando "${nomeTemplate}"…`;
+      wrapper.appendChild(aviso);
+      resolverImagemTemplate(nomeTemplate, (src) => {
+        if (src) {
+          wrapper.style.backgroundImage = `url('${src}')`;
+          aviso.remove();
+        } else {
+          aviso.innerText = `Template "${nomeTemplate}" não pôde ser carregado do Drive`;
+        }
+      });
     }
 
     function renderizarPaginaEstatica(container, nomeTemplate, rotulo) {
       document.getElementById('pagina-titulo').innerText = rotulo;
-      const url = ESTADO.templates[nomeTemplate];
 
       const wrapper = document.createElement('div');
       wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
       wrapper.style.aspectRatio = `${SLOT_MAP.dimensaoReferencia[0]} / ${SLOT_MAP.dimensaoReferencia[1]}`;
-      if (url) {
-        wrapper.style.backgroundImage = `url('${url}')`;
-      } else {
-        wrapper.innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-white/50 text-sm">Template "${nomeTemplate}" ainda não configurado no Drive</div>`;
-      }
+      aplicarFundoTemplate(wrapper, nomeTemplate);
       container.appendChild(wrapper);
     }
 
     function renderizarPaginaComSlots(container, nomeTemplate, rotulo) {
       document.getElementById('pagina-titulo').innerText = rotulo;
-      const url = ESTADO.templates[nomeTemplate];
       const tpl = SLOT_MAP.templates[nomeTemplate];
       const slots = (tpl && tpl.slots) || [];
       const dim = SLOT_MAP.dimensaoReferencia;
@@ -546,7 +632,7 @@
       const wrapper = document.createElement('div');
       wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
       wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
-      if (url) wrapper.style.backgroundImage = `url('${url}')`;
+      aplicarFundoTemplate(wrapper, nomeTemplate);
 
       slots.forEach(slot => {
         const slotDiv = document.createElement('div');
@@ -571,13 +657,6 @@
         wrapper.appendChild(slotDiv);
       });
 
-      if (!url) {
-        const aviso = document.createElement('div');
-        aviso.className = "absolute inset-0 flex items-center justify-center text-white/50 text-sm pointer-events-none";
-        aviso.innerText = `Template "${nomeTemplate}" ainda não configurado no Drive`;
-        wrapper.appendChild(aviso);
-      }
-
       container.appendChild(wrapper);
     }
 
@@ -594,7 +673,8 @@
       } else if (pagina.tipo === 'contracapa') {
         renderizarPaginaEstatica(container, 'Contra Capa', 'Contracapa');
       } else {
-        let rotulo = (pagina.template === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.template;
+        let rotulo = (pagina.agencia === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.agencia;
+        if (pagina.parte) rotulo += ' ' + (ROMANOS[pagina.parte] || pagina.parte);
         if (pagina.propria) rotulo += ' — SUA AGÊNCIA';
         renderizarPaginaComSlots(container, pagina.template, rotulo);
       }
@@ -633,10 +713,13 @@
 
         const imgWrapper = document.createElement('div');
         imgWrapper.className = "w-full h-full rounded-md overflow-hidden";
-        imgWrapper.innerHTML = (fig && fig.imageUrl)
-          ? `<img src="${fig.imageUrl}" alt="${nomeExibicao}" class="w-full h-full object-cover">`
-          : `<div class="w-full h-full flex items-center justify-center text-lg bg-slate-100">👤</div>`;
+        imgWrapper.innerHTML = `<div class="w-full h-full flex items-center justify-center text-lg bg-slate-100">👤</div>`;
         card.appendChild(imgWrapper);
+        if (fig) {
+          resolverImagemFigurinha(fig, (src) => {
+            if (src) imgWrapper.innerHTML = `<img src="${src}" alt="${nomeExibicao}" class="w-full h-full object-cover">`;
+          });
+        }
 
         if (isRepetida) {
           card.insertAdjacentHTML('beforeend', `<div class="absolute -top-1 -right-1 bg-slate-700 text-white text-[7px] font-black px-1 py-0.5 rounded shadow z-10">DUP</div>`);
@@ -787,17 +870,19 @@
         // cortado fora da borda.
         const labelRepetida = jaTinha ? `<div class="absolute top-1 right-1 bg-slate-800 text-white text-[9px] font-black px-2 py-1 rounded-md shadow-lg z-10">REPETIDA</div>` : '';
 
-        if (fig && fig.imageUrl) {
-          front.innerHTML = `${labelRepetida}<img src="${fig.imageUrl}" alt="Figurinha ${numero}" class="w-full h-full object-cover">`;
-        } else {
-          front.innerHTML = `
+        const placeholderCarta = `
             ${labelRepetida}
             <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 mb-2 flex items-center justify-center text-4xl shadow-inner">👤</div>
               <p class="text-xs font-extrabold text-slate-800 uppercase leading-tight">Nº ${numero}</p>
-              <div class="mt-auto w-full bg-slate-100 py-1 rounded border border-slate-200"><span class="text-[8px] uppercase tracking-widest font-black text-slate-400">Sem imagem</span></div>
+              <div class="mt-auto w-full bg-slate-100 py-1 rounded border border-slate-200"><span class="text-[8px] uppercase tracking-widest font-black text-slate-400">Carregando…</span></div>
             </div>
           `;
+        front.innerHTML = placeholderCarta;
+        if (fig) {
+          resolverImagemFigurinha(fig, (src) => {
+            if (src) front.innerHTML = `${labelRepetida}<img src="${src}" alt="Figurinha ${numero}" class="w-full h-full object-cover">`;
+          });
         }
 
         const back = document.createElement('div');
