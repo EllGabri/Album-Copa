@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Álbum Oficial - Copa Excelência</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sport: ['"Teko"', 'sans-serif']
+          },
+          colors: {
+            gold: { 400: '#facc15', 500: '#eab308', 600: '#ca8a04' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .stadium-bg {
+      background-color: #0c2e17;
+      background-image:
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.9), rgba(11, 46, 23, 0.95)),
+        repeating-linear-gradient(to right, transparent, transparent 80px, rgba(255, 255, 255, 0.03) 80px, rgba(255, 255, 255, 0.03) 160px);
+      background-attachment: fixed;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Slot numerado sobreposto ao template do Canva - o template já desenha
+       o retângulo/número; aqui só damos feedback visual de drag-over. */
+    .slot-figurinha-numero {
+      transition: background-color 0.2s ease, outline-color 0.2s ease;
+      outline: 0px solid transparent;
+      outline-offset: -3px;
+    }
+    .slot-figurinha-numero.drag-over {
+      background-color: rgba(250, 204, 21, 0.25);
+      outline: 3px solid #facc15;
+    }
+
+    .pagina-template-bg {
+      width: 100%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+
+    .anim-shake { animation: shake 0.5s infinite; }
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      25% { transform: translate(-1px, -2px) rotate(-1deg); }
+      50% { transform: translate(-3px, 0px) rotate(1deg); }
+      75% { transform: translate(3px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, -1px) rotate(0deg); }
+    }
+
+    /* ==================== NOVO: Inventário Expansível ==================== */
+    .inventario-bar {
+      max-height: 60px;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .inventario-bar:hover {
+      max-height: 180px;
+    }
+
+    .card-inventario {
+      position: relative;
+    }
+
+    .card-inventario .tooltip-name {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .card-inventario:hover .tooltip-name {
+      opacity: 1;
+      visibility: visible;
+    }
+    /* ==================== FIM NOVO ==================== */
+  </style>
+  
+</head>
+<body class="stadium-bg text-slate-800 font-sans min-h-screen antialiased flex flex-col h-screen overflow-hidden">
+
+  <!-- ECRÃ DE CARREGAMENTO -->
+  <div id="loader" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 text-center transition-all duration-300">
+    <div class="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h3 class="text-xl font-bold text-green-800 mb-2">A preparar o Relvado...</h3>
+    <p class="text-sm text-slate-500">A organizar as figurinhas da Copa Excelência.</p>
+  </div>
+
+  <!-- NOTIFICAÇÕES TOAST -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-2"></div>
+
+  <!-- ECRÃ DE LOGIN (Vestiário) -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1518605368461-1e1e127394eb?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center before:content-[''] before:absolute before:inset-0 before:bg-slate-900/80 before:backdrop-blur-sm hidden">
+    <div class="relative bg-white border border-slate-200 rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500 shadow-inner">
+        <span class="text-4xl">🔐</span>
+      </div>
+      <h2 class="text-4xl font-sport text-green-800 uppercase tracking-widest mb-1">Acesso ao Vestiário</h2>
+      <p class="text-sm text-slate-500 mb-8 font-medium">Selecione a sua Seleção (Agência) e introduza o PIN para aceder ao Álbum Oficial.</p>
+
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">A Sua Agência</label>
+          <select id="login-agencia" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 font-semibold focus:ring-2 focus:ring-green-500 outline-none">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">PIN de Acesso</label>
+          <input type="password" id="login-pin" maxlength="4" placeholder="****" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-black text-slate-800 focus:ring-2 focus:ring-green-500 outline-none">
+        </div>
+        <button onclick="fazerLogin()" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-4 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all uppercase tracking-widest mt-4">
+          Entrar no Álbum
+        </button>
+      </div>
+      <button onclick="voltarDashboard()" class="mt-6 text-sm text-slate-400 hover:text-green-600 font-bold underline transition-colors">Voltar ao Dashboard da Copa</button>
+    </div>
+  </div>
+
+  <!-- ECRÃ DO ÁLBUM (Principal) -->
+  <div id="album-screen" class="hidden flex-col h-full">
+
+    <header class="border-b border-green-800/50 bg-slate-900/60 backdrop-blur-md shrink-0">
+      <div class="max-w-[1400px] mx-auto px-6 py-3 flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-sport tracking-wider text-yellow-400 uppercase leading-none">Álbum Oficial</h1>
+          <p class="text-[10px] text-green-100 font-bold tracking-widest uppercase">Seleção: <span id="header-agencia-nome" class="text-white">...</span></p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 flex items-center gap-3">
+            <span class="text-2xl">📦</span>
+            <div>
+              <p class="text-[9px] text-slate-400 uppercase tracking-widest font-black leading-none">Pacotes</p>
+              <p class="text-xl font-sport text-white leading-none" id="pacote-counter">0</p>
+            </div>
+            <button onclick="abrirModalPacote()" id="btn-abrir-pacote" class="ml-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 text-[10px] font-black uppercase px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Abrir</button>
+          </div>
+          <button onclick="sairAlbum()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 w-10 h-10 rounded-full flex items-center justify-center transition-colors" title="Sair do Álbum">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+
+      <div class="w-full max-w-7xl flex justify-between items-center mb-6 bg-slate-900/40 p-2 rounded-2xl backdrop-blur-sm border border-slate-700/50">
+        <button onclick="mudarPagina(-1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <div class="text-center">
+          <h2 id="pagina-titulo" class="text-2xl md:text-4xl font-sport text-white uppercase tracking-widest drop-shadow-md">Carregando...</h2>
+          <p class="text-xs text-yellow-400 font-bold uppercase tracking-widest">Página <span id="pagina-atual">1</span> / <span id="pagina-total">15</span></p>
+        </div>
+        <button onclick="mudarPagina(1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+
+      <!-- Página do álbum: fundo = template Canva (aspect-ratio 2000:1414), figurinhas coladas em overlay posicionado por SLOT_MAP -->
+      <div id="pagina-container" class="w-full max-w-5xl mx-auto pb-32 flex items-center justify-center">
+      </div>
+    </div>
+
+    <!-- ==================== AJUSTE 5: Inventário Expansível ==================== -->
+    <div class="shrink-0 bg-slate-900 border-t-4 border-slate-700 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-40">
+      <div class="max-w-[1400px] mx-auto">
+        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+          <span>🎒 O Seu Inventário (Figurinhas por Colar)</span>
+          <span class="bg-slate-800 px-2 py-0.5 rounded-md text-white border border-slate-600" id="inventario-count">0</span>
+        </h3>
+        <p class="text-[10px] text-slate-500 mb-2">Dica: Passe o mouse para expandir. Arraste a figurinha e largue na silhueta correta da página.</p>
+
+        <!-- Barra expansível com hover -->
+        <div class="inventario-bar bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-3 backdrop-blur-sm">
+          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[50px] items-center px-2">
+            <div class="text-slate-600 text-xs italic py-2" id="inventario-vazio">Sem figurinhas novas. Abra um pacote!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ==================== FIM AJUSTE 5 ==================== -->
+  </div>
+
+  <!-- MODAL DE ABERTURA DE PACOTE (paleta Cresol/Copa Excelência - ver Capa.png) -->
+  <div id="modal-pacote" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[150] flex flex-col items-center justify-center p-6 hidden">
+    <button onclick="fecharModalPacote()" class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl">&times;</button>
+
+    <div id="pacote-fechado" class="text-center cursor-pointer transform transition-transform hover:scale-110" onclick="rasgarPacote()">
+      <div class="w-48 h-64 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-[0_0_50px_rgba(249,115,22,0.5)] border-4 border-orange-300 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 2px, transparent 2px, transparent 14px);"></div>
+        <span class="text-5xl drop-shadow-md mb-1">⚽</span>
+        <h3 class="text-2xl font-sport text-white uppercase font-black leading-none drop-shadow-sm px-2">Copa</h3>
+        <div class="w-full bg-green-800 border-y-2 border-white/30 py-1 mt-2">
+          <p class="text-[10px] text-white font-black uppercase tracking-widest leading-tight">Excelência<br>de Negócios</p>
+        </div>
+        <p class="text-[10px] text-orange-900 font-bold uppercase tracking-widest mt-3 bg-white/70 px-2 py-1 rounded">12-13 Cromos</p>
+      </div>
+      <p class="text-white mt-8 text-sm font-bold uppercase tracking-widest animate-pulse">Clique para Rasgar</p>
+    </div>
+
+    <div id="pacote-aberto" class="hidden flex-col items-center">
+      <h3 class="text-3xl font-sport text-orange-400 uppercase tracking-widest mb-10 drop-shadow-lg">Novas Figurinhas!</h3>
+      <div id="cartas-reveladas" class="flex flex-wrap justify-center gap-4 max-w-4xl">
+      </div>
+      <button onclick="guardarFigurinhasNoInventario()" class="mt-12 bg-white text-slate-900 hover:bg-slate-200 font-bold py-3 px-8 rounded-full shadow-lg uppercase tracking-widest transition-colors border-2 border-orange-400">Guardar no Inventário</button>
+    </div>
+  </div>
+
+  
+<script>
+  const __MOCK__ = {"slotmap": {"geradoEm": "scripts/generate_slot_map.py", "dimensaoReferencia": [2000, 1414], "templates": {"Capa": {"template": "Capa.png", "slots": [], "status": "sem_slots"}, "Comissao Tecnica": {"template": "Comissao Tecnica.png", "largura": 2000, "altura": 1414, "circulosDetectados": 10, "retangulosDetectados": 10, "slotsMontados": 10, "slots": [{"numero": 1, "x": 25, "y": 149, "largura": 297, "altura": 392}, {"numero": 2, "x": 352, "y": 149, "largura": 297, "altura": 392}, {"numero": 3, "x": 678, "y": 149, "largura": 298, "altura": 392}, {"numero": 4, "x": 196, "y": 566, "largura": 297, "altura": 391}, {"numero": 5, "x": 523, "y": 566, "largura": 297, "altura": 391}, {"numero": 6, "x": 1195, "y": 261, "largura": 297, "altura": 345}, {"numero": 7, "x": 1521, "y": 214, "largura": 298, "altura": 392}, {"numero": 8, "x": 1024, "y": 873, "largura": 297, "altura": 392}, {"numero": 9, "x": 1350, "y": 878, "largura": 298, "altura": 387}, {"numero": 10, "x": 1677, "y": 873, "largura": 298, "altura": 392}], "status": "ok"}, "Contra Capa": {"template": "Contra Capa.png", "slots": [], "status": "sem_slots"}, "Pac Bela Vista do Toldo": {"template": "Pac Bela Vista do Toldo.png", "largura": 2000, "altura": 1414, "circulosDetectados": 9, "retangulosDetectados": 7, "slotsMontados": 9, "slots": [{"numero": 147, "x": 180, "y": 169, "largura": 298.0, "altura": 392, "grupoPar": {"x": 180, "y": 169, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 148, "x": 478.0, "y": 169, "largura": 298.0, "altura": 392, "grupoPar": {"x": 180, "y": 169, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 149, "x": 180, "y": 592, "largura": 298.0, "altura": 392, "grupoPar": {"x": 180, "y": 592, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 150, "x": 478.0, "y": 592, "largura": 298.0, "altura": 392, "grupoPar": {"x": 180, "y": 592, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 151, "x": 1026, "y": 35, "largura": 297, "altura": 392}, {"numero": 152, "x": 1352, "y": 35, "largura": 298, "altura": 392}, {"numero": 153, "x": 1679, "y": 35, "largura": 298, "altura": 392}, {"numero": 154, "x": 1203, "y": 458, "largura": 298, "altura": 392}, {"numero": 155, "x": 1530, "y": 458, "largura": 298, "altura": 392}], "status": "ok"}, "Pac Bom Jardim da Serra": {"template": "Pac Bom Jardim da Serra.png", "largura": 2000, "altura": 1414, "circulosDetectados": 7, "retangulosDetectados": 5, "slotsMontados": 7, "slots": [{"numero": 116, "x": 20, "y": 474, "largura": 297, "altura": 391}, {"numero": 117, "x": 347, "y": 474, "largura": 297, "altura": 391}, {"numero": 118, "x": 673, "y": 474, "largura": 298, "altura": 391}, {"numero": 119, "x": 1222, "y": 474, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1222, "y": 474, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 120, "x": 1519.5, "y": 474, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1222, "y": 474, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 121, "x": 1222, "y": 904, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1222, "y": 904, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 122, "x": 1519.5, "y": 904, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1222, "y": 904, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Canoinhas": {"template": "Pac Canoinhas.png", "largura": 2000, "altura": 1414, "circulosDetectados": 13, "retangulosDetectados": 11, "slotsMontados": 13, "slots": [{"numero": 29, "x": 26, "y": 508, "largura": 297, "altura": 392}, {"numero": 30, "x": 352, "y": 508, "largura": 298, "altura": 392}, {"numero": 31, "x": 679, "y": 508, "largura": 298, "altura": 392}, {"numero": 32, "x": 26, "y": 938, "largura": 297, "altura": 392}, {"numero": 33, "x": 352, "y": 938, "largura": 298, "altura": 392}, {"numero": 34, "x": 679, "y": 938, "largura": 298, "altura": 392}, {"numero": 35, "x": 1365, "y": 79, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1365, "y": 79, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 36, "x": 1663.0, "y": 79, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1365, "y": 79, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 37, "x": 1365, "y": 504, "largura": 298.0, "altura": 391, "grupoPar": {"x": 1365, "y": 504, "largura": 596, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 38, "x": 1663.0, "y": 504, "largura": 298.0, "altura": 391, "grupoPar": {"x": 1365, "y": 504, "largura": 596, "altura": 391}, "ladoPar": "direita"}, {"numero": 39, "x": 1022, "y": 938, "largura": 298, "altura": 392}, {"numero": 40, "x": 1349, "y": 938, "largura": 298, "altura": 392}, {"numero": 41, "x": 1676, "y": 938, "largura": 298, "altura": 392}], "status": "ok"}, "Pac Correia Pinto": {"template": "Pac Correia Pinto.png", "largura": 2000, "altura": 1414, "circulosDetectados": 9, "retangulosDetectados": 7, "slotsMontados": 9, "slots": [{"numero": 84, "x": 31, "y": 511, "largura": 298, "altura": 392}, {"numero": 85, "x": 358, "y": 576, "largura": 298, "altura": 327}, {"numero": 86, "x": 685, "y": 511, "largura": 298, "altura": 392}, {"numero": 87, "x": 195, "y": 940, "largura": 298, "altura": 392}, {"numero": 88, "x": 522, "y": 940, "largura": 297, "altura": 392}, {"numero": 89, "x": 1203, "y": 165, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1203, "y": 165, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 90, "x": 1500.5, "y": 165, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1203, "y": 165, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 91, "x": 1203, "y": 595, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1203, "y": 595, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 92, "x": 1500.5, "y": 595, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1203, "y": 595, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Irineopolis": {"template": "Pac Irineopolis.png", "largura": 2000, "altura": 1414, "circulosDetectados": 12, "retangulosDetectados": 10, "slotsMontados": 12, "slots": [{"numero": 93, "x": 23, "y": 82, "largura": 297, "altura": 392}, {"numero": 94, "x": 350, "y": 82, "largura": 298, "altura": 392}, {"numero": 95, "x": 677, "y": 82, "largura": 297, "altura": 392}, {"numero": 96, "x": 23, "y": 511, "largura": 297, "altura": 392}, {"numero": 97, "x": 350, "y": 512, "largura": 298, "altura": 392}, {"numero": 98, "x": 677, "y": 511, "largura": 297, "altura": 392}, {"numero": 99, "x": 180, "y": 940, "largura": 297, "altura": 392}, {"numero": 100, "x": 507, "y": 940, "largura": 298, "altura": 392}, {"numero": 101, "x": 1207, "y": 354, "largura": 294.5, "altura": 391, "grupoPar": {"x": 1207, "y": 354, "largura": 589, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 102, "x": 1501.5, "y": 354, "largura": 294.5, "altura": 391, "grupoPar": {"x": 1207, "y": 354, "largura": 589, "altura": 391}, "ladoPar": "direita"}, {"numero": 103, "x": 1204, "y": 793, "largura": 294.5, "altura": 392, "grupoPar": {"x": 1204, "y": 793, "largura": 589, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 104, "x": 1498.5, "y": 793, "largura": 294.5, "altura": 392, "grupoPar": {"x": 1204, "y": 793, "largura": 589, "altura": 392}, "ladoPar": "direita"}], "status": "ok"}, "Pac Lages Ii": {"template": "Pac Lages Ii.png", "largura": 2000, "altura": 1414, "circulosDetectados": 10, "retangulosDetectados": 8, "slotsMontados": 10, "slots": [{"numero": 42, "x": 31, "y": 511, "largura": 298, "altura": 392}, {"numero": 43, "x": 358, "y": 511, "largura": 298, "altura": 392}, {"numero": 44, "x": 685, "y": 511, "largura": 298, "altura": 392}, {"numero": 45, "x": 31, "y": 922, "largura": 298, "altura": 392}, {"numero": 46, "x": 358, "y": 922, "largura": 298, "altura": 392}, {"numero": 47, "x": 685, "y": 922, "largura": 298, "altura": 392}, {"numero": 48, "x": 1198, "y": 493, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1198, "y": 493, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 49, "x": 1495.5, "y": 493, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1198, "y": 493, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 50, "x": 1198, "y": 923, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1198, "y": 923, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 51, "x": 1495.5, "y": 923, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1198, "y": 923, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Lages": {"template": "Pac Lages.png", "largura": 2000, "altura": 1414, "circulosDetectados": 11, "retangulosDetectados": 9, "slotsMontados": 11, "slots": [{"numero": 52, "x": 19, "y": 82, "largura": 298, "altura": 392}, {"numero": 53, "x": 346, "y": 82, "largura": 298, "altura": 392}, {"numero": 54, "x": 673, "y": 82, "largura": 297, "altura": 392}, {"numero": 55, "x": 19, "y": 511, "largura": 298, "altura": 392}, {"numero": 56, "x": 346, "y": 511, "largura": 298, "altura": 392}, {"numero": 57, "x": 673, "y": 511, "largura": 297, "altura": 392}, {"numero": 58, "x": 19, "y": 941, "largura": 298, "altura": 392}, {"numero": 59, "x": 1338, "y": 82, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 82, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 60, "x": 1635.5, "y": 82, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 82, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 61, "x": 1338, "y": 512, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 512, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 62, "x": 1635.5, "y": 512, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 512, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Major Vieira": {"template": "Pac Major Vieira.png", "largura": 2000, "altura": 1414, "circulosDetectados": 11, "retangulosDetectados": 9, "slotsMontados": 11, "slots": [{"numero": 105, "x": 23, "y": 82, "largura": 297, "altura": 392}, {"numero": 106, "x": 350, "y": 82, "largura": 297, "altura": 392}, {"numero": 107, "x": 677, "y": 82, "largura": 297, "altura": 392}, {"numero": 108, "x": 23, "y": 511, "largura": 298, "altura": 392}, {"numero": 109, "x": 350, "y": 511, "largura": 297, "altura": 392}, {"numero": 110, "x": 674, "y": 511, "largura": 298, "altura": 392}, {"numero": 111, "x": 23, "y": 941, "largura": 297, "altura": 392}, {"numero": 112, "x": 362, "y": 941, "largura": 298.0, "altura": 392, "grupoPar": {"x": 362, "y": 941, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 113, "x": 660.0, "y": 941, "largura": 298.0, "altura": 392, "grupoPar": {"x": 362, "y": 941, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 114, "x": 1191, "y": 941, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1191, "y": 941, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 115, "x": 1489.0, "y": 941, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1191, "y": 941, "largura": 596, "altura": 392}, "ladoPar": "direita"}], "status": "ok"}, "Pac Monte Castelo": {"template": "Pac Monte Castelo.png", "largura": 2000, "altura": 1414, "circulosDetectados": 9, "retangulosDetectados": 7, "slotsMontados": 8, "slots": [{"numero": 131, "x": 481.0, "y": 109, "largura": 298.0, "altura": 391, "grupoPar": {"x": 183, "y": 109, "largura": 596, "altura": 391}, "ladoPar": "direita"}, {"numero": 132, "x": 183, "y": 532, "largura": 298.0, "altura": 392, "grupoPar": {"x": 183, "y": 532, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 133, "x": 481.0, "y": 532, "largura": 298.0, "altura": 392, "grupoPar": {"x": 183, "y": 532, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 134, "x": 1020, "y": 109, "largura": 298, "altura": 391}, {"numero": 135, "x": 1347, "y": 109, "largura": 298, "altura": 391}, {"numero": 136, "x": 1020, "y": 532, "largura": 298, "altura": 392}, {"numero": 137, "x": 1347, "y": 532, "largura": 298, "altura": 392}, {"numero": 138, "x": 1347, "y": 955, "largura": 298, "altura": 391}], "status": "ok"}, "Pac Otacilio Costa": {"template": "Pac Otacilio Costa.png", "largura": 2000, "altura": 1414, "circulosDetectados": 11, "retangulosDetectados": 9, "slotsMontados": 11, "slots": [{"numero": 73, "x": 19, "y": 82, "largura": 298, "altura": 392}, {"numero": 74, "x": 346, "y": 82, "largura": 298, "altura": 392}, {"numero": 75, "x": 673, "y": 82, "largura": 297, "altura": 392}, {"numero": 76, "x": 19, "y": 511, "largura": 298, "altura": 392}, {"numero": 77, "x": 346, "y": 511, "largura": 298, "altura": 392}, {"numero": 78, "x": 673, "y": 511, "largura": 297, "altura": 392}, {"numero": 79, "x": 19, "y": 941, "largura": 298, "altura": 392}, {"numero": 80, "x": 1338, "y": 82, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 82, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 81, "x": 1635.5, "y": 82, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 82, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 82, "x": 1338, "y": 512, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 512, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 83, "x": 1635.5, "y": 512, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1338, "y": 512, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Ponte Alta": {"template": "Pac Ponte Alta.png", "largura": 2000, "altura": 1414, "circulosDetectados": 8, "retangulosDetectados": 6, "slotsMontados": 8, "slots": [{"numero": 139, "x": 175, "y": 343, "largura": 297, "altura": 345}, {"numero": 140, "x": 502, "y": 351, "largura": 297, "altura": 337}, {"numero": 141, "x": 175, "y": 726, "largura": 297, "altura": 392}, {"numero": 142, "x": 502, "y": 726, "largura": 297, "altura": 392}, {"numero": 143, "x": 1201, "y": 297, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1201, "y": 297, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 144, "x": 1498.5, "y": 297, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1201, "y": 297, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 145, "x": 1201, "y": 727, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1201, "y": 727, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 146, "x": 1498.5, "y": 727, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1201, "y": 727, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Porto Uniao D. Sta Cruz Do Timbo": {"template": "Pac Porto Uniao D. Sta Cruz Do Timbo.png", "largura": 2000, "altura": 1414, "circulosDetectados": 7, "retangulosDetectados": 5, "slotsMontados": 7, "slots": [{"numero": 156, "x": 204, "y": 327, "largura": 296.0, "altura": 392, "grupoPar": {"x": 204, "y": 327, "largura": 592, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 157, "x": 500.0, "y": 327, "largura": 296.0, "altura": 392, "grupoPar": {"x": 204, "y": 327, "largura": 592, "altura": 392}, "ladoPar": "direita"}, {"numero": 158, "x": 204, "y": 740, "largura": 296.0, "altura": 392, "grupoPar": {"x": 204, "y": 740, "largura": 592, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 159, "x": 500.0, "y": 740, "largura": 296.0, "altura": 392, "grupoPar": {"x": 204, "y": 740, "largura": 592, "altura": 392}, "ladoPar": "direita"}, {"numero": 160, "x": 1034, "y": 350, "largura": 298, "altura": 392}, {"numero": 161, "x": 1351, "y": 350, "largura": 297, "altura": 392}, {"numero": 162, "x": 1667, "y": 350, "largura": 298, "altura": 392}], "status": "ok"}, "Pac Porto Uniao": {"template": "Pac Porto Uniao.png", "largura": 2000, "altura": 1414, "circulosDetectados": 10, "retangulosDetectados": 8, "slotsMontados": 10, "slots": [{"numero": 63, "x": 23, "y": 290, "largura": 298, "altura": 391}, {"numero": 64, "x": 350, "y": 290, "largura": 297, "altura": 392}, {"numero": 65, "x": 677, "y": 290, "largura": 297, "altura": 392}, {"numero": 66, "x": 23, "y": 714, "largura": 298, "altura": 392}, {"numero": 67, "x": 350, "y": 714, "largura": 297, "altura": 392}, {"numero": 68, "x": 676, "y": 714, "largura": 298, "altura": 392}, {"numero": 69, "x": 1181, "y": 128, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1181, "y": 128, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 70, "x": 1479.0, "y": 128, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1181, "y": 128, "largura": 596, "altura": 392}, "ladoPar": "direita"}, {"numero": 71, "x": 1181, "y": 894, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1181, "y": 894, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 72, "x": 1479.0, "y": 894, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1181, "y": 894, "largura": 596, "altura": 392}, "ladoPar": "direita"}], "status": "ok"}, "Pac Sao Joaquim I": {"template": "Pac Sao Joaquim I.png", "largura": 2000, "altura": 1414, "circulosDetectados": 9, "retangulosDetectados": 9, "slotsMontados": 9, "slots": [{"numero": 11, "x": 197, "y": 388, "largura": 298, "altura": 391}, {"numero": 12, "x": 524, "y": 388, "largura": 298, "altura": 392}, {"numero": 13, "x": 851, "y": 388, "largura": 298, "altura": 391}, {"numero": 14, "x": 1178, "y": 388, "largura": 298, "altura": 392}, {"numero": 15, "x": 1505, "y": 388, "largura": 298, "altura": 392}, {"numero": 16, "x": 361, "y": 801, "largura": 298, "altura": 392}, {"numero": 17, "x": 688, "y": 801, "largura": 297, "altura": 392}, {"numero": 18, "x": 1015, "y": 801, "largura": 297, "altura": 392}, {"numero": 19, "x": 1341, "y": 801, "largura": 298, "altura": 392}], "status": "ok"}, "Pac Sao Joaquim Ii": {"template": "Pac Sao Joaquim Ii.png", "largura": 2000, "altura": 1414, "circulosDetectados": 9, "retangulosDetectados": 7, "slotsMontados": 9, "slots": [{"numero": 20, "x": 20, "y": 142, "largura": 298, "altura": 391}, {"numero": 21, "x": 347, "y": 142, "largura": 297, "altura": 391}, {"numero": 22, "x": 673, "y": 142, "largura": 298, "altura": 391}, {"numero": 23, "x": 183, "y": 571, "largura": 298, "altura": 392}, {"numero": 24, "x": 510, "y": 571, "largura": 298, "altura": 392}, {"numero": 25, "x": 1231, "y": 142, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1231, "y": 142, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 26, "x": 1528.5, "y": 142, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1231, "y": 142, "largura": 595, "altura": 391}, "ladoPar": "direita"}, {"numero": 27, "x": 1231, "y": 572, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1231, "y": 572, "largura": 595, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 28, "x": 1528.5, "y": 572, "largura": 297.5, "altura": 391, "grupoPar": {"x": 1231, "y": 572, "largura": 595, "altura": 391}, "ladoPar": "direita"}], "status": "ok"}, "Pac Timbo Grande": {"template": "Pac Timbo Grande.png", "largura": 2000, "altura": 1414, "circulosDetectados": 8, "retangulosDetectados": 6, "slotsMontados": 8, "slots": [{"numero": 123, "x": 185, "y": 358, "largura": 298, "altura": 391}, {"numero": 124, "x": 512, "y": 358, "largura": 298, "altura": 391}, {"numero": 125, "x": 185, "y": 787, "largura": 298, "altura": 392}, {"numero": 126, "x": 512, "y": 787, "largura": 298, "altura": 392}, {"numero": 127, "x": 1190, "y": 358, "largura": 298.0, "altura": 391, "grupoPar": {"x": 1190, "y": 358, "largura": 596, "altura": 391}, "ladoPar": "esquerda"}, {"numero": 128, "x": 1488.0, "y": 358, "largura": 298.0, "altura": 391, "grupoPar": {"x": 1190, "y": 358, "largura": 596, "altura": 391}, "ladoPar": "direita"}, {"numero": 129, "x": 1190, "y": 784, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1190, "y": 784, "largura": 596, "altura": 392}, "ladoPar": "esquerda"}, {"numero": 130, "x": 1488.0, "y": 784, "largura": 298.0, "altura": 392, "grupoPar": {"x": 1190, "y": 784, "largura": 596, "altura": 392}, "ladoPar": "direita"}], "status": "ok"}}, "paginasPorAgencia": {"Pac Bela Vista Do Toldo": ["Pac Bela Vista do Toldo"], "Pac São Joaquim": ["Pac Sao Joaquim I", "Pac Sao Joaquim Ii"], "Pac Canoinhas": ["Pac Canoinhas"], "Pac Lages": ["Pac Lages Ii"], "Pac Lages Ii": ["Pac Lages"], "Pac Porto União": ["Pac Porto Uniao"], "Pac Otacilio Costa": ["Pac Otacilio Costa"], "Pac Correia Pinto": ["Pac Correia Pinto"], "Pac Irineópolis": ["Pac Irineopolis"], "Pac Major Vieira": ["Pac Major Vieira"], "Pac Bom Jardim Da Serra": ["Pac Bom Jardim da Serra"], "Pac Timbó Grande": ["Pac Timbo Grande"], "Pac Monte Castelo": ["Pac Monte Castelo"], "Pac Ponte Alta": ["Pac Ponte Alta"], "Pac Santa Cruz Do Timbo": ["Pac Porto Uniao D. Sta Cruz Do Timbo"]}}, "figurinhas": [{"id": 1, "nome": "Nº 1", "agencia": "", "fileId": "1.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/1.png"}, {"id": 10, "nome": "Nº 10", "agencia": "", "fileId": "10.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/10.png"}, {"id": 2, "nome": "Nº 2", "agencia": "", "fileId": "2.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/2.png"}, {"id": 3, "nome": "Nº 3", "agencia": "", "fileId": "3.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/3.png"}, {"id": 39, "nome": "MARIA SILVANA", "agencia": "", "fileId": "39- MARIA SILVANA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/39-%20MARIA%20SILVANA.png"}, {"id": 4, "nome": "Nº 4", "agencia": "", "fileId": "4.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/4.png"}, {"id": 40, "nome": "FERNANDA FERNANDES", "agencia": "", "fileId": "40- FERNANDA FERNANDES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/40-%20FERNANDA%20FERNANDES.png"}, {"id": 5, "nome": "Nº 5", "agencia": "", "fileId": "5.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/5.png"}, {"id": 6, "nome": "Nº 6", "agencia": "", "fileId": "6.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/6.png"}, {"id": 7, "nome": "Nº 7", "agencia": "", "fileId": "7.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/7.png"}, {"id": 8, "nome": "Nº 8", "agencia": "", "fileId": "8.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/8.png"}, {"id": 9, "nome": "Nº 9", "agencia": "", "fileId": "9.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/9.png"}, {"id": 101, "nome": "Nº 101", "agencia": "", "fileId": "Cópia de 101-102.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20101-102.png"}, {"id": 102, "nome": "Nº 102", "agencia": "", "fileId": "Cópia de 101-102.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20101-102.png"}, {"id": 103, "nome": "TAIS FERNANDA", "agencia": "", "fileId": "Cópia de 103- TAIS FERNANDA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20103-%20TAIS%20FERNANDA.png"}, {"id": 104, "nome": "ALANA SOFIA", "agencia": "", "fileId": "Cópia de 104- ALANA SOFIA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20104-%20ALANA%20SOFIA.png"}, {"id": 105, "nome": "CARLA ANDRESSA", "agencia": "", "fileId": "Cópia de 105- CARLA ANDRESSA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20105-%20CARLA%20ANDRESSA.png"}, {"id": 106, "nome": "DANIELI CHUPEL", "agencia": "", "fileId": "Cópia de 106- DANIELI CHUPEL.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20106-%20DANIELI%20CHUPEL.png"}, {"id": 107, "nome": "ZANDRIELI", "agencia": "", "fileId": "Cópia de 107- ZANDRIELI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20107-%20ZANDRIELI.png"}, {"id": 108, "nome": "LUCIMARA AP", "agencia": "", "fileId": "Cópia de 108- LUCIMARA AP.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20108-%20LUCIMARA%20AP.png"}, {"id": 109, "nome": "LEONARDO MARON", "agencia": "", "fileId": "Cópia de 109- LEONARDO MARON.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20109-%20LEONARDO%20MARON.png"}, {"id": 11, "nome": "ALINE DE LIMA", "agencia": "", "fileId": "Cópia de 11- ALINE DE LIMA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2011-%20ALINE%20DE%20LIMA.png"}, {"id": 110, "nome": "Nº 110", "agencia": "", "fileId": "Cópia de 110-111.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20110-111.png"}, {"id": 111, "nome": "Nº 111", "agencia": "", "fileId": "Cópia de 110-111.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20110-111.png"}, {"id": 112, "nome": "Nº 112", "agencia": "", "fileId": "Cópia de 112-113.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20112-113.png"}, {"id": 113, "nome": "Nº 113", "agencia": "", "fileId": "Cópia de 112-113.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20112-113.png"}, {"id": 114, "nome": "LUAN", "agencia": "", "fileId": "Cópia de 114- LUAN.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20114-%20LUAN.png"}, {"id": 115, "nome": "CAMILA GUIZONI", "agencia": "", "fileId": "Cópia de 115- CAMILA GUIZONI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20115-%20CAMILA%20GUIZONI.png"}, {"id": 116, "nome": "ALINE MARTENDAL", "agencia": "", "fileId": "Cópia de 116-ALINE MARTENDAL.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20116-ALINE%20MARTENDAL.png"}, {"id": 117, "nome": "Nº 117", "agencia": "", "fileId": "Cópia de 117-118.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20117-118.png"}, {"id": 118, "nome": "Nº 118", "agencia": "", "fileId": "Cópia de 117-118.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20117-118.png"}, {"id": 119, "nome": "Nº 119", "agencia": "", "fileId": "Cópia de 119-120.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20119-120.png"}, {"id": 120, "nome": "Nº 120", "agencia": "", "fileId": "Cópia de 119-120.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20119-120.png"}, {"id": 12, "nome": "ANDRIGO", "agencia": "", "fileId": "Cópia de 12- ANDRIGO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2012-%20ANDRIGO.png"}, {"id": 121, "nome": "MAIC SANDRO", "agencia": "", "fileId": "Cópia de 121- MAIC SANDRO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20121-%20MAIC%20SANDRO.png"}, {"id": 122, "nome": "PAULO MAIDEL", "agencia": "", "fileId": "Cópia de 122- PAULO MAIDEL.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20122-%20PAULO%20MAIDEL.png"}, {"id": 123, "nome": "NATHALIA MASSANEIRO", "agencia": "", "fileId": "Cópia de 123- NATHALIA MASSANEIRO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20123-%20NATHALIA%20MASSANEIRO.png"}, {"id": 124, "nome": "MAYARA", "agencia": "", "fileId": "Cópia de 124- MAYARA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20124-%20MAYARA.png"}, {"id": 125, "nome": "Nº 125", "agencia": "", "fileId": "Cópia de 125-126.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20125-126.png"}, {"id": 126, "nome": "Nº 126", "agencia": "", "fileId": "Cópia de 125-126.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20125-126.png"}, {"id": 127, "nome": "Nº 127", "agencia": "", "fileId": "Cópia de 127-128.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20127-128.png"}, {"id": 128, "nome": "Nº 128", "agencia": "", "fileId": "Cópia de 127-128.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20127-128.png"}, {"id": 129, "nome": "Nº 129", "agencia": "", "fileId": "Cópia de 129-130.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20129-130.png"}, {"id": 130, "nome": "Nº 130", "agencia": "", "fileId": "Cópia de 129-130.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20129-130.png"}, {"id": 13, "nome": "PATRICIA", "agencia": "", "fileId": "Cópia de 13- PATRICIA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2013-%20PATRICIA.png"}, {"id": 131, "nome": "Nº 131", "agencia": "", "fileId": "Cópia de 131-132.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20131-132.png"}, {"id": 132, "nome": "Nº 132", "agencia": "", "fileId": "Cópia de 131-132.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20131-132.png"}, {"id": 133, "nome": "LUAN DE MELLO", "agencia": "", "fileId": "Cópia de 133- LUAN DE MELLO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20133-%20LUAN%20DE%20MELLO.png"}, {"id": 134, "nome": "MILENA FERNANDES", "agencia": "", "fileId": "Cópia de 134- MILENA FERNANDES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20134-%20MILENA%20FERNANDES.png"}, {"id": 135, "nome": "RAWÃ", "agencia": "", "fileId": "Cópia de 135- RAWÃ.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20135-%20RAW%C3%83.png"}, {"id": 136, "nome": "TIAGO HUMOCHINSKI", "agencia": "", "fileId": "Cópia de 136- TIAGO HUMOCHINSKI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20136-%20TIAGO%20HUMOCHINSKI.png"}, {"id": 137, "nome": "VITORIA AMANDA", "agencia": "", "fileId": "Cópia de 137- VITORIA AMANDA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20137-%20VITORIA%20AMANDA.png"}, {"id": 138, "nome": "MAIKON MORAES", "agencia": "", "fileId": "Cópia de 138- MAIKON MORAES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20138-%20MAIKON%20MORAES.png"}, {"id": 139, "nome": "MARCIA REGINA", "agencia": "", "fileId": "Cópia de 139- MARCIA REGINA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20139-%20MARCIA%20REGINA.png"}, {"id": 14, "nome": "MATHEUS", "agencia": "", "fileId": "Cópia de 14- MATHEUS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2014-%20MATHEUS.png"}, {"id": 140, "nome": "JESSICA CRISTINA", "agencia": "", "fileId": "Cópia de 140- JESSICA CRISTINA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20140-%20JESSICA%20CRISTINA.png"}, {"id": 141, "nome": "CRISTIANE  CORREA", "agencia": "", "fileId": "Cópia de 141- CRISTIANE  CORREA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20141-%20CRISTIANE%20%20CORREA.png"}, {"id": 142, "nome": "Nº 142", "agencia": "", "fileId": "Cópia de 142-143.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20142-143.png"}, {"id": 143, "nome": "Nº 143", "agencia": "", "fileId": "Cópia de 142-143.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20142-143.png"}, {"id": 144, "nome": "Nº 144", "agencia": "", "fileId": "Cópia de 144-145.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20144-145.png"}, {"id": 145, "nome": "Nº 145", "agencia": "", "fileId": "Cópia de 144-145.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20144-145.png"}, {"id": 146, "nome": "Nº 146", "agencia": "", "fileId": "Cópia de 146-147.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20146-147.png"}, {"id": 147, "nome": "Nº 147", "agencia": "", "fileId": "Cópia de 146-147.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20146-147.png"}, {"id": 148, "nome": "Nº 148", "agencia": "", "fileId": "Cópia de 148-149.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20148-149.png"}, {"id": 149, "nome": "Nº 149", "agencia": "", "fileId": "Cópia de 148-149.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20148-149.png"}, {"id": 15, "nome": "NATHALLY", "agencia": "", "fileId": "Cópia de 15-  NATHALLY.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2015-%20%20NATHALLY.png"}, {"id": 150, "nome": "JEAN GILBERTO", "agencia": "", "fileId": "Cópia de 150- JEAN GILBERTO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20150-%20JEAN%20GILBERTO.png"}, {"id": 151, "nome": "SUELLEN DO PRADO", "agencia": "", "fileId": "Cópia de 151- SUELLEN DO PRADO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20151-%20SUELLEN%20DO%20PRADO.png"}, {"id": 152, "nome": "WILLIAN RODRIGO", "agencia": "", "fileId": "Cópia de 152- WILLIAN RODRIGO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20152-%20WILLIAN%20RODRIGO.png"}, {"id": 153, "nome": "THAMIRIS", "agencia": "", "fileId": "Cópia de 153- THAMIRIS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20153-%20THAMIRIS.png"}, {"id": 154, "nome": "GUILHERME DRANKA", "agencia": "", "fileId": "Cópia de 154- GUILHERME DRANKA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20154-%20GUILHERME%20DRANKA.png"}, {"id": 155, "nome": "Nº 155", "agencia": "", "fileId": "Cópia de 155-156.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20155-156.png"}, {"id": 156, "nome": "Nº 156", "agencia": "", "fileId": "Cópia de 155-156.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20155-156.png"}, {"id": 157, "nome": "Nº 157", "agencia": "", "fileId": "Cópia de 157-158.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20157-158.png"}, {"id": 158, "nome": "Nº 158", "agencia": "", "fileId": "Cópia de 157-158.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20157-158.png"}, {"id": 159, "nome": "JAMES NALON", "agencia": "", "fileId": "Cópia de 159- JAMES NALON.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20159-%20JAMES%20NALON.png"}, {"id": 16, "nome": "LETICIA FERREIRA", "agencia": "", "fileId": "Cópia de 16- LETICIA FERREIRA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2016-%20LETICIA%20FERREIRA.png"}, {"id": 160, "nome": "CARLA EDUARDA", "agencia": "", "fileId": "Cópia de 160- CARLA EDUARDA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20160-%20CARLA%20EDUARDA.png"}, {"id": 161, "nome": "CLEONICE", "agencia": "", "fileId": "Cópia de 161- CLEONICE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%20161-%20CLEONICE.png"}, {"id": 17, "nome": "JORGE DO AMARAL", "agencia": "", "fileId": "Cópia de 17- JORGE DO AMARAL.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2017-%20JORGE%20DO%20AMARAL.png"}, {"id": 18, "nome": "FABIANA PEREIRA", "agencia": "", "fileId": "Cópia de 18- FABIANA PEREIRA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2018-%20FABIANA%20PEREIRA.png"}, {"id": 19, "nome": "DALVIANI", "agencia": "", "fileId": "Cópia de 19- DALVIANI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2019-%20DALVIANI.png"}, {"id": 20, "nome": "DENISIA", "agencia": "", "fileId": "Cópia de 20- DENISIA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2020-%20DENISIA.png"}, {"id": 21, "nome": "CARLOS FILIPE", "agencia": "", "fileId": "Cópia de 21- CARLOS FILIPE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2021-%20CARLOS%20FILIPE.png"}, {"id": 22, "nome": "THIAGO PEREIRA", "agencia": "", "fileId": "Cópia de 22- THIAGO PEREIRA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2022-%20THIAGO%20PEREIRA.png"}, {"id": 23, "nome": "SUELLEN VITORIA", "agencia": "", "fileId": "Cópia de 23-SUELLEN VITORIA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2023-SUELLEN%20VITORIA.png"}, {"id": 24, "nome": "SAMARA BORGES", "agencia": "", "fileId": "Cópia de 24- SAMARA BORGES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2024-%20SAMARA%20BORGES.png"}, {"id": 25, "nome": "Nº 25", "agencia": "", "fileId": "Cópia de 25_26.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2025_26.png"}, {"id": 26, "nome": "Nº 26", "agencia": "", "fileId": "Cópia de 25_26.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2025_26.png"}, {"id": 27, "nome": "Nº 27", "agencia": "", "fileId": "Cópia de 27_28.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2027_28.png"}, {"id": 28, "nome": "Nº 28", "agencia": "", "fileId": "Cópia de 27_28.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2027_28.png"}, {"id": 29, "nome": "ANDRIELE", "agencia": "", "fileId": "Cópia de 29- ANDRIELE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2029-%20ANDRIELE.png"}, {"id": 30, "nome": "JULIANA NUNES", "agencia": "", "fileId": "Cópia de 30- JULIANA NUNES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2030-%20JULIANA%20NUNES.png"}, {"id": 31, "nome": "EVELIN PRISCILA", "agencia": "", "fileId": "Cópia de 31- EVELIN PRISCILA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2031-%20EVELIN%20PRISCILA.png"}, {"id": 32, "nome": "LUIS GUSTAVO DE SOUZA", "agencia": "", "fileId": "Cópia de 32- LUIS GUSTAVO DE SOUZA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2032-%20LUIS%20GUSTAVO%20DE%20SOUZA.png"}, {"id": 33, "nome": "VICTOR PZIVITOVSKI", "agencia": "", "fileId": "Cópia de 33- VICTOR PZIVITOVSKI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2033-%20VICTOR%20PZIVITOVSKI.png"}, {"id": 34, "nome": "RAISSA", "agencia": "", "fileId": "Cópia de 34- RAISSA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2034-%20RAISSA.png"}, {"id": 35, "nome": "Nº 35", "agencia": "", "fileId": "Cópia de 35_36.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2035_36.png"}, {"id": 36, "nome": "Nº 36", "agencia": "", "fileId": "Cópia de 35_36.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2035_36.png"}, {"id": 37, "nome": "Nº 37", "agencia": "", "fileId": "Cópia de 37_38.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2037_38.png"}, {"id": 38, "nome": "Nº 38", "agencia": "", "fileId": "Cópia de 37_38.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2037_38.png"}, {"id": 41, "nome": "CRISTIANE", "agencia": "", "fileId": "Cópia de 41- CRISTIANE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2041-%20CRISTIANE.png"}, {"id": 42, "nome": "DAYANE", "agencia": "", "fileId": "Cópia de 42-DAYANE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2042-DAYANE.png"}, {"id": 43, "nome": "JOICE", "agencia": "", "fileId": "Cópia de 43- JOICE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2043-%20JOICE.png"}, {"id": 44, "nome": "GRAZIELA", "agencia": "", "fileId": "Cópia de 44- GRAZIELA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2044-%20GRAZIELA.png"}, {"id": 45, "nome": "HENRIQUE ZABOT", "agencia": "", "fileId": "Cópia de 45- HENRIQUE ZABOT.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2045-%20HENRIQUE%20ZABOT.png"}, {"id": 46, "nome": "VITOR LEITE", "agencia": "", "fileId": "Cópia de 46- VITOR LEITE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2046-%20VITOR%20LEITE.png"}, {"id": 47, "nome": "Nº 47", "agencia": "", "fileId": "Cópia de 47_48.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2047_48.png"}, {"id": 48, "nome": "Nº 48", "agencia": "", "fileId": "Cópia de 47_48.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2047_48.png"}, {"id": 49, "nome": "Nº 49", "agencia": "", "fileId": "Cópia de 49_50.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2049_50.png"}, {"id": 50, "nome": "Nº 50", "agencia": "", "fileId": "Cópia de 49_50.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2049_50.png"}, {"id": 51, "nome": "ANDREZA", "agencia": "", "fileId": "Cópia de 51- ANDREZA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2051-%20ANDREZA.png"}, {"id": 52, "nome": "CHRIS", "agencia": "", "fileId": "Cópia de 52- CHRIS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2052-%20CHRIS.png"}, {"id": 53, "nome": "DAIANE", "agencia": "", "fileId": "Cópia de 53- DAIANE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2053-%20DAIANE.png"}, {"id": 54, "nome": "GABRIEL NUNES", "agencia": "", "fileId": "Cópia de 54- GABRIEL NUNES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2054-%20GABRIEL%20NUNES.png"}, {"id": 55, "nome": "LUIZ GUSTAVO", "agencia": "", "fileId": "Cópia de 55- LUIZ GUSTAVO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2055-%20LUIZ%20GUSTAVO.png"}, {"id": 56, "nome": "LUANA ANTUNES", "agencia": "", "fileId": "Cópia de 56- LUANA ANTUNES.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2056-%20LUANA%20ANTUNES.png"}, {"id": 57, "nome": "NICOLAS AMARANTE", "agencia": "", "fileId": "Cópia de 57- NICOLAS AMARANTE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2057-%20NICOLAS%20AMARANTE.png"}, {"id": 58, "nome": "Nº 58", "agencia": "", "fileId": "Cópia de 58_59.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2058_59.png"}, {"id": 59, "nome": "Nº 59", "agencia": "", "fileId": "Cópia de 58_59.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2058_59.png"}, {"id": 60, "nome": "Nº 60", "agencia": "", "fileId": "Cópia de 60_61.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2060_61.png"}, {"id": 61, "nome": "Nº 61", "agencia": "", "fileId": "Cópia de 60_61.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2060_61.png"}, {"id": 62, "nome": "EDINA DOS SANTOS", "agencia": "", "fileId": "Cópia de 62- EDINA DOS SANTOS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2062-%20EDINA%20DOS%20SANTOS.png"}, {"id": 63, "nome": "ELIZANDRO", "agencia": "", "fileId": "Cópia de 63- ELIZANDRO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2063-%20ELIZANDRO.png"}, {"id": 64, "nome": "FERNANDO RABELO", "agencia": "", "fileId": "Cópia de 64 FERNANDO RABELO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2064%20FERNANDO%20RABELO.png"}, {"id": 65, "nome": "HEMERSON", "agencia": "", "fileId": "Cópia de 65- HEMERSON.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2065-%20HEMERSON.png"}, {"id": 66, "nome": "MAURA", "agencia": "", "fileId": "Cópia de 66-MAURA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2066-MAURA.png"}, {"id": 67, "nome": "NEDIVAN", "agencia": "", "fileId": "Cópia de 67- NEDIVAN.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2067-%20NEDIVAN.png"}, {"id": 68, "nome": "Nº 68", "agencia": "", "fileId": "Cópia de 68-69.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2068-69.png"}, {"id": 69, "nome": "Nº 69", "agencia": "", "fileId": "Cópia de 68-69.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2068-69.png"}, {"id": 70, "nome": "Nº 70", "agencia": "", "fileId": "Cópia de 70-71.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2070-71.png"}, {"id": 71, "nome": "Nº 71", "agencia": "", "fileId": "Cópia de 70-71.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2070-71.png"}, {"id": 72, "nome": "ALESSANDRA COSTA", "agencia": "", "fileId": "Cópia de 72- ALESSANDRA COSTA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2072-%20ALESSANDRA%20COSTA.png"}, {"id": 73, "nome": "BEATRIZ FRONZA", "agencia": "", "fileId": "Cópia de 73- BEATRIZ FRONZA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2073-%20BEATRIZ%20FRONZA.png"}, {"id": 74, "nome": "BRUNA DIAS", "agencia": "", "fileId": "Cópia de 74- BRUNA DIAS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2074-%20BRUNA%20DIAS.png"}, {"id": 75, "nome": "BRUNA CRUZ", "agencia": "", "fileId": "Cópia de 75- BRUNA CRUZ.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2075-%20BRUNA%20CRUZ.png"}, {"id": 76, "nome": "EDSON ESPINDOLA", "agencia": "", "fileId": "Cópia de 76- EDSON ESPINDOLA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2076-%20EDSON%20ESPINDOLA.png"}, {"id": 77, "nome": "GILMARA COSTA", "agencia": "", "fileId": "Cópia de 77- GILMARA COSTA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2077-%20GILMARA%20COSTA.png"}, {"id": 78, "nome": "GUILHERME ZANATTA", "agencia": "", "fileId": "Cópia de 78- GUILHERME ZANATTA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2078-%20GUILHERME%20ZANATTA.png"}, {"id": 79, "nome": "Nº 79", "agencia": "", "fileId": "Cópia de 79-80.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2079-80.png"}, {"id": 80, "nome": "Nº 80", "agencia": "", "fileId": "Cópia de 79-80.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2079-80.png"}, {"id": 81, "nome": "Nº 81", "agencia": "", "fileId": "Cópia de 81-82.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2081-82.png"}, {"id": 82, "nome": "Nº 82", "agencia": "", "fileId": "Cópia de 81-82.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2081-82.png"}, {"id": 83, "nome": "ALINE CLAUDINO", "agencia": "", "fileId": "Cópia de 83- ALINE CLAUDINO.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2083-%20ALINE%20CLAUDINO.png"}, {"id": 84, "nome": "DIEINE", "agencia": "", "fileId": "Cópia de 84- DIEINE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2084-%20DIEINE.png"}, {"id": 85, "nome": "KATRIELE", "agencia": "", "fileId": "Cópia de 85-KATRIELE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2085-KATRIELE.png"}, {"id": 86, "nome": "KEMILY", "agencia": "", "fileId": "Cópia de 86- KEMILY.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2086-%20KEMILY.png"}, {"id": 87, "nome": "VIVIANE", "agencia": "", "fileId": "Cópia de 87- VIVIANE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2087-%20VIVIANE.png"}, {"id": 88, "nome": "Nº 88", "agencia": "", "fileId": "Cópia de 88-89.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2088-89.png"}, {"id": 89, "nome": "Nº 89", "agencia": "", "fileId": "Cópia de 88-89.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2088-89.png"}, {"id": 90, "nome": "Nº 90", "agencia": "", "fileId": "Cópia de 90-91.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2090-91.png"}, {"id": 91, "nome": "Nº 91", "agencia": "", "fileId": "Cópia de 90-91.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2090-91.png"}, {"id": 92, "nome": "CHAIANE", "agencia": "", "fileId": "Cópia de 92- CHAIANE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2092-%20CHAIANE.png"}, {"id": 93, "nome": "DIENIQUELI", "agencia": "", "fileId": "Cópia de 93- DIENIQUELI.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2093-%20DIENIQUELI.png"}, {"id": 94, "nome": "EDINAN", "agencia": "", "fileId": "Cópia de 94- EDINAN.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2094-%20EDINAN.png"}, {"id": 95, "nome": "ELAINE MOISSA", "agencia": "", "fileId": "Cópia de 95- ELAINE MOISSA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2095-%20ELAINE%20MOISSA.png"}, {"id": 96, "nome": "LETICIA HALABURA", "agencia": "", "fileId": "Cópia de 96- LETICIA HALABURA.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2096-%20LETICIA%20HALABURA.png"}, {"id": 97, "nome": "MARIA SALETE", "agencia": "", "fileId": "Cópia de 97- MARIA SALETE.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2097-%20MARIA%20SALETE.png"}, {"id": 98, "nome": "LUKAS", "agencia": "", "fileId": "Cópia de 98- LUKAS.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2098-%20LUKAS.png"}, {"id": 99, "nome": "Nº 99", "agencia": "", "fileId": "Cópia de 99-100.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2099-100.png"}, {"id": 100, "nome": "Nº 100", "agencia": "", "fileId": "Cópia de 99-100.png", "imageUrl": "/Figurinhas%20Copa%20Excelencia/C%C3%B3pia%20de%2099-100.png"}], "templates": {"Capa": "/TEMPLATE%20-%20ALBUM/Capa.png", "Comissao Tecnica": "/TEMPLATE%20-%20ALBUM/Comissao%20Tecnica.png", "Contra Capa": "/TEMPLATE%20-%20ALBUM/Contra%20Capa.png", "Pac Bela Vista do Toldo": "/TEMPLATE%20-%20ALBUM/Pac%20Bela%20Vista%20do%20Toldo.png", "Pac Bom Jardim da Serra": "/TEMPLATE%20-%20ALBUM/Pac%20Bom%20Jardim%20da%20Serra.png", "Pac Canoinhas": "/TEMPLATE%20-%20ALBUM/Pac%20Canoinhas.png", "Pac Correia Pinto": "/TEMPLATE%20-%20ALBUM/Pac%20Correia%20Pinto.png", "Pac Irineopolis": "/TEMPLATE%20-%20ALBUM/Pac%20Irineopolis.png", "Pac Lages Ii": "/TEMPLATE%20-%20ALBUM/Pac%20Lages%20Ii.png", "Pac Lages": "/TEMPLATE%20-%20ALBUM/Pac%20Lages.png", "Pac Major Vieira": "/TEMPLATE%20-%20ALBUM/Pac%20Major%20Vieira.png", "Pac Monte Castelo": "/TEMPLATE%20-%20ALBUM/Pac%20Monte%20Castelo.png", "Pac Otacilio Costa": "/TEMPLATE%20-%20ALBUM/Pac%20Otacilio%20Costa.png", "Pac Ponte Alta": "/TEMPLATE%20-%20ALBUM/Pac%20Ponte%20Alta.png", "Pac Porto Uniao D. Sta Cruz Do Timbo": "/TEMPLATE%20-%20ALBUM/Pac%20Porto%20Uniao%20D.%20Sta%20Cruz%20Do%20Timbo.png", "Pac Porto Uniao": "/TEMPLATE%20-%20ALBUM/Pac%20Porto%20Uniao.png", "Pac Sao Joaquim I": "/TEMPLATE%20-%20ALBUM/Pac%20Sao%20Joaquim%20I.png", "Pac Sao Joaquim Ii": "/TEMPLATE%20-%20ALBUM/Pac%20Sao%20Joaquim%20Ii.png", "Pac Timbo Grande": "/TEMPLATE%20-%20ALBUM/Pac%20Timbo%20Grande.png"}, "login": {"status": "success", "data": {"agencia": "Pac Canoinhas", "pacotinhos": 2, "inventario": [30, 31], "coladas": [29, 35, 36]}}};
+  const SLOT_MAP = __MOCK__.slotmap;
+  Object.defineProperty(window, 'google', {
+    value: { script: { get run() {
+      let onSuccess = null, onFailure = null;
+      const chain = {
+        withSuccessHandler(fn) { onSuccess = fn; return chain; },
+        withFailureHandler(fn) { onFailure = fn; return chain; },
+        validarLoginAlbum(agencia, pin) { setTimeout(() => onSuccess(JSON.stringify(__MOCK__.login)), 80); },
+        obterFigurinhusDoAlbum(agencia) { setTimeout(() => onSuccess(JSON.stringify({status:"success", figurinhas: __MOCK__.figurinhas})), 120); },
+        obterTemplatesDoAlbum() { setTimeout(() => onSuccess(JSON.stringify({status:"success", templates: __MOCK__.templates})), 60); },
+        salvarProgressoAlbum(agencia, pacotes, inventario, coladas) { console.log("[mock] salvarProgressoAlbum", agencia, pacotes, inventario, coladas); }
+      };
+      return chain;
+    } } }
+  });
+</script>
+<script>
+    // SLOT_MAP vem do include('SlotMap') no <head> (ver task 1.3 / Plans.md).
+    const ESTADO = {
+      agenciaAtual: null,
+      pacotes: 0,
+      inventario: [],          // array de numeros de slot (int)
+      coladas: [],             // array de numeros de slot (int)
+      figurinhasComImagem: [], // [{id:numero, nome, agencia, fileId, imageUrl}]
+      templates: {},           // { nomeTemplate: urlDaImagem }
+      paginasDoAlbum: [],      // [{tipo:'capa'|'contracapa'|'pagina', template?}]
+      poolDaAgencia: [],       // numeros sorteáveis em pacote (própria página + Comissão Técnica)
+      paginaAtualIndex: 0
+    };
+
+    const CARGAS_PENDENTES = new Set();
+
+    // Escapa texto vindo da planilha (aba Figurinhas, coluna Nome) antes de
+    // interpolar em innerHTML - defesa contra HTML/script injetado por
+    // engano numa célula da planilha.
+    function escaparHtml(texto) {
+      const div = document.createElement('div');
+      div.textContent = texto == null ? "" : String(texto);
+      return div.innerHTML;
+    }
+
+    function mostrarToast(mensagem, tipo = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const cores = tipo === 'success' ? 'bg-green-500' : (tipo === 'error' ? 'bg-red-500' : 'bg-yellow-500 text-slate-900');
+      toast.className = `${cores} text-white px-6 py-3 rounded-lg shadow-xl font-bold text-sm transform transition-all duration-300 translate-x-full flex items-center gap-2`;
+      toast.innerHTML = `<span>${tipo === 'success' ? '✅' : (tipo === 'error' ? '❌' : '⚠️')}</span> ${mensagem}`;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function popularDropdownAgencias() {
+      const select = document.getElementById('login-agencia');
+      const agencias = Object.keys(SLOT_MAP.paginasPorAgencia).sort();
+      agencias.forEach(ag => {
+        const opt = document.createElement('option');
+        opt.value = ag;
+        opt.textContent = ag;
+        select.appendChild(opt);
+      });
+    }
+
+    window.onload = function() {
+      popularDropdownAgencias();
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    };
+
+    function marcarCarregamentoConcluido(chave) {
+      CARGAS_PENDENTES.delete(chave);
+      if (CARGAS_PENDENTES.size === 0) {
+        renderizarPaginaAtual();
+      }
+    }
+
+    function carregarFigurinhasComImagens() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            try {
+              const res = JSON.parse(jsonRes);
+              ESTADO.figurinhasComImagem = (res.status === "success") ? (res.figurinhas || []) : [];
+            } catch (e) {
+              console.error("Erro ao processar figurinhas:", e);
+              ESTADO.figurinhasComImagem = [];
+            }
+            marcarCarregamentoConcluido('figurinhas');
+          })
+          .withFailureHandler(function(erro) {
+            console.error("Erro ao carregar figurinhas:", erro);
+            ESTADO.figurinhasComImagem = [];
+            marcarCarregamentoConcluido('figurinhas');
+          })
+          .obterFigurinhusDoAlbum(ESTADO.agenciaAtual || "");
+      } else {
+        marcarCarregamentoConcluido('figurinhas');
+      }
+    }
+
+    function carregarTemplates() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            try {
+              const res = JSON.parse(jsonRes);
+              ESTADO.templates = (res.status === "success") ? (res.templates || {}) : {};
+              if (res.status !== "success") console.warn("Templates:", res.message);
+            } catch (e) {
+              console.error("Erro ao processar templates:", e);
+              ESTADO.templates = {};
+            }
+            marcarCarregamentoConcluido('templates');
+          })
+          .withFailureHandler(function(erro) {
+            console.error("Erro ao carregar templates:", erro);
+            ESTADO.templates = {};
+            marcarCarregamentoConcluido('templates');
+          })
+          .obterTemplatesDoAlbum();
+      } else {
+        marcarCarregamentoConcluido('templates');
+      }
+    }
+
+    function voltarDashboard() {
+      window.location.href = window.location.href.split('?')[0];
+    }
+
+    function fazerLogin() {
+      const agencia = document.getElementById('login-agencia').value;
+      const pin = document.getElementById('login-pin').value;
+
+      if (!agencia || agencia.trim() === "") {
+        mostrarToast("Selecione a agência.", "warning");
+        return;
+      }
+      if (!pin || pin.trim() === "" || pin.length !== 4) {
+        mostrarToast("Digite o PIN de 4 dígitos.", "warning");
+        return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            try {
+              const res = JSON.parse(jsonRes);
+              if (res.status === "success") {
+                iniciarAlbum(res.data);
+              } else {
+                mostrarToast(res.message || "Erro ao validar login", "error");
+              }
+            } catch (e) {
+              console.error("Erro ao processar resposta de login:", e);
+              mostrarToast("Erro no servidor.", "error");
+            }
+          })
+          .withFailureHandler(function(erro) {
+            console.error("Erro ao validar login:", erro);
+            mostrarToast("Erro ao conectar ao servidor.", "error");
+          })
+          .validarLoginAlbum(agencia, pin);
+      }
+    }
+
+    // Templates de exibição de uma agência, em ordem (a maioria tem 1; São
+    // Joaquim tem 2 - ver spec.md seção 3).
+    function obterTemplatesDaAgencia(agencia) {
+      return SLOT_MAP.paginasPorAgencia[agencia] || [agencia];
+    }
+
+    function construirPaginasDoAlbum(agencia) {
+      const paginas = [{ tipo: 'capa' }];
+      obterTemplatesDaAgencia(agencia).forEach(t => paginas.push({ tipo: 'pagina', template: t }));
+      paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica' });
+      paginas.push({ tipo: 'contracapa' });
+      return paginas;
+    }
+
+    // Pool de sorteio de pacote: numeros da(s) pagina(s) da propria agencia
+    // UNIAO com o pool global da Comissao Tecnica (spec.md secao 6).
+    function construirPoolDaAgencia(agencia) {
+      const numeros = new Set();
+      obterTemplatesDaAgencia(agencia).forEach(t => {
+        const tpl = SLOT_MAP.templates[t];
+        (tpl && tpl.slots ? tpl.slots : []).forEach(s => numeros.add(s.numero));
+      });
+      const comissao = SLOT_MAP.templates['Comissao Tecnica'];
+      (comissao && comissao.slots ? comissao.slots : []).forEach(s => numeros.add(s.numero));
+      return Array.from(numeros);
+    }
+
+    function iniciarAlbum(dadosSalvos) {
+      ESTADO.agenciaAtual = dadosSalvos.agencia;
+      ESTADO.pacotes = parseInt(dadosSalvos.pacotinhos) || 0;
+      ESTADO.inventario = (dadosSalvos.inventario || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+      ESTADO.coladas = (dadosSalvos.coladas || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+
+      ESTADO.paginasDoAlbum = construirPaginasDoAlbum(ESTADO.agenciaAtual);
+      ESTADO.poolDaAgencia = construirPoolDaAgencia(ESTADO.agenciaAtual);
+      // Pula a Capa por padrão, abre direto na primeira página da agência.
+      ESTADO.paginaAtualIndex = ESTADO.paginasDoAlbum.length > 1 ? 1 : 0;
+
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('album-screen').classList.remove('hidden');
+      document.getElementById('album-screen').classList.add('flex');
+      document.getElementById('header-agencia-nome').innerText = ESTADO.agenciaAtual;
+
+      CARGAS_PENDENTES.add('figurinhas');
+      CARGAS_PENDENTES.add('templates');
+      carregarFigurinhasComImagens();
+      carregarTemplates();
+
+      atualizarUI();
+      mostrarToast(`Bem-vindo, Seleção de ${ESTADO.agenciaAtual}!`);
+    }
+
+    function sairAlbum() {
+      if (confirm("Deseja sair do seu vestiário?")) {
+        window.location.reload();
+      }
+    }
+
+    function atualizarUI() {
+      document.getElementById('pacote-counter').innerText = ESTADO.pacotes;
+      document.getElementById('btn-abrir-pacote').disabled = ESTADO.pacotes <= 0;
+      renderizarInventario();
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.salvarProgressoAlbum(ESTADO.agenciaAtual, ESTADO.pacotes, ESTADO.inventario, ESTADO.coladas);
+      }
+    }
+
+    function mudarPagina(direcao) {
+      const maxIndex = ESTADO.paginasDoAlbum.length - 1;
+      ESTADO.paginaAtualIndex += direcao;
+
+      if (ESTADO.paginaAtualIndex < 0) ESTADO.paginaAtualIndex = 0;
+      if (ESTADO.paginaAtualIndex > maxIndex) ESTADO.paginaAtualIndex = maxIndex;
+
+      renderizarPaginaAtual();
+    }
+
+    function obterFigurinhaPorNumero(numero) {
+      return ESTADO.figurinhasComImagem.find(f => f.id === numero);
+    }
+
+    // Duas figurinhas vizinhas (numero consecutivo) que apontam pro MESMO
+    // FileID no Drive compartilham uma imagem panorâmica (ex.: 35/36,
+    // 101/102) - a adjacência geométrica no template NÃO é o critério (ver
+    // spec.md seção 3: 149/150 ficam colados no template mas são pessoas
+    // diferentes).
+    function obterVizinhoCompartilhado(slot, numero) {
+      if (!slot.grupoPar) return null;
+      const outroNumero = (slot.ladoPar === 'esquerda') ? numero + 1 : numero - 1;
+      const fig = obterFigurinhaPorNumero(numero);
+      const vizinho = obterFigurinhaPorNumero(outroNumero);
+      if (fig && vizinho && fig.fileId && fig.fileId === vizinho.fileId) return vizinho;
+      return null;
+    }
+
+    function renderizarImagemNoSlot(slotDiv, slot, numero) {
+      const fig = obterFigurinhaPorNumero(numero);
+      if (!fig || !fig.imageUrl) return;
+
+      const img = document.createElement('img');
+      img.alt = `Figurinha ${numero}`;
+
+      if (slot.grupoPar && obterVizinhoCompartilhado(slot, numero)) {
+        // Imagem panorâmica compartilhada: renderiza em largura dobrada e
+        // desloca pra mostrar só a metade correta (técnica de sprite).
+        slotDiv.style.overflow = 'hidden';
+        img.src = fig.imageUrl;
+        img.className = "absolute h-full object-cover";
+        // Tailwind preflight aplica "max-width: 100%" em <img>; sem
+        // sobrescrever, a largura de 200% usada pra sprite fica limitada a
+        // 100% e a técnica de recorte compartilhado quebra.
+        img.style.maxWidth = "none";
+        img.style.width = "200%";
+        img.style.top = "0";
+        img.style.left = (slot.ladoPar === 'esquerda') ? "0" : "-100%";
+      } else {
+        img.src = fig.imageUrl;
+        img.className = "w-full h-full object-cover";
+      }
+      slotDiv.appendChild(img);
+    }
+
+    function renderizarPaginaEstatica(container, nomeTemplate, rotulo) {
+      document.getElementById('pagina-titulo').innerText = rotulo;
+      const url = ESTADO.templates[nomeTemplate];
+
+      const wrapper = document.createElement('div');
+      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
+      wrapper.style.aspectRatio = `${SLOT_MAP.dimensaoReferencia[0]} / ${SLOT_MAP.dimensaoReferencia[1]}`;
+      if (url) {
+        wrapper.style.backgroundImage = `url('${url}')`;
+      } else {
+        wrapper.innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-white/50 text-sm">Template "${nomeTemplate}" ainda não configurado no Drive</div>`;
+      }
+      container.appendChild(wrapper);
+    }
+
+    function renderizarPaginaComSlots(container, nomeTemplate, rotulo) {
+      document.getElementById('pagina-titulo').innerText = rotulo;
+      const url = ESTADO.templates[nomeTemplate];
+      const tpl = SLOT_MAP.templates[nomeTemplate];
+      const slots = (tpl && tpl.slots) || [];
+      const dim = SLOT_MAP.dimensaoReferencia;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
+      wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
+      if (url) wrapper.style.backgroundImage = `url('${url}')`;
+
+      slots.forEach(slot => {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = "absolute slot-figurinha-numero";
+        slotDiv.style.left = (slot.x / dim[0] * 100) + "%";
+        slotDiv.style.top = (slot.y / dim[1] * 100) + "%";
+        slotDiv.style.width = (slot.largura / dim[0] * 100) + "%";
+        slotDiv.style.height = (slot.altura / dim[1] * 100) + "%";
+        slotDiv.id = `slot_${slot.numero}`;
+
+        const isColada = ESTADO.coladas.includes(slot.numero);
+
+        if (isColada) {
+          renderizarImagemNoSlot(slotDiv, slot, slot.numero);
+        } else {
+          slotDiv.setAttribute('ondragover', 'allowDrop(event)');
+          slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
+          slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
+          slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
+        }
+
+        wrapper.appendChild(slotDiv);
+      });
+
+      if (!url) {
+        const aviso = document.createElement('div');
+        aviso.className = "absolute inset-0 flex items-center justify-center text-white/50 text-sm pointer-events-none";
+        aviso.innerText = `Template "${nomeTemplate}" ainda não configurado no Drive`;
+        wrapper.appendChild(aviso);
+      }
+
+      container.appendChild(wrapper);
+    }
+
+    function renderizarPaginaAtual() {
+      const pagina = ESTADO.paginasDoAlbum[ESTADO.paginaAtualIndex];
+      document.getElementById('pagina-atual').innerText = ESTADO.paginaAtualIndex + 1;
+      document.getElementById('pagina-total').innerText = ESTADO.paginasDoAlbum.length;
+
+      const container = document.getElementById('pagina-container');
+      container.innerHTML = "";
+
+      if (pagina.tipo === 'capa') {
+        renderizarPaginaEstatica(container, 'Capa', 'Capa');
+      } else if (pagina.tipo === 'contracapa') {
+        renderizarPaginaEstatica(container, 'Contra Capa', 'Contracapa');
+      } else {
+        const rotulo = (pagina.template === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.template;
+        renderizarPaginaComSlots(container, pagina.template, rotulo);
+      }
+    }
+
+    function renderizarInventario() {
+      const container = document.getElementById('inventario-container');
+      const vazioMsg = document.getElementById('inventario-vazio');
+      const countLabel = document.getElementById('inventario-count');
+
+      Array.from(container.children).forEach(c => {
+        if (c.id !== 'inventario-vazio') c.remove();
+      });
+
+      countLabel.innerText = ESTADO.inventario.length;
+
+      if (ESTADO.inventario.length === 0) {
+        vazioMsg.style.display = 'block';
+        return;
+      }
+      vazioMsg.style.display = 'none';
+
+      ESTADO.inventario.forEach((numero, index) => {
+        const fig = obterFigurinhaPorNumero(numero);
+        const isRepetida = ESTADO.coladas.includes(numero);
+        const nomeExibicao = escaparHtml((fig && fig.nome) ? fig.nome : `Nº ${numero}`);
+
+        const card = document.createElement('div');
+        // Sem overflow-hidden aqui: o selo "DUP" e o tooltip usam posições
+        // fora da caixa (top/bottom negativos) e seriam cortados. Quem
+        // recorta a imagem é o wrapper interno (imgWrapper) só.
+        card.className = "card-inventario shrink-0 w-20 h-24 bg-white rounded-lg border-2 border-slate-300 shadow-md cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
+        card.draggable = true;
+        card.id = `inv_${numero}_${index}`;
+        card.setAttribute('ondragstart', `dragStart(event, ${numero}, '${index}')`);
+
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = "w-full h-full rounded-md overflow-hidden";
+        imgWrapper.innerHTML = (fig && fig.imageUrl)
+          ? `<img src="${fig.imageUrl}" alt="${nomeExibicao}" class="w-full h-full object-cover">`
+          : `<div class="w-full h-full flex items-center justify-center text-lg bg-slate-100">👤</div>`;
+        card.appendChild(imgWrapper);
+
+        if (isRepetida) {
+          card.insertAdjacentHTML('beforeend', `<div class="absolute -top-1 -right-1 bg-slate-700 text-white text-[7px] font-black px-1 py-0.5 rounded shadow z-10">DUP</div>`);
+        }
+
+        card.insertAdjacentHTML('beforeend', `
+          <div class="tooltip-name absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-50">
+            <div class="font-bold">${nomeExibicao}</div>
+            <div class="text-slate-300 text-[8px]">Nº ${numero}</div>
+          </div>
+        `);
+
+        container.appendChild(card);
+      });
+    }
+
+    let dragDataCache = null;
+
+    function dragStart(ev, numero, inventarioIndex) {
+      const dataStr = numero + "|||" + inventarioIndex;
+      ev.dataTransfer.setData("text/plain", dataStr);
+      dragDataCache = dataStr;
+      ev.dataTransfer.effectAllowed = "move";
+      setTimeout(() => ev.target.classList.add('opacity-50'), 0);
+    }
+
+    function dragEnd(ev) {
+      ev.target.classList.remove('opacity-50');
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "move";
+    }
+
+    function dragEnter(ev) {
+      ev.preventDefault();
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.add('drag-over');
+    }
+
+    function dragLeave(ev) {
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.remove('drag-over');
+    }
+
+    function drop(ev, slotNumero) {
+      ev.preventDefault();
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.remove('drag-over');
+
+      let data = ev.dataTransfer.getData("text/plain");
+      if (!data) data = dragDataCache;
+      if (!data) return;
+
+      const partes = data.split("|||");
+      const dragNumero = parseInt(partes[0], 10);
+      const invIndex = parseInt(partes[1], 10);
+
+      if (dragNumero === slotNumero) {
+        colarFigurinha(dragNumero, invIndex);
+      } else {
+        mostrarToast("Figurinha errada para este espaço!", "error");
+      }
+    }
+
+    function colarFigurinha(numero, inventarioIndex) {
+      ESTADO.inventario.splice(inventarioIndex, 1);
+      ESTADO.coladas.push(numero);
+      mostrarToast("Figurinha Colada com Sucesso!");
+      renderizarPaginaAtual();
+      atualizarUI();
+    }
+
+    function abrirModalPacote() {
+      if (ESTADO.pacotes <= 0) return;
+      document.getElementById('modal-pacote').classList.remove('hidden');
+      document.getElementById('pacote-fechado').classList.remove('hidden');
+      document.getElementById('pacote-aberto').classList.add('hidden');
+      document.getElementById('pacote-fechado').classList.remove('anim-shake');
+    }
+
+    function fecharModalPacote() {
+      document.getElementById('modal-pacote').classList.add('hidden');
+    }
+
+    function rasgarPacote() {
+      const pack = document.getElementById('pacote-fechado');
+      pack.classList.add('anim-shake');
+
+      setTimeout(() => {
+        ESTADO.pacotes -= 1;
+
+        const pool = ESTADO.poolDaAgencia || [];
+        const tamanho = Math.floor(Math.random() * 2) + 12; // 12 ou 13
+
+        const sorteados = [];
+        const usados = new Set();
+        let tentativas = 0;
+        while (sorteados.length < tamanho && tentativas < 200 && pool.length > 0) {
+          const numero = pool[Math.floor(Math.random() * pool.length)];
+          if (!usados.has(numero)) {
+            sorteados.push(numero);
+            usados.add(numero);
+          }
+          tentativas++;
+        }
+        // Pool menor que o tamanho do pacote: completa com o que sobrar.
+        if (sorteados.length < tamanho && pool.length > 0) {
+          pool.forEach(numero => {
+            if (sorteados.length < tamanho && !usados.has(numero)) {
+              sorteados.push(numero);
+              usados.add(numero);
+            }
+          });
+        }
+
+        sorteados.forEach(numero => ESTADO.inventario.push(numero));
+
+        revelarCartas(sorteados);
+
+        pack.classList.add('hidden');
+        document.getElementById('pacote-aberto').classList.remove('hidden');
+        document.getElementById('pacote-aberto').classList.add('flex');
+      }, 800);
+    }
+
+    function revelarCartas(numeros) {
+      const container = document.getElementById('cartas-reveladas');
+      container.innerHTML = "";
+
+      numeros.forEach((numero, i) => {
+        const fig = obterFigurinhaPorNumero(numero);
+        const jaTinha = ESTADO.coladas.includes(numero) || ESTADO.inventario.filter(n => n === numero).length > 1;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = "perspective-1000 w-32 h-48 md:w-40 md:h-56 cursor-pointer";
+
+        const inner = document.createElement('div');
+        inner.className = "w-full h-full relative transform-style-3d rotate-y-180";
+        inner.id = `reveal_${i}`;
+
+        const front = document.createElement('div');
+        front.className = `absolute w-full h-full bg-white rounded-xl border-4 border-orange-300 shadow-2xl overflow-hidden backface-hidden ${jaTinha ? 'opacity-80' : ''}`;
+
+        // top-1/right-1 (não -top-3/-right-3): o card usa overflow-hidden
+        // pra recortar a imagem, então um selo com offset negativo ficaria
+        // cortado fora da borda.
+        const labelRepetida = jaTinha ? `<div class="absolute top-1 right-1 bg-slate-800 text-white text-[9px] font-black px-2 py-1 rounded-md shadow-lg z-10">REPETIDA</div>` : '';
+
+        if (fig && fig.imageUrl) {
+          front.innerHTML = `${labelRepetida}<img src="${fig.imageUrl}" alt="Figurinha ${numero}" class="w-full h-full object-cover">`;
+        } else {
+          front.innerHTML = `
+            ${labelRepetida}
+            <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 mb-2 flex items-center justify-center text-4xl shadow-inner">👤</div>
+              <p class="text-xs font-extrabold text-slate-800 uppercase leading-tight">Nº ${numero}</p>
+              <div class="mt-auto w-full bg-slate-100 py-1 rounded border border-slate-200"><span class="text-[8px] uppercase tracking-widest font-black text-slate-400">Sem imagem</span></div>
+            </div>
+          `;
+        }
+
+        const back = document.createElement('div');
+        back.className = "absolute w-full h-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl border-4 border-white shadow-xl flex items-center justify-center backface-hidden rotate-y-180";
+        back.innerHTML = `<span class="text-4xl">⚽</span>`;
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        wrapper.appendChild(inner);
+        container.appendChild(wrapper);
+
+        setTimeout(() => {
+          document.getElementById(`reveal_${i}`).classList.remove('rotate-y-180');
+        }, 300 + (i * 150));
+      });
+    }
+
+    function guardarFigurinhasNoInventario() {
+      fecharModalPacote();
+      atualizarUI();
+      mostrarToast("Figurinhas guardadas no Inventário!");
+    }
+
+  </script>
+
+</body>
+</html>

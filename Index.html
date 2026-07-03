@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copa Excelência de Negócios</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sport: ['"Teko"', 'sans-serif']
+          },
+          colors: {
+            gold: { 400: '#facc15', 500: '#eab308', 600: '#ca8a04' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .stadium-bg {
+      background-color: #0c2e17; 
+      background-image: 
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(11, 46, 23, 0.9)),
+        repeating-linear-gradient(
+          to right,
+          transparent,
+          transparent 80px,
+          rgba(255, 255, 255, 0.04) 80px,
+          rgba(255, 255, 255, 0.04) 160px
+        );
+      background-attachment: fixed;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="stadium-bg text-slate-800 font-sans min-h-screen antialiased relative">
+
+  <!-- LOADER -->
+  <div id="loader" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 text-center overflow-y-auto transition-all duration-300">
+    <div class="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h3 class="text-xl font-bold text-green-800 mb-2">Aquecendo o Estádio...</h3>
+    <p class="text-sm text-slate-500 max-w-md">Preparando as classificações e o quadro de medalhas da Copa.</p>
+  </div>
+
+  <!-- CABEÇALHO DA COPA -->
+  <header class="border-b-4 border-yellow-400 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
+    <div class="max-w-[1400px] mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-4 w-full md:w-auto justify-center md:justify-start">
+        <div class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-full shadow-[0_0_15px_rgba(22,163,74,0.3)]">
+          <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-sport tracking-wider text-green-800 uppercase leading-none">Copa Excelência</h1>
+          <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase mt-0.5">Rumo à Grande Final • Jun/Jul/Ago 2026</p>
+        </div>
+      </div>
+
+      <!-- MENU NAVEGAÇÃO INTERNA -->
+      <nav class="flex space-x-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+        <button onclick="alternarAba('selecoes')" id="btn-selecoes" class="px-4 py-2 bg-yellow-400 text-green-900 rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-colors whitespace-nowrap">As Seleções</button>
+        <button onclick="alternarAba('comissao')" id="btn-comissao" class="px-4 py-2 bg-green-700 text-white border border-green-600 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-green-800 transition-colors whitespace-nowrap">Comissão Técnica</button>
+        <button onclick="alternarAba('premiacoes')" id="btn-premiacoes" class="px-4 py-2 bg-green-700 text-white border border-green-600 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-green-800 transition-colors whitespace-nowrap">Pódio & Premiações</button>
+        <a id="btn-album-link" href="#" target="_top" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-all whitespace-nowrap flex items-center justify-center">📖 Álbum Virtual</a>
+      </nav>
+      
+      <div class="text-right hidden xl:flex flex-col items-end">
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Fase do Campeonato</p>
+        <div id="fase-atual-badge" class="bg-slate-100 border border-slate-300 px-3 py-1 rounded text-slate-600 text-xs font-black shadow-sm">
+          AQUECIMENTO
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-[1400px] mx-auto p-6 space-y-12 pb-20">
+
+    <!-- ABA 1: AS SELEÇÕES E ARTILHEIROS -->
+    <div id="aba-selecoes" class="space-y-12 block">
+      
+      <section>
+        <div class="mb-6">
+           <h2 class="text-4xl font-sport tracking-wide text-white uppercase flex items-center drop-shadow-md">
+             <span class="text-yellow-400 mr-3">📋</span> Classificação das Seleções
+           </h2>
+           <p class="text-xs text-green-100 font-medium opacity-80">As agências disputam a glória do grupo pela Taça de Negócios e o Almoço dos Campeões.</p>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-xl font-sport text-yellow-400 font-black drop-shadow uppercase tracking-widest mb-4">Top 3 Artilheiros Gerais</h3>
+          <div id="podio-artilheiros" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl">
+            <div class="bg-gradient-to-r from-blue-700 to-blue-500 px-5 py-3 flex justify-between items-center">
+              <h3 class="font-extrabold text-white text-sm uppercase tracking-wider">Grupo 1 <span class="text-blue-200 text-[10px] ml-1 font-normal">(Cabeças de Chave)</span></h3>
+              <span class="text-xs">🌍</span>
+            </div>
+            <table class="w-full text-left text-sm text-slate-700">
+              <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
+                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+              </thead>
+              <tbody id="tabela-grupo1" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl">
+            <div class="bg-gradient-to-r from-green-700 to-green-500 px-5 py-3 flex justify-between items-center">
+              <h3 class="font-extrabold text-white text-sm uppercase tracking-wider">Grupo 2 <span class="text-green-200 text-[10px] ml-1 font-normal">(Intermediárias)</span></h3>
+              <span class="text-xs">⚡</span>
+            </div>
+            <table class="w-full text-left text-sm text-slate-700">
+              <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
+                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+              </thead>
+              <tbody id="tabela-grupo2" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl">
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-400 px-5 py-3 flex justify-between items-center">
+              <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Grupo 3 <span class="text-slate-800/70 text-[10px] ml-1 font-normal">(Desafiantes)</span></h3>
+              <span class="text-xs">🔥</span>
+            </div>
+            <table class="w-full text-left text-sm text-slate-700">
+              <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
+                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+              </thead>
+              <tbody id="tabela-grupo3" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-4xl font-sport tracking-wide text-white uppercase flex items-center drop-shadow-md">
+              <span class="text-yellow-400 mr-3">📖</span> Álbum Oficial dos Craques
+            </h2>
+            <p class="text-xs text-green-100 opacity-80 mt-1 font-medium">As 8 figurinhas mais cobiçadas (Maiores goleadores do Campeonato).</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="album-figurinhas"></div>
+      </section>
+
+    </div>
+
+    <!-- ABA 2: COMISSÃO TÉCNICA -->
+    <div id="aba-comissao" class="space-y-12 hidden">
+      
+      <section>
+        <div class="text-center mb-10">
+          <h2 class="text-5xl font-sport tracking-widest text-white uppercase drop-shadow-md mb-2">Duelo de Técnicos</h2>
+          <p class="text-sm text-green-100 opacity-90 font-medium">Os Regionais somam os gols dos artilheiros das suas respectivas Chaves.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+          <div class="bg-white border-2 border-blue-200 rounded-3xl p-8 relative overflow-hidden shadow-xl transform hover:scale-105 transition-all">
+            <div class="absolute -right-10 -bottom-10 opacity-[0.03] text-9xl">👔</div>
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <p class="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1">Chaveamento Norte</p>
+                <h3 class="text-3xl font-extrabold text-slate-800">Marcos</h3>
+              </div>
+              <div class="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center text-3xl">👤</div>
+            </div>
+            <div class="bg-blue-50/80 rounded-xl p-4 border border-blue-100 text-center">
+              <p class="text-[10px] text-blue-400 uppercase tracking-widest mb-1 font-bold">Soma de Gols dos Artilheiros</p>
+              <p class="text-5xl font-sport text-blue-600 drop-shadow-sm" id="gols-tecnico-norte">0</p>
+            </div>
+          </div>
+
+          <div class="bg-white border-2 border-green-200 rounded-3xl p-8 relative overflow-hidden shadow-xl transform hover:scale-105 transition-all">
+            <div class="absolute -right-10 -bottom-10 opacity-[0.03] text-9xl">👔</div>
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <p class="text-[10px] text-green-500 font-black tracking-widest uppercase mb-1">Chaveamento Serra</p>
+                <h3 class="text-3xl font-extrabold text-slate-800">Jean</h3>
+              </div>
+              <div class="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center text-3xl">👤</div>
+            </div>
+            <div class="bg-green-50/80 rounded-xl p-4 border border-green-100 text-center">
+              <p class="text-[10px] text-green-500 uppercase tracking-widest mb-1 font-bold">Soma de Gols dos Artilheiros</p>
+              <p class="text-5xl font-sport text-green-600 drop-shadow-sm" id="gols-tecnico-serra">0</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pt-10 border-t border-green-500/30">
+        <div class="text-center mb-10">
+          <h2 class="text-4xl font-sport tracking-widest text-white uppercase drop-shadow-md mb-2">Auxiliares Técnicos (Assistências)</h2>
+          <p class="text-sm text-green-100 opacity-90 font-medium">Os Assessores somam as assistências dos artilheiros nos seus respectivos Segmentos.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+          <div class="bg-white border border-purple-200 rounded-3xl p-8 relative overflow-hidden shadow-xl">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <p class="text-[10px] text-purple-300 font-black tracking-widest uppercase mb-1">Segmento Empresarial (PJ)</p>
+                <h3 class="text-2xl font-extrabold text-slate-800">Karla</h3>
+              </div>
+              <div class="w-12 h-12 rounded-full bg-purple-200 border-2 border-purple-300 flex items-center justify-center text-xl">👩‍💼</div>
+            </div>
+            <div class="bg-purple-50/80 rounded-xl p-3 border border-purple-100 text-center">
+              <p class="text-[10px] text-purple-400 uppercase tracking-widest mb-1 font-bold">Assistências (Gols do Segmento)</p>
+              <p class="text-4xl font-sport text-purple-600 drop-shadow-sm" id="gols-auxiliar-pj">0</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-orange-200 rounded-3xl p-8 relative overflow-hidden shadow-xl">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <p class="text-[10px] text-orange-500 font-black tracking-widest uppercase mb-1">Segmento PF & Agro</p>
+                <h3 class="text-2xl font-extrabold text-slate-800">Paulo Colli</h3>
+              </div>
+              <div class="w-12 h-12 rounded-full bg-orange-200 border-2 border-orange-300 flex items-center justify-center text-xl">👨‍💼</div>
+            </div>
+            <div class="bg-orange-50/80 rounded-xl p-3 border border-orange-100 text-center">
+              <p class="text-[10px] text-orange-400 uppercase tracking-widest mb-1 font-bold">Assistências (Gols do Segmento)</p>
+              <p class="text-4xl font-sport text-orange-600 drop-shadow-sm" id="gols-auxiliar-pfagro">0</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ABA 3: PÓDIO E PREMIAÇÕES -->
+    <div id="aba-premiacoes" class="space-y-16 hidden">
+      
+      <section class="flex flex-col items-center justify-center text-center w-full">
+        <h2 class="text-5xl md:text-7xl font-sport tracking-widest text-yellow-400 uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] mb-2">A Grande Campeã</h2>
+        <p class="text-sm md:text-base text-white mb-10 font-bold uppercase tracking-widest drop-shadow-sm">Taça da Copa & Almoço dos Campeões</p>
+        
+        <div class="relative group cursor-default">
+          <div class="absolute inset-0 bg-yellow-400 rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+          <div class="relative bg-white border-4 border-yellow-400 rounded-full w-64 h-64 md:w-80 md:h-80 flex flex-col items-center justify-center shadow-2xl z-10 p-4">
+            <span class="text-6xl md:text-8xl drop-shadow-lg mb-1 animate-bounce" style="animation-duration: 3s;">🏆</span>
+            <h3 id="taca-agencia-nome" class="text-base md:text-2xl font-extrabold text-slate-800 leading-tight uppercase px-2 w-full drop-shadow-md break-words max-h-16 overflow-hidden">Aguardando</h3>
+            <div id="taca-agencia-gols" class="text-xs md:text-sm font-black text-slate-700 mt-0.5 uppercase tracking-wider">⚽ 0 GOLS FEITOS</div>
+            <div class="mt-2 bg-slate-900/85 px-4 py-1.5 rounded-full border border-yellow-400/30 shadow-inner">
+               <span class="text-[10px] text-slate-300 uppercase tracking-widest font-bold">Atingimento:</span>
+               <span id="taca-agencia-perc" class="text-lg md:text-xl font-black text-yellow-400">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full max-w-4xl mt-16 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm">
+           <div class="bg-green-700 px-6 py-4 border-b border-green-800">
+              <h3 class="font-extrabold text-white text-lg uppercase tracking-wider text-left">Ranking Geral - Atingimento da Meta</h3>
+           </div>
+           <table class="w-full text-left text-sm text-slate-700">
+              <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th class="px-6 py-4 text-center w-16">Pos</th>
+                  <th class="px-6 py-4">Agência (Seleção)</th>
+                  <th class="px-6 py-4 text-center">Gols Feitos</th>
+                  <th class="px-6 py-4 text-center">Meta Gols</th>
+                  <th class="px-6 py-4 text-right">Atingimento</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-ranking-agencias" class="divide-y divide-slate-100">
+              </tbody>
+           </table>
+        </div>
+      </section>
+
+      <section>
+        <div class="text-center mb-10">
+          <h2 class="text-4xl font-sport tracking-widest text-white uppercase drop-shadow-md mb-2">Os Pódios (Chuteira de Ouro)</h2>
+          <p class="text-sm text-green-100 opacity-90 font-medium">Os 3 melhores artilheiros de cada grupo e as suas respetivas Bolas de Ouro, Prata e Bronze.</p>
+        </div>
+
+        <div class="space-y-12" id="podios-grupos-container">
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script>
+    // CONFIGURAÇÕES DA COPA
+    const GRUPOS_COPA = {
+      1: ["São Joaquim", "Canoinhas", "Lages II", "Lages Santa Helena", "Porto União"],
+      2: ["Correia Pinto", "Otacílio Costa", "Irineópolis", "Major Vieira"],
+      3: ["Bom Jardim Da Serra", "Timbó Grande", "Monte Castelo", "Ponte Alta", "Bela Vista Do Toldo", "Santa Cruz Do Timbo"]
+    };
+
+    const CHAVEAMENTO_NORTE = ["Canoinhas", "Porto União", "Irineópolis", "Major Vieira", "Bela Vista Do Toldo", "Timbó Grande", "Monte Castelo", "Santa Cruz Do Timbo"];
+    const CHAVEAMENTO_SERRA = ["São Joaquim", "Lages II", "Lages Santa Helena", "Correia Pinto", "Otacílio Costa", "Bom Jardim Da Serra", "Ponte Alta"];
+
+    const TIMES_AGENCIA = {
+      "São Joaquim": "Gigantes da Serra",
+      "Canoinhas": "Little Boat",
+      "Lages II": "Craques da Coop",
+      "Lages Santa Helena": "Craques da cooperação",
+      "Porto União": "Tropa do Xixo",
+      "Correia Pinto": "Construindo Gigantes",
+      "Otacílio Costa": "Furacão Laranja",
+      "Irineópolis": "Pix na Rede FC",
+      "Major Vieira": "Sinergia",
+      "Bom Jardim Da Serra": "Real Cooperativo",
+      "Timbó Grande": "Golaço Tg",
+      "Monte Castelo": "Morangueiros",
+      "Ponte Alta": "Craques da cooperação",
+      "Bela Vista Do Toldo": "Esquadrão Excelência",
+      "Santa Cruz Do Timbo": "Artilheiros da Meta"
+    };
+
+    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], webAppUrl: "" };
+    
+    function getProp(obj, key) {
+      if (!obj) return "";
+      let kLower = key.toLowerCase();
+      for (let k in obj) {
+        if (k.toLowerCase() === kLower) return obj[k];
+      }
+      return "";
+    }
+
+    function normalizarString(str) {
+      if (str === null || str === undefined) return "";
+      return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
+    function isAgenciaOficial(nomeAgencia) {
+      const agLimpa = normalizarString(nomeAgencia);
+      for (let g in GRUPOS_COPA) {
+        if (GRUPOS_COPA[g].some(a => agLimpa.includes(normalizarString(a)))) return true;
+      }
+      return false;
+    }
+
+    function encontrarAgenciaOficial(nomeAgencia) {
+      const agLimpa = normalizarString(nomeAgencia);
+      for (let g in GRUPOS_COPA) {
+        for (let agOficial of GRUPOS_COPA[g]) {
+          if (agLimpa.includes(normalizarString(agOficial))) {
+            return agOficial;
+          }
+        }
+      }
+      return null;
+    }
+
+    function isChaveNorte(nomeAgencia) {
+      const agLimpa = normalizarString(nomeAgencia);
+      return CHAVEAMENTO_NORTE.some(a => agLimpa.includes(normalizarString(a)));
+    }
+
+    function isChaveSerra(nomeAgencia) {
+      const agLimpa = normalizarString(nomeAgencia);
+      return CHAVEAMENTO_SERRA.some(a => agLimpa.includes(normalizarString(a)));
+    }
+
+    function normalizarSegmento(carteiraStr) {
+      if (carteiraStr === null || carteiraStr === undefined) return "MISTA";
+      const c = carteiraStr.toString().toLowerCase();
+      if (c.includes("agro")) return "AGRO";
+      if (c.includes("empresarial") || c.includes("pj")) return "EMPRESARIAL";
+      if (c.includes("pf") || c.includes("física") || c.includes("urbano") || c.includes("varejo")) return "PF";
+      return "MISTA";
+    }
+
+    function isDataCopa(dateStr) {
+      if (!dateStr) return false;
+      const parts = dateStr.toString().split('/');
+      if (parts.length === 3) {
+        const mes = parseInt(parts[1], 10);
+        const ano = parseInt(parts[2], 10);
+        if (ano === 2026 && mes >= 6 && mes <= 8) return true;
+      }
+      return false;
+    }
+
+    function alternarAba(aba) {
+      document.getElementById('aba-selecoes').classList.add('hidden');
+      document.getElementById('aba-comissao').classList.add('hidden');
+      document.getElementById('aba-premiacoes').classList.add('hidden');
+      
+      const unselectedClass = "px-4 py-2 bg-green-700/90 backdrop-blur-md text-white border border-green-600/50 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-green-800 transition-colors whitespace-nowrap shadow-sm";
+      document.getElementById('btn-selecoes').className = unselectedClass;
+      document.getElementById('btn-comissao').className = unselectedClass;
+      document.getElementById('btn-premiacoes').className = unselectedClass;
+
+      document.getElementById(`aba-${aba}`).classList.remove('hidden');
+      document.getElementById(`btn-${aba}`).className = "px-4 py-2 bg-yellow-400 text-green-900 rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-colors whitespace-nowrap";
+    }
+
+    function converterParaGols(indicador, realizado, meta, dataStr) {
+      let ind = (indicador || "").toString().trim().toLowerCase();
+      let r = parseFloat(realizado) || 0;
+      let m = parseFloat(meta) || 0;
+      let gols = 0, metaEsperadaGols = 0;
+
+      if (ind.includes("cheque") || ind.includes("boleto") || ind.includes("solcap") || ind.includes("adquirência") || ind.includes("maquininha") || ind.includes("domicílio") || ind.includes("domicilio")) {
+        return { gols: 0, metaGols: 0 };
+      }
+
+      if (ind === "inad 15" || ind.includes("inad")) {
+        let metaBase = m > 0 ? m : 2.5;
+        metaEsperadaGols = 5; 
+        if (r < metaBase) gols = Math.floor(metaBase - r) * 2; 
+        else if (r > metaBase) gols = Math.floor(r - metaBase) * -5; 
+      }
+      else if (ind.includes("ativo comercial") || ind.includes("conta")) {
+        if (r > 150) {
+          gols = Math.floor(r / 50) * 1;
+          metaEsperadaGols = Math.floor(m / 50) * 1;
+        } else {
+          gols = Math.floor(r) * 1;
+          metaEsperadaGols = Math.floor(m) * 1;
+        }
+      }
+      else if (ind.includes("cartão") || ind.includes("cartao")) {
+        if (r > 150) {
+          gols = Math.floor(r / 2000) * 1;
+          metaEsperadaGols = Math.floor(m / 2000) * 1;
+        } else {
+          gols = Math.floor(r) * 1;
+          metaEsperadaGols = Math.floor(m) * 1;
+        }
+      }
+      else if (ind.includes("seguro de vida") || ind.includes("vida") || ind.includes("residência") || ind.includes("residencia")) {
+        if (ind.includes("auto") || ind.includes("danos") || ind.includes("frota") || ind.includes("agrícola") || ind.includes("agricola") || ind.includes("maquinário") || ind.includes("maquinario")) {
+          if (r > 150) { 
+            gols = Math.floor(r / 2500) * 4;
+            metaEsperadaGols = Math.floor(m / 2500) * 4;
+          } else { 
+            gols = Math.floor(r) * 4;
+            metaEsperadaGols = Math.floor(m) * 4;
+          }
+        } else {
+          if (r > 150) { 
+            gols = Math.floor(r / 500) * 2; 
+            metaEsperadaGols = Math.floor(m / 500) * 2;
+          } else { 
+            gols = Math.floor(r) * 2; 
+            metaEsperadaGols = Math.floor(m) * 2;
+          }
+        }
+      }
+      else if (ind.includes("consórcio") || ind.includes("consorcio")) {
+        if (r > 1000) { 
+          gols = Math.floor(r / 50000) * 4; 
+          metaEsperadaGols = Math.floor(m / 50000) * 4; 
+        } else { 
+          gols = Math.floor(r) * 4; 
+          metaEsperadaGols = Math.floor(m) * 4; 
+        }
+      }
+      else if (ind.includes("depósitos totais") || ind.includes("depositos totais") || ind.includes("captação") || ind.includes("captacao") || ind.includes("rdc") || ind.includes("poupança") || ind.includes("lca")) {
+        gols = Math.floor(r / 10000) * 4; 
+        metaEsperadaGols = Math.floor(m / 10000) * 4;
+      }
+      else if (ind.includes("crédito comercial") || ind.includes("credito comercial") || ind.includes("custeio")) {
+        gols = Math.floor(r / 10000) * 4; 
+        metaEsperadaGols = Math.floor(m / 10000) * 4;
+      }
+      else if (ind.includes("pré-aprovado") || ind.includes("pre-aprovado") || ind.includes("pre aprovado")) {
+        gols = Math.floor(r / 5000) * 1;
+        metaEsperadaGols = Math.floor(m / 5000) * 1;
+      }
+      else if (ind === "capital social" || ind.includes("procap")) {
+        if (r >= 10000) { 
+          gols = Math.floor(r / 10000) * 5; 
+          metaEsperadaGols = Math.floor(m / 10000) * 5; 
+        }
+      }
+
+      if (dataStr) {
+        let parts = dataStr.toString().split('/');
+        if (parts.length === 3 && parseInt(parts[1], 10) === 7) {
+          gols = gols * 1.5;
+          metaEsperadaGols = metaEsperadaGols * 1.5;
+        }
+      }
+
+      return { gols: Math.round(gols * 10) / 10, metaGols: Math.round(metaEsperadaGols * 10) / 10 };
+    }
+
+    // INICIALIZAÇÃO COM BACKEND
+    window.onload = function() {
+      // RESPONSIVIDADE DINÂMICA: ajustar zoom conforme tamanho da tela
+      function ajustarZoom() {
+        let largura = window.innerWidth;
+        let zoom = 1;
+        
+        if (largura < 768) zoom = 0.85;        // Telas pequenas (móvel)
+        else if (largura < 1024) zoom = 0.9;   // Tablets
+        else if (largura > 2000) zoom = 1.15;  // Monitors grandes (27")
+        else if (largura > 1500) zoom = 1.1;   // Monitors médios
+        
+        document.documentElement.style.fontSize = (16 * zoom) + 'px';
+      }
+      
+      ajustarZoom();
+      window.addEventListener('resize', ajustarZoom);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonResponse) {
+            try {
+              const response = JSON.parse(jsonResponse);
+              if (response && response.status === "ok") {
+                DB = response.data;
+                if(DB.usuariosExcluidos) DB.usuariosExcluidos = DB.usuariosExcluidos.map(u => normalizarString(u));
+                else DB.usuariosExcluidos = [];
+                
+                const albumBtnReal = document.getElementById('btn-album-link');
+                if (albumBtnReal && DB.webAppUrl) {
+                  albumBtnReal.href = DB.webAppUrl + "?pagina=Album";
+                }
+                
+                document.getElementById('loader').classList.add('hidden');
+                processarCalculosCopa();
+              } else {
+                console.error("Erro na resposta:", response?.message || "Desconhecido");
+                document.getElementById('loader').classList.add('hidden');
+              }
+            } catch (e) { 
+              console.error("Erro ao processar resposta do backend:", e);
+              document.getElementById('loader').classList.add('hidden');
+            }
+          })
+          .withFailureHandler(function(erro) {
+            console.error("Erro ao conectar ao backend:", erro);
+            document.getElementById('loader').classList.add('hidden');
+          })
+          .obterDadosCompletos();
+      } else {
+        document.getElementById('loader').classList.add('hidden');
+        processarCalculosCopa();
+      }
+    };
+
+    function processarCalculosCopa() {
+      try {
+        let placarAgencias = {};
+        for (let g in GRUPOS_COPA) {
+            GRUPOS_COPA[g].forEach(ag => {
+                placarAgencias[ag] = { nome: ag, group: g, gols: 0, metaGols: 0 };
+            });
+        }
+
+        let placarGerentes = {};
+        (DB.gerentes || []).forEach(row => {
+            let agLimpa = normalizarString(getProp(row, 'nm_agencia'));
+            let genLimpa = normalizarString(getProp(row, 'Gerente'));
+            
+            if (agLimpa === "vale do contestado") return;
+            if (DB.usuariosExcluidos && DB.usuariosExcluidos.includes(genLimpa)) return;
+
+            let gerente = (getProp(row, 'Gerente') || "Desconhecido").toString().trim();
+            let agencia = (getProp(row, 'nm_agencia') || "Desconhecida").toString().trim();
+            
+            if (isAgenciaOficial(agencia)) {
+                if (!placarGerentes[gerente]) {
+                    placarGerentes[gerente] = { nome: gerente, ag: agencia, gols: 0, metaGols: 0 };
+                }
+            }
+        });
+
+        let rawAgencias = (DB.agencias || []).filter(x => isDataCopa(getProp(x, 'ds_periodo')));
+        let rawCarteiras = (DB.carteiras || []).filter(x => isDataCopa(getProp(x, 'ds_periodo')));
+
+        let isForaDaJanela = rawAgencias.length === 0;
+        atualizarBadgeFase(rawAgencias, isForaDaJanela);
+
+        // DEDUPLICAÇÃO: usar chave única por gerente+carteira+mês+indicador
+        let chaveRealizado = {}; // Para evitar contar a mesma carteira 2x
+        
+        // CÁLCULAR GOLS E METAS DOS GERENTES usando nova lógica
+        (DB.gerentes || []).forEach(row => {
+          let agLimpa = normalizarString(getProp(row, 'nm_agencia'));
+          let genLimpa = normalizarString(getProp(row, 'Gerente'));
+          
+          if (agLimpa === "vale do contestado") return;
+          if (DB.usuariosExcluidos && DB.usuariosExcluidos.includes(genLimpa)) return;
+
+          let gerente = (getProp(row, 'Gerente') || "Desconhecido").toString().trim();
+          let carteira = (getProp(row, 'nm_carteira') || "").toString().trim();
+          let mes = (getProp(row, 'ds_periodo') || "").toString().trim();
+          let indicador = (getProp(row, 'Indicador') || "").toString().trim();
+          let realizado = parseFloat(getProp(row, 'Realizado')) || 0;
+          let meta = parseFloat(getProp(row, 'Meta')) || 0;
+          
+          // CHAVE ÚNICA: evitar contar mesma carteira 2x no mesmo mês
+          let chaveUnica = gerente + "|||" + carteira + "|||" + mes + "|||" + indicador;
+          
+          if (chaveRealizado[chaveUnica]) {
+            return; // Já foi contabilizado, pular
+          }
+          
+          if (placarGerentes[gerente]) {
+            // USAR NOVA LÓGICA DE CÁLCULO com calcularGolsGerente
+            let golsFeitos = calcularGolsGerente(indicador, realizado, 0); // valorAnterior=0 por padrão
+            let golsMeta = calcularGolsGerente(indicador, meta, 0);
+            
+            placarGerentes[gerente].gols += golsFeitos;
+            placarGerentes[gerente].metaGols += golsMeta;
+            
+            // Marcar como já contabilizado
+            chaveRealizado[chaveUnica] = true;
+          }
+        });
+
+        // SOMAR GOLS DOS GERENTES PARA AS AGÊNCIAS
+        for (let gerenteNome in placarGerentes) {
+          let gData = placarGerentes[gerenteNome];
+          let agOfficialName = encontrarAgenciaOficial(gData.ag);
+          if (agOfficialName && placarAgencias[agOfficialName]) {
+            placarAgencias[agOfficialName].gols += gData.gols;
+            placarAgencias[agOfficialName].metaGols += gData.metaGols;
+          }
+        }
+
+        let gerentesRank = Object.values(placarGerentes).sort((a, b) => {
+           if (b.gols !== a.gols) return b.gols - a.gols;
+           return a.nome.localeCompare(b.nome);
+        });
+        
+        let agenciasRank = Object.values(placarAgencias).sort((a, b) => {
+           if (b.gols !== a.gols) return b.gols - a.gols;
+           return a.nome.localeCompare(b.nome);
+        });
+
+        renderizarAbaSelecoes(gerentesRank, agenciasRank, isForaDaJanela);
+        renderizarAbaComissao(gerentesRank, rawCarteiras);
+        renderizarAbaPremiacoes(agenciasRank, gerentesRank);
+
+      } catch (error) {
+        console.error("Erro crítico no processamento:", error);
+      }
+    }
+
+    function atualizarBadgeFase(rawAgencias, isForaDaJanela) {
+      let hasAgosto = false, hasJulho = false, hasJunho = false;
+      rawAgencias.forEach(d => {
+        if(!d.ds_periodo) return;
+        let m = parseInt(getProp(d, 'ds_periodo').toString().split('/')[1], 10);
+        if (m === 8) hasAgosto = true;
+        if (m === 7) hasJulho = true;
+        if (m === 6) hasJunho = true;
+      });
+      
+      const badgeFase = document.getElementById('fase-atual-badge');
+      if (hasAgosto) {
+        badgeFase.innerHTML = "🏆 A GRANDE FINAL (AGOSTO)";
+        badgeFase.className = "bg-yellow-500 border border-yellow-600 px-3 py-1 rounded text-green-900 text-xs font-black animate-pulse shadow-md";
+      } else if (hasJulho) {
+        badgeFase.innerHTML = "🔥 O MATA-MATA (JULHO - GOLS 1.5x)";
+        badgeFase.className = "bg-orange-500 border border-orange-600 px-3 py-1 rounded text-white text-xs font-black animate-pulse shadow-md";
+      } else if (hasJunho) {
+        badgeFase.innerHTML = "⚽ FASE DE GRUPOS (JUNHO)";
+        badgeFase.className = "bg-blue-600 border border-blue-700 px-3 py-1 rounded text-white text-xs font-black animate-pulse shadow-md";
+      } else {
+        badgeFase.innerHTML = isForaDaJanela ? "AQUECIMENTO PRÉ-COPA" : "SEM DADOS DA COPA";
+        badgeFase.className = "bg-slate-100 border border-slate-300 px-3 py-1 rounded text-slate-600 text-xs font-black shadow-sm";
+      }
+    }
+
+    function calcularGolsGerente(indicador, valorAtual, valorAnterior) {
+      var gols = 0;
+      
+      switch (indicador) {
+        // CATEGORIA 1: Regra Unitária
+        case "Ativo Comercial":
+          gols = valorAtual * 1;
+          break;
+          
+        case "Seguro de Vida":
+        case "Consórcio":
+          gols = valorAtual * 4;
+          break;
+          
+        // CATEGORIA 2: Blocos Fechados
+        case "Depósitos Totais":
+        case "Crédito Comercial":
+          gols = Math.floor(valorAtual / 10000) * 4;
+          break;
+          
+        case "Capital Social":
+          gols = Math.floor(valorAtual / 10000) * 5;
+          break;
+          
+        // CATEGORIA 3: Variação (Inad 15)
+        case "Inad 15":
+          var variacaoPercentual = (valorAtual - valorAnterior) * 100;
+          
+          if (variacaoPercentual < 0) {
+            gols = Math.abs(variacaoPercentual) * 2;
+          } 
+          else if (variacaoPercentual > 0) {
+            gols = variacaoPercentual * (-5);
+          }
+          break;
+          
+        default:
+          gols = 0;
+      }
+      
+      return Number(gols.toFixed(2));
+    }
+
+    function formatGols(g) {
+      if (!g || isNaN(g)) return "0";
+      if (g % 1 === 0) return Math.floor(g).toString();
+      return g.toFixed(1).replace('.', ',');
+    }
+
+    function renderizarAbaSelecoes(gerentesRank, agenciasRank, isForaDaJanela) {
+      const containerArtilheiros = document.getElementById('podio-artilheiros');
+      if(gerentesRank.length === 0) {
+        containerArtilheiros.innerHTML = `<div class="text-center text-slate-500 font-bold bg-white/90 backdrop-blur-sm rounded-xl py-10 w-full col-span-3 shadow-md">Sem dados cadastrados.</div>`;
+      } else {
+        const top3 = gerentesRank.slice(0, 3);
+        const medals = ['🥇', '🥈', '🥉'];
+        const colors = ['from-yellow-400 to-yellow-500', 'from-slate-200 to-slate-400', 'from-orange-300 to-orange-500'];
+
+        containerArtilheiros.innerHTML = top3.map((g, i) => `
+          <div class="bg-white border border-slate-200 shadow-xl rounded-2xl p-5 flex items-center space-x-4 relative overflow-hidden hover:scale-105 transition-transform duration-300">
+            <div class="absolute -right-4 -bottom-4 opacity-[0.04] text-8xl">${medals[i]}</div>
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br ${colors[i]} flex items-center justify-center text-2xl shadow-lg z-10 border-2 border-white">
+              ${medals[i]}
+            </div>
+            <div class="z-10 w-full pr-4">
+              <h3 class="text-lg font-extrabold text-slate-800 leading-tight truncate" title="${g.nome}">${g.nome}</h3>
+              <p class="text-xs text-slate-500 truncate font-medium">${g.ag}</p>
+              <div class="mt-1.5 inline-flex items-center bg-green-50 px-2.5 py-0.5 rounded shadow-sm border border-green-200 text-sm font-black text-green-700">
+                ⚽ ${formatGols(g.gols)}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      [1, 2, 3].forEach(grupo => {
+        const agsGrupo = agenciasRank.filter(a => a.group == grupo);
+        const tbody = document.getElementById(`tabela-grupo${grupo}`);
+        
+        tbody.innerHTML = agsGrupo.length === 0 ? `<tr><td colspan="3" class="px-4 py-6 text-center text-slate-400 font-bold">Nenhuma seleção classificada</td></tr>` : agsGrupo.map((ag, i) => {
+          let posColor = (i === 0 && ag.gols > 0) ? 'text-green-600 font-extrabold text-lg' : (i >= agsGrupo.length - 1 ? 'text-red-500' : 'text-slate-600 font-bold');
+          let medalha = (i === 0 && ag.gols > 0) ? '🏆' : '';
+          let nomeTime = TIMES_AGENCIA[ag.nome] || ag.nome;
+
+          return `
+          <tr class="hover:bg-green-50/50 transition-colors border-b border-slate-100 last:border-0 h-14">
+            <td class="px-4 py-3 text-center ${posColor} align-middle whitespace-nowrap">${i + 1}º</td>
+            <td class="px-4 py-3 font-semibold text-slate-700 flex items-center justify-between align-middle flex-1">
+              <span class="truncate pr-2">${nomeTime} <span class="text-xs text-slate-400 font-normal">(${ag.nome})</span></span><span class="text-xs drop-shadow-sm">${medalha}</span>
+            </td>
+            <td class="px-4 py-3 text-right font-black text-green-700 text-base whitespace-nowrap align-middle min-w-20 max-w-20">${formatGols(ag.gols)}</td>
+          </tr>`}).join('');
+      });
+
+      const containerAlbum = document.getElementById('album-figurinhas');
+      const craques = gerentesRank.slice(0, 8); 
+      containerAlbum.innerHTML = craques.length === 0 ? '' : craques.map((g, i) => {
+        let isLendario = i < 2 && g.gols > 0; 
+        let borderClass = isLendario ? 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]' : 'border-slate-200 shadow-lg';
+        let bgClass = isLendario ? 'bg-gradient-to-b from-yellow-50 to-white' : 'bg-white';
+        let badge = isLendario ? '<div class="absolute -top-2 -right-2 bg-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-sm transform rotate-12 shadow-md z-20">LENDÁRIA ✨</div>' : '';
+        let crown = isLendario ? '<div class="absolute -top-4 text-2xl drop-shadow-md z-10">👑</div>' : '';
+
+        return `
+        <div class="relative ${bgClass} border-2 ${borderClass} rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer hover:-translate-y-2 transition-all duration-300 h-48 justify-between">
+          ${badge}
+          <div class="w-full flex justify-between items-start mb-2 opacity-90">
+            <span class="text-[11px] font-black text-slate-600 bg-slate-100 px-1.5 rounded border border-slate-200">#${i+1}</span>
+            <span class="text-[11px]">⚽</span>
+          </div>
+          <div class="relative w-16 h-16 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-3xl mb-2 group-hover:scale-110 transition-transform shadow-inner">
+            ${crown}👤
+          </div>
+          <div class="w-full">
+            <h4 class="text-[11px] font-extrabold text-slate-800 uppercase leading-tight truncate px-1" title="${g.nome}">${g.nome}</h4>
+            <p class="text-[9px] text-slate-500 truncate px-1 mt-0.5 font-medium">${g.ag}</p>
+          </div>
+          <div class="w-full bg-green-50 py-1.5 mt-2 rounded border border-green-100 flex justify-between items-center px-3 shadow-sm">
+             <span class="text-[9px] text-green-700 font-bold uppercase tracking-widest">Gols</span>
+             <span class="text-sm font-black text-green-700">${formatGols(g.gols)}</span>
+          </div>
+        </div>`}).join('');
+    }
+
+    function renderizarAbaComissao(gerentesRank, rawCarteiras) {
+      // TÉCNICOS: somar gols das agências que atuam (conforme tabelaTecnicos)
+      let tabelaTec = DB.tabelaTecnicos || {};
+      let golsPorTecnico = {};
+      
+      for (let agOfficialName in tabelaTec) {
+        let tecData = tabelaTec[agOfficialName];
+        let tecNome = tecData.tecnico;
+        let chaveamento = tecData.chaveamento;
+        
+        // Encontrar gols desta agência
+        let agGols = 0;
+        gerentesRank.forEach(g => {
+          if (normalizarString(g.ag) === normalizarString(agOfficialName)) {
+            agGols += g.gols;
+          }
+        });
+        
+        if (!golsPorTecnico[tecNome]) {
+          golsPorTecnico[tecNome] = { nome: tecNome, chaveamento: chaveamento, gols: 0 };
+        }
+        golsPorTecnico[tecNome].gols += agGols;
+      }
+
+      let golsNorte = 0;
+      let golsSerra = 0;
+      
+      for (let tecNome in golsPorTecnico) {
+        let tec = golsPorTecnico[tecNome];
+        if (tec.chaveamento === "Norte") golsNorte += tec.gols;
+        if (tec.chaveamento === "Serra") golsSerra += tec.gols;
+      }
+
+      document.getElementById('gols-tecnico-norte').innerText = formatGols(golsNorte);
+      document.getElementById('gols-tecnico-serra').innerText = formatGols(golsSerra);
+
+      // AUXILIARES: somar gols por segmento (nm_carteira)
+      let placarSegmento = {};
+      rawCarteiras.forEach(row => {
+        let segmento = normalizarSegmento(getProp(row, 'nm_carteira'));
+        let gerente = (getProp(row, 'Gerente') || "Desconhecido").toString().trim();
+        let agencia = (getProp(row, 'nm_agencia') || "Desconhecida").toString().trim();
+        let agLimpa = normalizarString(agencia);
+        let genLimpa = normalizarString(gerente);
+
+        if (agLimpa === "vale do contestado") return;
+        if (DB.usuariosExcluidos && DB.usuariosExcluidos.includes(genLimpa)) return;
+
+        if (!placarSegmento[segmento]) placarSegmento[segmento] = 0;
+        
+        // Encontrar gols deste gerente
+        gerentesRank.forEach(g => {
+          if (normalizarString(g.nome) === normalizarString(gerente)) {
+            placarSegmento[segmento] += g.gols;
+          }
+        });
+      });
+
+      let golsPJ = placarSegmento['EMPRESARIAL'] || 0;
+      let golsPFAgro = (placarSegmento['PF'] || 0) + (placarSegmento['AGRO'] || 0);
+
+      document.getElementById('gols-auxiliar-pj').innerText = formatGols(golsPJ);
+      document.getElementById('gols-auxiliar-pfagro').innerText = formatGols(golsPFAgro);
+    }
+
+    function renderizarAbaPremiacoes(agenciasRank, gerentesRank) {
+      let agenciasPorPerc = agenciasRank.map(ag => {
+        let perc = ag.metaGols > 0 ? (ag.gols / ag.metaGols) * 100 : (ag.gols > 0 ? 100 : 0);
+        return { ...ag, perc: perc };
+      }).sort((a, b) => b.perc - a.perc);
+
+      let campea = agenciasPorPerc.length > 0 ? agenciasPorPerc[0] : null;
+
+      if (campea) {
+        let nomeTimeCampea = TIMES_AGENCIA[campea.nome] || campea.nome;
+        document.getElementById('taca-agencia-nome').innerText = nomeTimeCampea + " (" + campea.nome + ")";
+        document.getElementById('taca-agencia-perc').innerText = campea.perc.toFixed(1) + "%";
+        document.getElementById('taca-agencia-gols').innerText = "⚽ " + formatGols(campea.gols) + " GOLS FEITOS";
+      }
+
+      const tbodyRanking = document.getElementById('tabela-ranking-agencias');
+      if (tbodyRanking) {
+        tbodyRanking.innerHTML = agenciasPorPerc.length === 0 
+          ? `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold">Nenhuma seleção classificada</td></tr>` 
+          : agenciasPorPerc.map((ag, i) => {
+              let posColor = i === 0 ? 'text-green-700 font-extrabold text-lg' : 'text-slate-500 font-bold';
+              let bgRow = i === 0 ? 'bg-yellow-50' : 'hover:bg-green-50';
+              let medalha = i === 0 ? '🏆' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : ''));
+              let nomeTime = TIMES_AGENCIA[ag.nome] || ag.nome;
+
+              return `
+              <tr class="${bgRow} transition-colors border-b border-slate-100 last:border-0">
+                <td class="px-6 py-4 text-center ${posColor}">${i + 1}º</td>
+                <td class="px-6 py-4 font-semibold text-slate-700 flex items-center">
+                  <span class="truncate pr-2">${nomeTime} <span class="text-xs text-slate-500 font-normal">(${ag.nome})</span></span><span class="text-sm drop-shadow-sm ml-2">${medalha}</span>
+                </td>
+                <td class="px-6 py-4 text-center text-slate-600">${formatGols(ag.gols)}</td>
+                <td class="px-6 py-4 text-center text-slate-500">${formatGols(ag.metaGols)}</td>
+                <td class="px-6 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px]">${ag.perc.toFixed(1)}%</td>
+              </tr>`;
+          }).join('');
+      }
+
+      const container = document.getElementById('podios-grupos-container');
+      container.innerHTML = "";
+
+      [1, 2, 3].forEach(grupo => {
+        let agsDesteGrupo = agenciasRank.filter(a => a.group == grupo).map(a => normalizarString(a.nome));
+        let gerentesDesteGrupo = gerentesRank.filter(g => {
+          let gAgLimpa = normalizarString(g.ag);
+          return agsDesteGrupo.some(agOficial => gAgLimpa.includes(agOficial)); 
+        });
+        
+        let top3 = gerentesDesteGrupo.slice(0, 3);
+        if(top3.length === 0) return;
+
+        let htmlCards = top3.map((g, i) => {
+          let posName = i === 0 ? "Bola de Ouro" : (i === 1 ? "Bola de Prata" : "Bola de Bronze");
+          let cor = i === 0 ? "text-yellow-500" : (i === 1 ? "text-slate-400" : "text-orange-500");
+          let premioDesc = i === 0 ? "Voucher Viagem/Tech (R$ 3.000)" : (i === 1 ? "Bônus R$ 750,00" : "Bônus R$ 500,00");
+          let emoji = i === 0 ? "🟡" : (i === 1 ? "⚪" : "🟤");
+
+          return `
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col items-center text-center relative overflow-hidden shadow-xl">
+              <span class="text-4xl mb-2 drop-shadow-sm">${emoji}</span>
+              <h4 class="${cor} font-black text-lg uppercase tracking-wider mb-1">${posName}</h4>
+              <p class="text-slate-800 font-bold text-sm truncate w-full" title="${g.nome}">${g.nome}</p>
+              <p class="text-slate-500 text-[10px] mb-3 truncate w-full font-medium">${g.ag}</p>
+              <div class="w-full bg-green-50 rounded py-1.5 mb-3 border border-green-100 shadow-sm"><span class="text-green-700 font-black text-sm">⚽ ${formatGols(g.gols)} GOLS</span></div>
+              <p class="text-green-600 text-[10px] font-bold uppercase border-t border-slate-100 pt-2 w-full">🎁 ${premioDesc}</p>
+            </div>`;
+        }).join('');
+
+        container.innerHTML += `<div class="mb-10"><h3 class="text-2xl font-sport text-white uppercase border-b border-white/30 pb-2 mb-6 drop-shadow-md">Grupo ${grupo}</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6">${htmlCards}</div></div>`;
+      });
+    }
+  </script>
+</body>
+</html>
