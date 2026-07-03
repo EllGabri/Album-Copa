@@ -142,3 +142,36 @@ Encontradas pelo usuário ao rodar a task 5.1/5.2 no ambiente real.
 - Rodar novamente **🧩 Reconciliar Figurinhas do Drive** com o `FIGURINHAS_FOLDER_ID` correto (task 6.1). **🖼️ Reconciliar Templates do Drive** não precisa rodar de novo (já rodou), mas rodar não faz mal.
 - Testar no navegador: login em pelo menos 2 agências diferentes e confirmar que a navegação mostra as 15 páginas de agência + Comissão Técnica + Capa/Contracapa, com a própria agência destacada, e que a imagem de fundo de cada template E as figurinhas coladas carregam (agora via base64, sem depender de acesso externo).
 - **Confirmar o mapeamento de Lages** (bloqueio conhecido): os arquivos `Pac Lages.png` e `Pac Lages Ii.png` têm nome/conteúdo trocados. Hoje o código assume login **"Pac Lages" = slots 42-51** (Lages - Guarujá) e **"Pac Lages Ii" = slots 52-62** (Lages - Santa Helena). Marketing/usuário precisa confirmar se é essa a correspondência correta entre login e roster; se estiver invertido, trocar em `codigo.gs:obterSlotsPorAgencia()` e `generate_slot_map.py:EXPECTED_RANGES`.
+
+---
+
+## Fase 7: Ajustes visuais do álbum + validação dos cálculos do dashboard (2026-07-03)
+
+### Álbum (`Album.html`)
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 7.1 | Layout responsivo HD→4k: página dimensionada por JS (`dimensionarPaginaAtual`) para caber inteira na área disponível (largura E altura), reaplicando no resize | cc:完了 |
+| 7.2 | Inventário legível: cards maiores com aspect-ratio de cromo (2:3), imagem nítida e legenda de nome + número sob cada figurinha; removido o "expandir no hover" | cc:完了 |
+| 7.3 | Botão "Dashboard" no header do álbum (volta ao painel), espelhando o botão de ir ao álbum no dashboard | cc:完了 |
+
+### Dashboard (`Index.html` + `codigo.gs`)
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 7.4 | Gols saindo/escondidos atrás das tabelas de ranking: tabelas passam a `table-fixed` com larguras de coluna definidas e removido o `display:flex` aplicado direto no `<td>` (quebrava o layout de tabela). Vale para os 3 grupos e a tabela de premiações | cc:完了 |
+| 7.5 | **Duelo de Técnicos não somava nada**: o chaveamento na planilha é `"Chaveamento Norte"`/`"Chaveamento Serra"`, mas o código comparava com `=== "Norte"`/`=== "Serra"` (nunca batia). Corrigido para comparar por conteúdo (`includes`) | cc:完了 |
+| 7.6 | Auxiliares Técnicos: dedup por gerente+segmento (um gerente com várias linhas de carteira no mesmo segmento tinha os gols contados várias vezes, inflando o placar) | cc:完了 |
+| 7.7 | **Inad 15 estava quebrado**: `variacao=(valor-0)*100` gerava gols absurdos (ex.: 2,5% → -1250 gols), corrompendo o placar. Reescrito como comparação realizado×meta (regra da planilha: +2 gols por redução de %, -5 por aumento), tratado no loop (precisa dos dois valores juntos) | cc:完了 |
+| 7.8 | **Cartão não pontuava** (caía no `default`→0), apesar da planilha definir 1 gol/unidade. Adicionado a `calcularGolsGerente` | cc:完了 |
+| 7.9 | Removida a função morta `converterParaGols` (nunca chamada, com divisores que não batiam com a planilha — fonte de confusão) | cc:完了 |
+| 7.10 | Multiplicador de julho (1.5x, "O MATA-MATA") aplicado aos gols (o badge já anunciava, mas o cálculo vigente não aplicava) | cc:完了 |
+| 7.11 | Backend lia exclusões em `A1:A15` (pegava o cabeçalho e perdia o 15º nome em A16); corrigido para `A2:A16` | cc:完了 |
+
+### ⚠️ Premissas dos cálculos que precisam de confirmação (afetam premiação real)
+
+A tabela de pontuação foi lida da aba `Configuracoes_Dashboard` (colunas C/D/E). Pontos em aberto onde adotei uma decisão que precisa ser validada:
+
+1. **Seguro de Vida = 4 ou 2 gols?** A aba tem DUAS entradas: linha da tabela principal diz "4 Gols (a cada 1 seguro)" e um bloco de baixo diz "2 Gols". Adotei **4** (tabela principal, com texto de regra). Confirmar.
+2. **"Saldo Médio de Uso de Cheque Especial"** (indicador real, R$): a aba tem "Cheque Especial = 1 Gol" no bloco de baixo, mas o nome e a base (por unidade? por R$?) não batem — hoje pontua **0**. Confirmar se deve pontuar e como.
+3. **Julho 1.5x**: confirmei pelo badge, mas confirmar se a regra vale para todos os indicadores e também para a meta (hoje aplico aos dois, mantendo o % de atingimento).
+4. **Inad 15 — meta de referência**: adotei "atingir a meta de inadimplência = 5 gols" para o cálculo de atingimento. Confirmar a base.
+5. Indicadores **Cooperados, Liberação de Custeio, Resultado Financeiro, Taxa Ponderada do Crédito RP** não constam na tabela de pontuação → hoje pontuam **0** (correto se realmente não valem gols).

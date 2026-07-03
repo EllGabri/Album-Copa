@@ -71,8 +71,9 @@ function obterDadosCompletos() {
     
     if (configSheet) {
       try {
-        // LER EXCLUSÕES (Coluna A)
-        var excValues = configSheet.getRange("A1:A15").getValues();
+        // LER EXCLUSÕES (Coluna A) - A1 é cabeçalho ("Colaboradores
+        // Excluídos"); os nomes vão de A2 até A16.
+        var excValues = configSheet.getRange("A2:A16").getValues();
         for (var i = 0; i < excValues.length; i++) {
           var exc = excValues[i][0];
           if (exc && exc.toString().trim() !== "") {
