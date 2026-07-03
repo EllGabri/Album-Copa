@@ -5,8 +5,8 @@
  */
 
 var SPREADSHEET_ID = ""; // Deixe vazio se o script estiver vinculado à planilha "Copa Excelência"
-var FIGURINHAS_FOLDER_ID = ""; // ID da pasta do Drive com os PNGs das figurinhas (preencher antes de usar "Reconciliar Figurinhas do Drive")
-var TEMPLATES_FOLDER_ID = ""; // ID da pasta do Drive com os PNGs de "TEMPLATE - ALBUM/" (preencher antes de usar "Reconciliar Templates do Drive")
+var FIGURINHAS_FOLDER_ID = "1QIwO_rqFfBthfAMz8_OSvCFD1G4uqIHc"; // ID da pasta do Drive com os PNGs das figurinhas
+var TEMPLATES_FOLDER_ID = "1XpBlh_FBL8SHdExGccH1djViff1bnLcY"; // ID da pasta do Drive com os PNGs dos templates ("TEMPLATE - ALBUM/")
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
@@ -955,6 +955,15 @@ function reconciliarFigurinhasPeloMenu() {
 // "Pac Sao Joaquim I", "Comissao Tecnica", "Capa").
 
 /**
+ * Normaliza um nome de template para comparação tolerante: sem acentos,
+ * minúsculas, sem espaços/pontuação. Ex.: "Pac Timbó Grande" e
+ * "Pac Timbo Grande" -> "pactimbogrande".
+ */
+function normalizarNomeTemplate(s) {
+  return (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
  * Varre TEMPLATES_FOLDER_ID e popula/atualiza a aba "Templates"
  * (Nome | FileID), casando por nome de arquivo exato (sem extensão).
  * Idempotente. Cria a aba se ela não existir.
@@ -985,11 +994,24 @@ function reconciliarTemplates() {
       if (nomeExistente) linhaPorNome[nomeExistente] = i + 1;
     }
 
-    // Nomes de template reconhecidos: chaves de página de agência (única)
-    // + páginas especiais sem pool (Comissão Técnica, Capa, Contra Capa) +
-    // as 2 páginas de exibição de São Joaquim (não são chave de pool).
-    var nomesReconhecidos = Object.keys(obterMapeamentoCompletoDeSlots());
-    nomesReconhecidos.push("Comissao Tecnica", "Capa", "Contra Capa", "Pac Sao Joaquim I", "Pac Sao Joaquim Ii");
+    // Nomes de template esperados = as chaves usadas pelo álbum
+    // (slotMap.json). Comparadas de forma NORMALIZADA (sem acento, sem
+    // pontuação, sem espaços, minúsculas), porque os nomes dos arquivos no
+    // Drive variam em acento/casing/pontuação (ex.: "Timbó"→"Timbo",
+    // "D. Sta"→"D.Sta", "Do"→"do"). Isso evita falsos "não reconhecido".
+    var esperadosTemplate = [
+      "Capa", "Contra Capa", "Comissao Tecnica",
+      "Pac Sao Joaquim I", "Pac Sao Joaquim Ii",
+      "Pac Canoinhas", "Pac Lages", "Pac Lages Ii", "Pac Porto Uniao",
+      "Pac Otacilio Costa", "Pac Correia Pinto", "Pac Irineopolis",
+      "Pac Major Vieira", "Pac Bom Jardim da Serra", "Pac Timbo Grande",
+      "Pac Monte Castelo", "Pac Ponte Alta",
+      "Pac Porto Uniao D. Sta Cruz Do Timbo", "Pac Bela Vista do Toldo"
+    ];
+    var reconhecidosNorm = {};
+    esperadosTemplate.forEach(function (n) { reconhecidosNorm[normalizarNomeTemplate(n)] = true; });
+    // Aliases de nomes de arquivo com grafia divergente no Drive:
+    reconhecidosNorm[normalizarNomeTemplate("Pac Conoinhas")] = true; // typo de "Canoinhas"
 
     var criadas = 0, atualizadas = 0;
     var naoReconhecidos = [];
@@ -999,7 +1021,7 @@ function reconciliarTemplates() {
       var nomeChave = arquivo.getName().replace(/\.png$/i, "").trim();
       var fileId = arquivo.getId();
 
-      if (nomesReconhecidos.indexOf(nomeChave) === -1) {
+      if (!reconhecidosNorm[normalizarNomeTemplate(nomeChave)]) {
         naoReconhecidos.push(arquivo.getName());
       }
 

@@ -252,17 +252,49 @@
     // ---------------------------------------------------------------
     const IMG_CACHE = {};       // fileId -> dataUri
     const IMG_PENDENTES = {};   // fileId -> [callbacks]
+    // Fila com concorrência limitada: ao abrir um pacote são pedidas ~13
+    // imagens de uma vez (+ o template da página). Disparar todas ao mesmo
+    // tempo sobrecarrega o backend (google.script.run) e algumas falham ->
+    // figurinha sem foto. Aqui limitamos a poucas chamadas simultâneas e
+    // fazemos retry, garantindo que todas carreguem.
+    const IMG_FILA = [];
+    let IMG_ATIVOS = 0;
+    const IMG_MAX_CONCORRENTE = 3;
+    const IMG_MAX_TENTATIVAS = 3;
 
     function resolverImagemPorFileId(fileId, callback) {
       if (!fileId) { callback(null); return; }
       if (IMG_CACHE[fileId]) { callback(IMG_CACHE[fileId]); return; }
       if (IMG_PENDENTES[fileId]) { IMG_PENDENTES[fileId].push(callback); return; }
       IMG_PENDENTES[fileId] = [callback];
+      IMG_FILA.push(fileId);
+      processarFilaImagens();
+    }
 
-      const entregar = (dataUri) => {
+    function processarFilaImagens() {
+      while (IMG_ATIVOS < IMG_MAX_CONCORRENTE && IMG_FILA.length > 0) {
+        const fileId = IMG_FILA.shift();
+        IMG_ATIVOS++;
+        buscarImagemBackend(fileId, 1);
+      }
+    }
+
+    function buscarImagemBackend(fileId, tentativa) {
+      const concluir = (dataUri) => {
         if (dataUri) IMG_CACHE[fileId] = dataUri;
         (IMG_PENDENTES[fileId] || []).forEach(cb => cb(dataUri || null));
         delete IMG_PENDENTES[fileId];
+        IMG_ATIVOS--;
+        processarFilaImagens();
+      };
+      const falhar = (erro) => {
+        if (tentativa < IMG_MAX_TENTATIVAS) {
+          // Mantém o slot ocupado durante o backoff (segura a concorrência).
+          setTimeout(() => buscarImagemBackend(fileId, tentativa + 1), 400 * tentativa);
+        } else {
+          console.error("Falha ao carregar imagem após " + tentativa + " tentativas", fileId, erro);
+          concluir(null);
+        }
       };
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -270,15 +302,12 @@
           .withSuccessHandler(function(jsonRes) {
             let dataUri = null;
             try { const r = JSON.parse(jsonRes); if (r.status === 'success') dataUri = r.dataUri; } catch (e) {}
-            entregar(dataUri);
+            if (dataUri) concluir(dataUri); else falhar('resposta sem dataUri');
           })
-          .withFailureHandler(function(erro) {
-            console.error("Erro ao carregar imagem", fileId, erro);
-            entregar(null);
-          })
+          .withFailureHandler(function(erro) { falhar(erro); })
           .obterImagemBase64(fileId);
       } else {
-        entregar(null);
+        concluir(null);
       }
     }
 
@@ -290,11 +319,38 @@
       callback(fig.imageUrl || null);
     }
 
+    // Normaliza nome de template (sem acento/pontuação/espaço, minúsculo)
+    // para casar apesar das variações de grafia entre as chaves do slotMap
+    // (ex.: "Pac Timbó Grande") e os nomes reais dos arquivos no Drive
+    // (ex.: "Pac Timbo Grande", "Pac Porto Uniao D.Sta Cruz do Timbo").
+    function normalizarNomeTemplate(s) {
+      return (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+
+    // Aliases de grafia divergente de arquivo no Drive (chaves normalizadas).
+    const ALIAS_TEMPLATE = { "pacconoinhas": "paccanoinhas" }; // arquivo "Conoinhas" -> chave "Canoinhas"
+
+    // Índice normalizado de ESTADO.templates (nomeNormalizado -> valor).
+    function obterTemplatesNorm() {
+      const idx = {};
+      Object.keys(ESTADO.templates || {}).forEach(nome => {
+        const val = ESTADO.templates[nome];
+        const norm = normalizarNomeTemplate(nome);
+        idx[norm] = val;
+        if (ALIAS_TEMPLATE[norm]) idx[ALIAS_TEMPLATE[norm]] = val;
+      });
+      return idx;
+    }
+
     // Resolve o fundo (template) pelo valor guardado em ESTADO.templates.
-    // Hoje esse valor é um fileId; aceita também URL/data-URI já pronta
-    // (compat com mocks locais).
+    // Tenta o nome exato; se não achar, casa por nome normalizado (tolera
+    // acento/casing/pontuação/typo). O valor é um fileId (ou URL/data-URI
+    // em mocks locais).
     function resolverImagemTemplate(nomeTemplate, callback) {
-      const valor = ESTADO.templates[nomeTemplate];
+      let valor = ESTADO.templates[nomeTemplate];
+      if (valor === undefined) {
+        valor = obterTemplatesNorm()[normalizarNomeTemplate(nomeTemplate)];
+      }
       if (!valor) { callback(null); return; }
       if (/^(data:|https?:)/.test(valor)) { callback(valor); return; }
       resolverImagemPorFileId(valor, callback);

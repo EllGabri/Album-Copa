@@ -178,3 +178,16 @@ A tabela de pontuação foi lida da aba `Configuracoes_Dashboard` (colunas C/D/E
 3. **Julho 1.5x**: confirmei pelo badge, mas confirmar se a regra vale para todos os indicadores e também para a meta (hoje aplico aos dois, mantendo o % de atingimento).
 4. **Inad 15 — meta de referência**: adotei "atingir a meta de inadimplência = 5 gols" para o cálculo de atingimento. Confirmar a base.
 5. Indicadores **Cooperados, Liberação de Custeio, Resultado Financeiro, Taxa Ponderada do Crédito RP** não constam na tabela de pontuação → hoje pontuam **0** (correto se realmente não valem gols).
+
+---
+
+## Fase 8: IDs de pasta, nomes de template e carregamento de imagens (2026-07-03)
+
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 8.1 | Preenchidos `FIGURINHAS_FOLDER_ID` e `TEMPLATES_FOLDER_ID` em `codigo.gs` com os IDs reais do Drive | cc:完了 |
+| 8.2 | **"Reconciliar Templates" acusava 7 arquivos "não reconhecido"**: a validação usava nomes acentuados de `obterMapeamentoCompletoDeSlots()`, mas os arquivos no Drive têm grafia diferente (sem acento, casing/pontuação: "Timbó"→"Timbo", "D. Sta"→"D.Sta"). Passou a comparar por nome NORMALIZADO (`normalizarNomeTemplate`) contra a lista de nomes esperados do slotMap, + alias para o typo "Pac Conoinhas"→"Canoinhas". Agora reconhece os 19 | cc:完了 |
+| 8.3 | **Fundo de template não carregava para algumas agências** (Canoinhas, Santa Cruz): o álbum buscava `ESTADO.templates[chaveSlotMap]` por nome exato, mas o nome do arquivo no Drive difere. `resolverImagemTemplate` agora cai para busca NORMALIZADA (índice `obterTemplatesNorm` + `ALIAS_TEMPLATE`) | cc:完了 |
+| 8.4 | **Fotos de figurinhas às vezes não carregavam ao abrir o pacote**: abrir um pacote dispara ~13 chamadas base64 simultâneas (+ template) e o backend sobrecarregava, falhando algumas. `resolverImagemPorFileId` agora usa fila com concorrência limitada (3) + retry (até 3 tentativas com backoff) | cc:完了 |
+
+> Obs.: o arquivo de template de Canoinhas está grafado **"Pac Conoinhas"** no Drive (typo). O código já trata via alias, mas o ideal é renomear o arquivo para **"Pac Canoinhas.png"** no Drive para manter tudo consistente.
