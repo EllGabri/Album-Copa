@@ -47,9 +47,9 @@ OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "slotMap.json")
 #  (52-62); "Pac Lages Ii.png" mostra "Lages - Guaruja" (42-51). Os ranges
 #  abaixo sao os REAIS (por conteudo, nao pelo nome do arquivo); a
 #  associacao agencia->arquivo em paginasPorAgencia usa esses ranges para
-#  apontar pro arquivo certo. PRECISA CONFIRMAR com o usuario/marketing se
-#  o login "Pac Lages" corresponde de fato a "Lages - Santa Helena" (52-62)
-#  ou "Lages - Guaruja" (42-51) - aqui so cruzamos numero com numero.
+#  apontar pro arquivo certo. CONFIRMADO com o usuario (2026-07-04): login
+#  "Pac Lages" = "Lages - Santa Helena" (52-62, arquivo Pac Lages.png) e
+#  login "Pac Lages Ii" = "Lages - Guaruja" (42-51, arquivo Pac Lages Ii.png).
 EXPECTED_RANGES = {
     "Comissao Tecnica": (1, 10),
     "Pac Sao Joaquim I": (11, 19),
@@ -316,8 +316,11 @@ def main():
         "Pac Bela Vista Do Toldo": (147, 155),
         "Pac São Joaquim": (11, 28),  # 1 login, 2 arquivos de template
         "Pac Canoinhas": (29, 41),
-        "Pac Lages": (42, 51),
-        "Pac Lages Ii": (52, 62),
+        # Confirmado com o usuario (2026-07-04): login "Pac Lages" = agencia
+        # "Lages - Santa Helena" (arquivo Pac Lages.png, 52-62) e login
+        # "Pac Lages Ii" = "Lages - Guaruja" (arquivo Pac Lages Ii.png, 42-51).
+        "Pac Lages": (52, 62),
+        "Pac Lages Ii": (42, 51),
         "Pac Porto União": (63, 72),
         "Pac Otacilio Costa": (73, 83),
         "Pac Correia Pinto": (84, 92),

@@ -515,11 +515,12 @@
       const paginas = [{ tipo: 'capa' }];
       Object.keys(SLOT_MAP.paginasPorAgencia).sort().forEach(ag => {
         // O rótulo da página vem da AGÊNCIA (nome do login), não do nome
-        // do arquivo de template: os arquivos "Pac Lages" e "Pac Lages Ii"
-        // têm nome/conteúdo trocados (ver generate_slot_map.py), então
-        // mostrar o nome do arquivo confundia (login "Pac Lages" exibia
-        // "Pac Lages Ii"). "parte" numera as páginas quando a agência tem
-        // mais de um template (ex.: São Joaquim I e II).
+        // do arquivo de template. Mapeamento confirmado com o usuário
+        // (2026-07-04): login "Pac Lages" = agência Santa Helena (arquivo
+        // "Pac Lages.png", slots 52-62) e login "Pac Lages Ii" = agência
+        // Guarujá (arquivo "Pac Lages Ii.png", slots 42-51). "parte" numera
+        // as páginas quando a agência tem mais de um template (ex.: São
+        // Joaquim I e II).
         const templates = obterTemplatesDaAgencia(ag);
         templates.forEach((t, i) => paginas.push({
           tipo: 'pagina',

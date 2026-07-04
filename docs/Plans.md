@@ -141,7 +141,7 @@ Encontradas pelo usuário ao rodar a task 5.1/5.2 no ambiente real.
 - Colar o `codigo.gs` e `Album.html` atualizados (agora em `apps-script/`) no editor do Apps Script e **republicar o deployment do WebApp** (a mudança de imagens para base64 é no backend + frontend).
 - Rodar novamente **🧩 Reconciliar Figurinhas do Drive** com o `FIGURINHAS_FOLDER_ID` correto (task 6.1). **🖼️ Reconciliar Templates do Drive** não precisa rodar de novo (já rodou), mas rodar não faz mal.
 - Testar no navegador: login em pelo menos 2 agências diferentes e confirmar que a navegação mostra as 15 páginas de agência + Comissão Técnica + Capa/Contracapa, com a própria agência destacada, e que a imagem de fundo de cada template E as figurinhas coladas carregam (agora via base64, sem depender de acesso externo).
-- **Confirmar o mapeamento de Lages** (bloqueio conhecido): os arquivos `Pac Lages.png` e `Pac Lages Ii.png` têm nome/conteúdo trocados. Hoje o código assume login **"Pac Lages" = slots 42-51** (Lages - Guarujá) e **"Pac Lages Ii" = slots 52-62** (Lages - Santa Helena). Marketing/usuário precisa confirmar se é essa a correspondência correta entre login e roster; se estiver invertido, trocar em `codigo.gs:obterSlotsPorAgencia()` e `generate_slot_map.py:EXPECTED_RANGES`.
+- **Mapeamento de Lages — CONFIRMADO (2026-07-04):** login **"Pac Lages" = agência Lages - Santa Helena** (arquivo `Pac Lages.png`, slots 52-62) e login **"Pac Lages Ii" = Lages - Guarujá** (arquivo `Pac Lages Ii.png`, slots 42-51). Estava invertido (login Lages puxava a página do Guarujá). Corrigido em `slotMap.json:paginasPorAgencia`, `codigo.gs:obterSlotsPorAgencia()`/`obterMapeamentoCompletoDeSlots()` e `generate_slot_map.py:AGENCY_POOLS`.
 
 ---
 
