@@ -261,3 +261,34 @@ Perguntei ao usuário para checar os números impressos em 3 pontos-chave e as r
 **Conclusão:** o deslocamento não é um caso isolado de 1 dígito como Monte Castelo/Timbó Grande — parece se estender por pelo menos 3 templates seguidos (Correia Pinto → Irineópolis → Major Vieira), e possivelmente mais adiante na cadeia (Bom Jardim da Serra, Timbó Grande, Monte Castelo, Ponte Alta, Santa Cruz do Timbo). Perguntas de múltipla escolha não são eficientes para mapear isso com precisão — o próximo passo é o usuário enviar screenshots das páginas do álbum (ou dos PNGs originais) mostrando os números impressos em CADA template a partir de Correia Pinto até o fim da lista, para eu ler diretamente e recalcular os intervalos corretos de uma vez.
 
 **Não fiz nenhuma mudança de código para este achado ainda** — os ranges em `codigo.gs`/`generate_slot_map.py`/`slotMap.json`/`SlotMap.html` permanecem como estavam (93-104 para Irineópolis, 105-115 para Major Vieira etc.), até termos visibilidade completa da cadeia. Mexer agora, com informação parcial, arriscaria reatribuir números de figurinhas já cadastradas incorretamente.
+
+### Atualização da investigação (mesmo dia, 2ª leva): 2 bugs de contagem confirmados via screenshots
+
+Usuário enviou prints limpos (sem figurinhas coladas) de 5 templates. Lendo os números impressos diretamente:
+
+| Template | Números impressos (reais) | Range assumido pelo sistema hoje | Resultado |
+|---|---|---|---|
+| **Pac Canoinhas** | 29-41 (13 números) | 29-41 (13) | ✅ bate exatamente |
+| **Pac Correia Pinto** | 83-91 (9 números) | 84-92 (9) | ❌ deslocado -1 (mesma contagem, começa 1 antes) |
+| **Pac Irineópolis** | 92-102 (**11 números**: linha1 92,93,94 / linha2 95,96,97 / linha3 só 98 / par 99,100 / par 101,102) | 93-104 (**12 números**) | ❌ o `slotMap.json` tem **1 retângulo A MAIS que o real** (detectou 8 caixas soltas na coluna esquerda — 3+3+2 — mas a imagem real só tem 7 — 3+3+1, a 3ª linha tem só 1 caixa, o resto do espaço é ocupado pela logo da Copa). Ou seja: além do deslocamento herdado, Irineópolis tem um **falso-positivo de detecção** (provavelmente a logo circular "COPA EXCELÊNCIA" sendo confundida com mais um par retângulo+círculo pelo heurístico de pixels brancos do `generate_slot_map.py`) |
+| **Pac Bom Jardim da Serra** | 114-120 (7 números) | 116-122 (7) | ❌ deslocado -2 (mesma contagem, começa 2 antes) |
+| **Pac Bela Vista do Toldo** | 146-154 (9 números) | 147-155 (9) | ❌ deslocado -1 (mesma contagem, começa 1 antes) |
+
+**Conclusão parcial:** existem **pelo menos 2 bugs de contagem diferentes e independentes**, que se somam ao longo da sequência numérica real (não a ordem alfabética das páginas, e sim a ordem em que os números 1-162 realmente se sucedem entre os templates):
+
+1. Um "-1" que já está presente ANTES de Correia Pinto (Canoinhas bate 100%, então o problema está em algum template entre Canoinhas e Correia Pinto na sequência numérica: **Lages Ii (42-51) → Lages (52-62) → Porto União (63-72) → Otacilio Costa (73-83)** — um deles tem 1 slot a menos do que o sistema assume).
+2. Um "-1" adicional introduzido DENTRO do próprio Irineópolis (o falso-positivo de detecção citado acima), que empurra tudo depois dele (Major Vieira, Bom Jardim da Serra, etc.) para um total acumulado de "-2".
+3. Em algum ponto entre Bom Jardim da Serra (-2 confirmado) e Bela Vista do Toldo (-1 confirmado), deve haver uma COMPENSAÇÃO de +1 (outro falso-positivo faltante virando um FALSO-NEGATIVO, ou a duplicidade já documentada do "130" entre Monte Castelo/Timbó Grande sendo tratada de um jeito que reduz o deslocamento em 1). Candidatos: **Timbó Grande, Monte Castelo, Ponte Alta**.
+
+**Ainda faltam ver** (aguardando a próxima remessa do usuário) para fechar o quadro completo:
+- Pac São Joaquim I e II (11-28)
+- Pac Lages Ii (42-51) e Pac Lages (52-62)
+- Pac Porto União (63-72)
+- Pac Otacilio Costa (73-83)
+- Pac Major Vieira (105-115 assumido / já sabemos que o real começa em 103, confirmado por resposta anterior do usuário)
+- Pac Timbó Grande (123-130)
+- Pac Monte Castelo (131-138)
+- Pac Ponte Alta (139-146)
+- Pac Santa Cruz do Timbo / Porto União D. Sta Cruz (156-162)
+
+**Nenhuma mudança de código feita ainda.** Isso confirma que a decisão de "por onde começar a corrigir" não pode ser feita com dados parciais — os 2 (ou mais) pontos de miscontagem precisam ser localizados com precisão antes de eu tocar em qualquer `EXPECTED_RANGES`/`obterMapeamentoCompletoDeSlots()`, já que mudar o range de um template sem saber o range real de TODOS os outros da cadeia geraria mais inconsistência, não menos.
