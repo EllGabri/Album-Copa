@@ -43,43 +43,65 @@ OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "slotMap.json")
 # agência/pool (11-28) mas exibida em 2 arquivos de template - ver spec.md.
 #  ACHADO (2026-07-03): os arquivos "Pac Lages.png" e "Pac Lages Ii.png" tem
 #  o CONTEUDO trocado em relacao ao nome do arquivo - confirmado por
-#  inspecao visual direta. "Pac Lages.png" mostra "Lages - Santa Helena"
-#  (52-62); "Pac Lages Ii.png" mostra "Lages - Guaruja" (42-51). Os ranges
-#  abaixo sao os REAIS (por conteudo, nao pelo nome do arquivo); a
-#  associacao agencia->arquivo em paginasPorAgencia usa esses ranges para
-#  apontar pro arquivo certo. CONFIRMADO com o usuario (2026-07-04): login
-#  "Pac Lages" = "Lages - Santa Helena" (52-62, arquivo Pac Lages.png) e
-#  login "Pac Lages Ii" = "Lages - Guaruja" (42-51, arquivo Pac Lages Ii.png).
+#  inspecao visual direta. "Pac Lages.png" mostra "Lages - Santa Helena";
+#  "Pac Lages Ii.png" mostra "Lages - Guaruja". Os ranges abaixo sao os REAIS
+#  (por conteudo, nao pelo nome do arquivo); a associacao agencia->arquivo em
+#  paginasPorAgencia usa esses ranges para apontar pro arquivo certo.
+#  CONFIRMADO com o usuario (2026-07-04): login "Pac Lages" = "Lages - Santa
+#  Helena" (arquivo Pac Lages.png) e login "Pac Lages Ii" = "Lages - Guaruja"
+#  (arquivo Pac Lages Ii.png).
+#
+#  ACHADO MAIOR (2026-07-05, investigacao completa por leitura visual de
+#  todos os 19 templates, ver Fase 11 do Plans.md): a numeracao impressa nos
+#  templates estava DESLOCADA em varios pontos da cadeia em relacao ao que
+#  este script assumia (a "inspecao visual" original de 2026-07-02/03 errou
+#  em varios templates, nao so nos 2 achados documentados na epoca). Os
+#  ranges abaixo foram recalculados a partir da leitura direta de screenshots
+#  de TODOS os 19 templates e sao os REAIS. Note 2 casos especiais que este
+#  script sozinho (sem OCR) nao consegue reproduzir automaticamente:
+#   1. "Pac Irineopolis" tem 1 retangulo A MENOS que o antigo intervalo
+#      assumia - a deteccao antiga contava 12 (provavel falso-positivo da
+#      logo "COPA" sendo lida como retangulo+circulo). O range certo e 11
+#      numeros (92-102); ao rodar este script de novo, revisar manualmente
+#      se ainda detecta 12 e remover o retangulo espurio (3a linha do bloco
+#      esquerdo, posicao x~507 na resolucao de referencia 2000x1414).
+#   2. "Pac Lages Ii" tem o numero "41" IMPRESSO DUAS VEZES na arte (uma vez
+#      no ultimo slot de Canoinhas, outra vez no primeiro slot de Lages Ii) -
+#      uma duplicidade real de design, nao bug de deteccao. Decisao do
+#      usuario (2026-07-05): Canoinhas mantem "41"; o slot duplicado em
+#      Lages Ii e renumerado para "162" em vez de duplicar. Isso exige
+#      RENOMEAR o arquivo de foto correspondente no Drive (de "41-NOME.png"
+#      para "162-NOME.png") para a aba Figurinhas refletir o numero certo.
 EXPECTED_RANGES = {
     "Comissao Tecnica": (1, 10),
     "Pac Sao Joaquim I": (11, 19),
     "Pac Sao Joaquim Ii": (20, 28),
     "Pac Canoinhas": (29, 41),
-    "Pac Lages": (52, 62),
-    "Pac Lages Ii": (42, 51),
-    "Pac Porto Uniao": (63, 72),
-    "Pac Otacilio Costa": (73, 83),
-    "Pac Correia Pinto": (84, 92),
-    "Pac Irineopolis": (93, 104),
-    "Pac Major Vieira": (105, 115),
-    "Pac Bom Jardim da Serra": (116, 122),
-    "Pac Timbo Grande": (123, 130),
-    "Pac Monte Castelo": (131, 138),
-    "Pac Ponte Alta": (139, 146),
-    "Pac Porto Uniao D. Sta Cruz Do Timbo": (156, 162),
-    "Pac Bela Vista do Toldo": (147, 155),
+    "Pac Lages": (51, 61),
+    "Pac Lages Ii": (42, 50),  # + o slot renumerado manualmente para 162, ver achado 2 acima
+    "Pac Porto Uniao": (62, 71),
+    "Pac Otacilio Costa": (72, 82),
+    "Pac Correia Pinto": (83, 91),
+    "Pac Irineopolis": (92, 102),  # 11 numeros - ver achado 1 acima
+    "Pac Major Vieira": (103, 113),
+    "Pac Bom Jardim da Serra": (114, 120),
+    "Pac Timbo Grande": (121, 128),
+    "Pac Monte Castelo": (129, 137),
+    "Pac Ponte Alta": (138, 145),
+    "Pac Porto Uniao D. Sta Cruz Do Timbo": (155, 161),
+    "Pac Bela Vista do Toldo": (146, 154),
 }
 # Páginas sem slots numerados (só arte de capa/contracapa).
 NO_SLOT_TEMPLATES = {"Capa", "Contra Capa"}
 
-#  ACHADO (2026-07-03): "Pac Monte Castelo.png" tem 9 retangulos (130-138),
-#  mas o numero 130 TAMBEM aparece em "Pac Timbo Grande.png" (123-130) -
-#  duplicidade real na arte do Canva, nao é bug de deteccao (confirmado por
-#  inspecao visual dos dois arquivos). Ate a marketing decidir a quem 130
-#  pertence, mantemos o comportamento atual do codigo.gs (130 pertence só à
-#  Timbó Grande) e excluímos o primeiro retângulo detectado em Monte
-#  Castelo (a duplicata de "130") da numeração dessa página.
-SKIP_FIRST_N = {"Pac Monte Castelo": 1}
+# ACHADO ANTERIOR (2026-07-03) REVERTIDO em 2026-07-05: acreditava-se que
+# "130" era uma duplicata real entre Monte Castelo e Timbó Grande, e por
+# isso o primeiro retângulo detectado em Monte Castelo era descartado. A
+# investigação completa de 2026-07-05 (leitura visual de todos os
+# templates) mostrou que isso era um diagnóstico equivocado: Monte Castelo
+# tem 9 slots reais (129-137), contínuos com o fim real de Timbó Grande
+# (128), sem nenhuma duplicata. Não pular mais nenhum retângulo aqui.
+SKIP_FIRST_N = {}
 
 MIN_LINE = 150  # tamanho minimo (px) para considerar um componente "retangulo"
 
@@ -313,24 +335,24 @@ def main():
     # Lages Ii (arquivos com conteudo trocado, ver comentario em
     # EXPECTED_RANGES acima).
     AGENCY_POOLS = {
-        "Pac Bela Vista Do Toldo": (147, 155),
+        "Pac Bela Vista Do Toldo": (146, 154),
         "Pac São Joaquim": (11, 28),  # 1 login, 2 arquivos de template
         "Pac Canoinhas": (29, 41),
         # Confirmado com o usuario (2026-07-04): login "Pac Lages" = agencia
-        # "Lages - Santa Helena" (arquivo Pac Lages.png, 52-62) e login
-        # "Pac Lages Ii" = "Lages - Guaruja" (arquivo Pac Lages Ii.png, 42-51).
-        "Pac Lages": (52, 62),
-        "Pac Lages Ii": (42, 51),
-        "Pac Porto União": (63, 72),
-        "Pac Otacilio Costa": (73, 83),
-        "Pac Correia Pinto": (84, 92),
-        "Pac Irineópolis": (93, 104),
-        "Pac Major Vieira": (105, 115),
-        "Pac Bom Jardim Da Serra": (116, 122),
-        "Pac Timbó Grande": (123, 130),
-        "Pac Monte Castelo": (131, 138),
-        "Pac Ponte Alta": (139, 146),
-        "Pac Santa Cruz Do Timbo": (156, 162),
+        # "Lages - Santa Helena" (arquivo Pac Lages.png) e login
+        # "Pac Lages Ii" = "Lages - Guaruja" (arquivo Pac Lages Ii.png).
+        "Pac Lages": (51, 61),
+        "Pac Lages Ii": (42, 50),  # + numero 162 avulso, ver EXPECTED_RANGES acima
+        "Pac Porto União": (62, 71),
+        "Pac Otacilio Costa": (72, 82),
+        "Pac Correia Pinto": (83, 91),
+        "Pac Irineópolis": (92, 102),
+        "Pac Major Vieira": (103, 113),
+        "Pac Bom Jardim Da Serra": (114, 120),
+        "Pac Timbó Grande": (121, 128),
+        "Pac Monte Castelo": (129, 137),
+        "Pac Ponte Alta": (138, 145),
+        "Pac Santa Cruz Do Timbo": (155, 161),
     }
 
     range_por_template = {chave: EXPECTED_RANGES[chave] for chave in EXPECTED_RANGES if chave not in ("Pac Sao Joaquim I", "Pac Sao Joaquim Ii")}

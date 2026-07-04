@@ -105,7 +105,7 @@
       "slotsMontados": 9,
       "slots": [
         {
-          "numero": 147,
+          "numero": 146,
           "x": 180,
           "y": 169,
           "largura": 298.0,
@@ -117,23 +117,23 @@
             "altura": 392
           },
           "ladoPar": "esquerda"
+        },
+        {
+          "numero": 147,
+          "x": 478.0,
+          "y": 169,
+          "largura": 298.0,
+          "altura": 392,
+          "grupoPar": {
+            "x": 180,
+            "y": 169,
+            "largura": 596,
+            "altura": 392
+          },
+          "ladoPar": "direita"
         },
         {
           "numero": 148,
-          "x": 478.0,
-          "y": 169,
-          "largura": 298.0,
-          "altura": 392,
-          "grupoPar": {
-            "x": 180,
-            "y": 169,
-            "largura": 596,
-            "altura": 392
-          },
-          "ladoPar": "direita"
-        },
-        {
-          "numero": 149,
           "x": 180,
           "y": 592,
           "largura": 298.0,
@@ -147,7 +147,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 150,
+          "numero": 149,
           "x": 478.0,
           "y": 592,
           "largura": 298.0,
@@ -161,35 +161,35 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 151,
+          "numero": 150,
           "x": 1026,
           "y": 35,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 152,
+          "numero": 151,
           "x": 1352,
           "y": 35,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 153,
+          "numero": 152,
           "x": 1679,
           "y": 35,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 154,
+          "numero": 153,
           "x": 1203,
           "y": 458,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 155,
+          "numero": 154,
           "x": 1530,
           "y": 458,
           "largura": 298,
@@ -207,28 +207,28 @@
       "slotsMontados": 7,
       "slots": [
         {
-          "numero": 116,
+          "numero": 114,
           "x": 20,
           "y": 474,
           "largura": 297,
           "altura": 391
         },
         {
-          "numero": 117,
+          "numero": 115,
           "x": 347,
           "y": 474,
           "largura": 297,
           "altura": 391
         },
         {
-          "numero": 118,
+          "numero": 116,
           "x": 673,
           "y": 474,
           "largura": 298,
           "altura": 391
         },
         {
-          "numero": 119,
+          "numero": 117,
           "x": 1222,
           "y": 474,
           "largura": 297.5,
@@ -242,7 +242,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 120,
+          "numero": 118,
           "x": 1519.5,
           "y": 474,
           "largura": 297.5,
@@ -256,7 +256,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 121,
+          "numero": 119,
           "x": 1222,
           "y": 904,
           "largura": 297.5,
@@ -270,7 +270,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 122,
+          "numero": 120,
           "x": 1519.5,
           "y": 904,
           "largura": 297.5,
@@ -425,42 +425,42 @@
       "slotsMontados": 9,
       "slots": [
         {
-          "numero": 84,
+          "numero": 83,
           "x": 31,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 85,
+          "numero": 84,
           "x": 358,
           "y": 576,
           "largura": 298,
           "altura": 327
         },
         {
-          "numero": 86,
+          "numero": 85,
           "x": 685,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 87,
+          "numero": 86,
           "x": 195,
           "y": 940,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 88,
+          "numero": 87,
           "x": 522,
           "y": 940,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 89,
+          "numero": 88,
           "x": 1203,
           "y": 165,
           "largura": 297.5,
@@ -474,7 +474,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 90,
+          "numero": 89,
           "x": 1500.5,
           "y": 165,
           "largura": 297.5,
@@ -488,7 +488,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 91,
+          "numero": 90,
           "x": 1203,
           "y": 595,
           "largura": 297.5,
@@ -502,7 +502,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 92,
+          "numero": 91,
           "x": 1500.5,
           "y": 595,
           "largura": 297.5,
@@ -524,66 +524,59 @@
       "altura": 1414,
       "circulosDetectados": 12,
       "retangulosDetectados": 10,
-      "slotsMontados": 12,
+      "slotsMontados": 11,
       "slots": [
         {
-          "numero": 93,
+          "numero": 92,
           "x": 23,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 94,
+          "numero": 93,
           "x": 350,
           "y": 82,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 95,
+          "numero": 94,
           "x": 677,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 96,
+          "numero": 95,
           "x": 23,
           "y": 511,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 97,
+          "numero": 96,
           "x": 350,
           "y": 512,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 98,
+          "numero": 97,
           "x": 677,
           "y": 511,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 99,
+          "numero": 98,
           "x": 180,
           "y": 940,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 100,
-          "x": 507,
-          "y": 940,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 101,
+          "numero": 99,
           "x": 1207,
           "y": 354,
           "largura": 294.5,
@@ -597,7 +590,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 102,
+          "numero": 100,
           "x": 1501.5,
           "y": 354,
           "largura": 294.5,
@@ -611,7 +604,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 103,
+          "numero": 101,
           "x": 1204,
           "y": 793,
           "largura": 294.5,
@@ -625,7 +618,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 104,
+          "numero": 102,
           "x": 1498.5,
           "y": 793,
           "largura": 294.5,
@@ -650,49 +643,49 @@
       "slotsMontados": 10,
       "slots": [
         {
-          "numero": 42,
+          "numero": 162,
           "x": 31,
+          "y": 511,
+          "largura": 298,
+          "altura": 392
+        },
+        {
+          "numero": 42,
+          "x": 358,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 43,
-          "x": 358,
+          "x": 685,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 44,
-          "x": 685,
-          "y": 511,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 45,
           "x": 31,
           "y": 922,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 46,
+          "numero": 45,
           "x": 358,
           "y": 922,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 47,
+          "numero": 46,
           "x": 685,
           "y": 922,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 48,
+          "numero": 47,
           "x": 1198,
           "y": 493,
           "largura": 297.5,
@@ -706,7 +699,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 49,
+          "numero": 48,
           "x": 1495.5,
           "y": 493,
           "largura": 297.5,
@@ -720,7 +713,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 50,
+          "numero": 49,
           "x": 1198,
           "y": 923,
           "largura": 297.5,
@@ -734,7 +727,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 51,
+          "numero": 50,
           "x": 1495.5,
           "y": 923,
           "largura": 297.5,
@@ -759,56 +752,56 @@
       "slotsMontados": 11,
       "slots": [
         {
-          "numero": 52,
+          "numero": 51,
           "x": 19,
+          "y": 82,
+          "largura": 298,
+          "altura": 392
+        },
+        {
+          "numero": 52,
+          "x": 346,
           "y": 82,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 53,
-          "x": 346,
-          "y": 82,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 54,
           "x": 673,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 55,
+          "numero": 54,
           "x": 19,
+          "y": 511,
+          "largura": 298,
+          "altura": 392
+        },
+        {
+          "numero": 55,
+          "x": 346,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 56,
-          "x": 346,
-          "y": 511,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 57,
           "x": 673,
           "y": 511,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 58,
+          "numero": 57,
           "x": 19,
           "y": 941,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 59,
+          "numero": 58,
           "x": 1338,
           "y": 82,
           "largura": 297.5,
@@ -822,7 +815,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 60,
+          "numero": 59,
           "x": 1635.5,
           "y": 82,
           "largura": 297.5,
@@ -836,7 +829,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 61,
+          "numero": 60,
           "x": 1338,
           "y": 512,
           "largura": 297.5,
@@ -850,7 +843,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 62,
+          "numero": 61,
           "x": 1635.5,
           "y": 512,
           "largura": 297.5,
@@ -875,56 +868,56 @@
       "slotsMontados": 11,
       "slots": [
         {
-          "numero": 105,
+          "numero": 103,
           "x": 23,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 106,
+          "numero": 104,
           "x": 350,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 107,
+          "numero": 105,
           "x": 677,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 108,
+          "numero": 106,
           "x": 23,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 109,
+          "numero": 107,
           "x": 350,
           "y": 511,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 110,
+          "numero": 108,
           "x": 674,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 111,
+          "numero": 109,
           "x": 23,
           "y": 941,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 112,
+          "numero": 110,
           "x": 362,
           "y": 941,
           "largura": 298.0,
@@ -938,7 +931,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 113,
+          "numero": 111,
           "x": 660.0,
           "y": 941,
           "largura": 298.0,
@@ -952,7 +945,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 114,
+          "numero": 112,
           "x": 1191,
           "y": 941,
           "largura": 298.0,
@@ -966,7 +959,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 115,
+          "numero": 113,
           "x": 1489.0,
           "y": 941,
           "largura": 298.0,
@@ -988,10 +981,24 @@
       "altura": 1414,
       "circulosDetectados": 9,
       "retangulosDetectados": 7,
-      "slotsMontados": 8,
+      "slotsMontados": 9,
       "slots": [
         {
-          "numero": 131,
+          "numero": 129,
+          "x": 183,
+          "y": 109,
+          "largura": 298.0,
+          "altura": 391,
+          "grupoPar": {
+            "x": 183,
+            "y": 109,
+            "largura": 596,
+            "altura": 391
+          },
+          "ladoPar": "esquerda"
+        },
+        {
+          "numero": 130,
           "x": 481.0,
           "y": 109,
           "largura": 298.0,
@@ -1005,7 +1012,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 132,
+          "numero": 131,
           "x": 183,
           "y": 532,
           "largura": 298.0,
@@ -1019,7 +1026,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 133,
+          "numero": 132,
           "x": 481.0,
           "y": 532,
           "largura": 298.0,
@@ -1033,35 +1040,35 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 134,
+          "numero": 133,
           "x": 1020,
+          "y": 109,
+          "largura": 298,
+          "altura": 391
+        },
+        {
+          "numero": 134,
+          "x": 1347,
           "y": 109,
           "largura": 298,
           "altura": 391
         },
         {
           "numero": 135,
-          "x": 1347,
-          "y": 109,
-          "largura": 298,
-          "altura": 391
-        },
-        {
-          "numero": 136,
           "x": 1020,
           "y": 532,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 137,
+          "numero": 136,
           "x": 1347,
           "y": 532,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 138,
+          "numero": 137,
           "x": 1347,
           "y": 955,
           "largura": 298,
@@ -1079,56 +1086,56 @@
       "slotsMontados": 11,
       "slots": [
         {
-          "numero": 73,
+          "numero": 72,
           "x": 19,
+          "y": 82,
+          "largura": 298,
+          "altura": 392
+        },
+        {
+          "numero": 73,
+          "x": 346,
           "y": 82,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 74,
-          "x": 346,
-          "y": 82,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 75,
           "x": 673,
           "y": 82,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 76,
+          "numero": 75,
           "x": 19,
+          "y": 511,
+          "largura": 298,
+          "altura": 392
+        },
+        {
+          "numero": 76,
+          "x": 346,
           "y": 511,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 77,
-          "x": 346,
-          "y": 511,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 78,
           "x": 673,
           "y": 511,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 79,
+          "numero": 78,
           "x": 19,
           "y": 941,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 80,
+          "numero": 79,
           "x": 1338,
           "y": 82,
           "largura": 297.5,
@@ -1142,7 +1149,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 81,
+          "numero": 80,
           "x": 1635.5,
           "y": 82,
           "largura": 297.5,
@@ -1156,7 +1163,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 82,
+          "numero": 81,
           "x": 1338,
           "y": 512,
           "largura": 297.5,
@@ -1170,7 +1177,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 83,
+          "numero": 82,
           "x": 1635.5,
           "y": 512,
           "largura": 297.5,
@@ -1195,35 +1202,35 @@
       "slotsMontados": 8,
       "slots": [
         {
-          "numero": 139,
+          "numero": 138,
           "x": 175,
           "y": 343,
           "largura": 297,
           "altura": 345
         },
         {
-          "numero": 140,
+          "numero": 139,
           "x": 502,
           "y": 351,
           "largura": 297,
           "altura": 337
         },
         {
-          "numero": 141,
+          "numero": 140,
           "x": 175,
           "y": 726,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 142,
+          "numero": 141,
           "x": 502,
           "y": 726,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 143,
+          "numero": 142,
           "x": 1201,
           "y": 297,
           "largura": 297.5,
@@ -1237,7 +1244,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 144,
+          "numero": 143,
           "x": 1498.5,
           "y": 297,
           "largura": 297.5,
@@ -1251,7 +1258,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 145,
+          "numero": 144,
           "x": 1201,
           "y": 727,
           "largura": 297.5,
@@ -1265,7 +1272,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 146,
+          "numero": 145,
           "x": 1498.5,
           "y": 727,
           "largura": 297.5,
@@ -1290,7 +1297,7 @@
       "slotsMontados": 7,
       "slots": [
         {
-          "numero": 156,
+          "numero": 155,
           "x": 204,
           "y": 327,
           "largura": 296.0,
@@ -1302,23 +1309,23 @@
             "altura": 392
           },
           "ladoPar": "esquerda"
+        },
+        {
+          "numero": 156,
+          "x": 500.0,
+          "y": 327,
+          "largura": 296.0,
+          "altura": 392,
+          "grupoPar": {
+            "x": 204,
+            "y": 327,
+            "largura": 592,
+            "altura": 392
+          },
+          "ladoPar": "direita"
         },
         {
           "numero": 157,
-          "x": 500.0,
-          "y": 327,
-          "largura": 296.0,
-          "altura": 392,
-          "grupoPar": {
-            "x": 204,
-            "y": 327,
-            "largura": 592,
-            "altura": 392
-          },
-          "ladoPar": "direita"
-        },
-        {
-          "numero": 158,
           "x": 204,
           "y": 740,
           "largura": 296.0,
@@ -1332,7 +1339,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 159,
+          "numero": 158,
           "x": 500.0,
           "y": 740,
           "largura": 296.0,
@@ -1346,21 +1353,21 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 160,
+          "numero": 159,
           "x": 1034,
           "y": 350,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 161,
+          "numero": 160,
           "x": 1351,
           "y": 350,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 162,
+          "numero": 161,
           "x": 1667,
           "y": 350,
           "largura": 298,
@@ -1378,49 +1385,49 @@
       "slotsMontados": 10,
       "slots": [
         {
-          "numero": 63,
+          "numero": 62,
           "x": 23,
           "y": 290,
           "largura": 298,
           "altura": 391
         },
         {
-          "numero": 64,
+          "numero": 63,
           "x": 350,
           "y": 290,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 65,
+          "numero": 64,
           "x": 677,
           "y": 290,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 66,
+          "numero": 65,
           "x": 23,
           "y": 714,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 67,
+          "numero": 66,
           "x": 350,
           "y": 714,
           "largura": 297,
           "altura": 392
         },
         {
-          "numero": 68,
+          "numero": 67,
           "x": 676,
           "y": 714,
           "largura": 298,
           "altura": 392
         },
         {
-          "numero": 69,
+          "numero": 68,
           "x": 1181,
           "y": 128,
           "largura": 298.0,
@@ -1434,7 +1441,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 70,
+          "numero": 69,
           "x": 1479.0,
           "y": 128,
           "largura": 298.0,
@@ -1448,7 +1455,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 71,
+          "numero": 70,
           "x": 1181,
           "y": 894,
           "largura": 298.0,
@@ -1462,7 +1469,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 72,
+          "numero": 71,
           "x": 1479.0,
           "y": 894,
           "largura": 298.0,
@@ -1663,35 +1670,35 @@
       "slotsMontados": 8,
       "slots": [
         {
-          "numero": 123,
+          "numero": 121,
           "x": 185,
           "y": 358,
           "largura": 298,
           "altura": 391
+        },
+        {
+          "numero": 122,
+          "x": 512,
+          "y": 358,
+          "largura": 298,
+          "altura": 391
+        },
+        {
+          "numero": 123,
+          "x": 185,
+          "y": 787,
+          "largura": 298,
+          "altura": 392
         },
         {
           "numero": 124,
           "x": 512,
-          "y": 358,
+          "y": 787,
           "largura": 298,
-          "altura": 391
+          "altura": 392
         },
         {
           "numero": 125,
-          "x": 185,
-          "y": 787,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 126,
-          "x": 512,
-          "y": 787,
-          "largura": 298,
-          "altura": 392
-        },
-        {
-          "numero": 127,
           "x": 1190,
           "y": 358,
           "largura": 298.0,
@@ -1705,7 +1712,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 128,
+          "numero": 126,
           "x": 1488.0,
           "y": 358,
           "largura": 298.0,
@@ -1719,7 +1726,7 @@
           "ladoPar": "direita"
         },
         {
-          "numero": 129,
+          "numero": 127,
           "x": 1190,
           "y": 784,
           "largura": 298.0,
@@ -1733,7 +1740,7 @@
           "ladoPar": "esquerda"
         },
         {
-          "numero": 130,
+          "numero": 128,
           "x": 1488.0,
           "y": 784,
           "largura": 298.0,

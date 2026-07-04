@@ -696,21 +696,25 @@ var SLOTS_COMISSAO_TECNICA = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 // dividir esta chave.
 function obterSlotsPorAgencia(agencia) {
   const mappings = {
-    "Pac Bela Vista Do Toldo": [147, 148, 149, 150, 151, 152, 153, 154, 155],
+    "Pac Bela Vista Do Toldo": [146, 147, 148, 149, 150, 151, 152, 153, 154],
     "Pac São Joaquim": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 23, 24],
     "Pac Canoinhas": [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41],
-    "Pac Lages": [52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62],
-    "Pac Lages Ii": [42, 43, 44, 45, 46, 47, 48, 49, 50, 51],
-    "Pac Porto União": [63, 64, 65, 66, 67, 68, 69, 70, 71, 72],
-    "Pac Otacilio Costa": [73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83],
-    "Pac Correia Pinto": [84, 85, 86, 87, 88, 89, 90, 91, 92],
-    "Pac Irineópolis": [93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104],
-    "Pac Major Vieira": [105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115],
-    "Pac Bom Jardim Da Serra": [116, 117, 118, 119, 120, 121, 122],
-    "Pac Timbó Grande": [123, 124, 125, 126, 127, 128, 129, 130],
-    "Pac Monte Castelo": [131, 132, 133, 134, 135, 136, 137, 138],
-    "Pac Ponte Alta": [139, 140, 141, 142, 143, 144, 145, 146],
-    "Pac Santa Cruz Do Timbo": [156, 157, 158, 159, 160, 161, 162]
+    "Pac Lages": [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
+    // "162" pertence a esta agência: é o slot que tinha o número "41"
+    // duplicado com Canoinhas na arte do Canva (achado confirmado com o
+    // usuário em 2026-07-05) - renumerado para 162 em vez de manter a
+    // duplicata. Ver Fase 11 do Plans.md.
+    "Pac Lages Ii": [42, 43, 44, 45, 46, 47, 48, 49, 50, 162],
+    "Pac Porto União": [62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
+    "Pac Otacilio Costa": [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82],
+    "Pac Correia Pinto": [83, 84, 85, 86, 87, 88, 89, 90, 91],
+    "Pac Irineópolis": [92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102],
+    "Pac Major Vieira": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113],
+    "Pac Bom Jardim Da Serra": [114, 115, 116, 117, 118, 119, 120],
+    "Pac Timbó Grande": [121, 122, 123, 124, 125, 126, 127, 128],
+    "Pac Monte Castelo": [129, 130, 131, 132, 133, 134, 135, 136, 137],
+    "Pac Ponte Alta": [138, 139, 140, 141, 142, 143, 144, 145],
+    "Pac Santa Cruz Do Timbo": [155, 156, 157, 158, 159, 160, 161]
   };
 
   return mappings[agencia] || [];
@@ -785,21 +789,25 @@ function obterFigurinhusDoAlbum(agencia) {
  */
 function obterMapeamentoCompletoDeSlots() {
   return {
-    "Pac Bela Vista Do Toldo": rangeDeNumeros(147, 155),
+    "Pac Bela Vista Do Toldo": rangeDeNumeros(146, 154),
     "Pac São Joaquim": rangeDeNumeros(11, 28),
     "Pac Canoinhas": rangeDeNumeros(29, 41),
-    "Pac Lages": rangeDeNumeros(52, 62),
-    "Pac Lages Ii": rangeDeNumeros(42, 51),
-    "Pac Porto União": rangeDeNumeros(63, 72),
-    "Pac Otacilio Costa": rangeDeNumeros(73, 83),
-    "Pac Correia Pinto": rangeDeNumeros(84, 92),
-    "Pac Irineópolis": rangeDeNumeros(93, 104),
-    "Pac Major Vieira": rangeDeNumeros(105, 115),
-    "Pac Bom Jardim Da Serra": rangeDeNumeros(116, 122),
-    "Pac Timbó Grande": rangeDeNumeros(123, 130),
-    "Pac Monte Castelo": rangeDeNumeros(131, 138),
-    "Pac Ponte Alta": rangeDeNumeros(139, 146),
-    "Pac Santa Cruz Do Timbo": rangeDeNumeros(156, 162)
+    "Pac Lages": rangeDeNumeros(51, 61),
+    // "162" pertence a esta agência: é o slot que tinha o número "41"
+    // duplicado com Canoinhas na arte do Canva (achado confirmado com o
+    // usuário em 2026-07-05) - renumerado para 162 em vez de manter a
+    // duplicata. Ver Fase 11 do Plans.md.
+    "Pac Lages Ii": rangeDeNumeros(42, 50).concat([162]),
+    "Pac Porto União": rangeDeNumeros(62, 71),
+    "Pac Otacilio Costa": rangeDeNumeros(72, 82),
+    "Pac Correia Pinto": rangeDeNumeros(83, 91),
+    "Pac Irineópolis": rangeDeNumeros(92, 102),
+    "Pac Major Vieira": rangeDeNumeros(103, 113),
+    "Pac Bom Jardim Da Serra": rangeDeNumeros(114, 120),
+    "Pac Timbó Grande": rangeDeNumeros(121, 128),
+    "Pac Monte Castelo": rangeDeNumeros(129, 137),
+    "Pac Ponte Alta": rangeDeNumeros(138, 145),
+    "Pac Santa Cruz Do Timbo": rangeDeNumeros(155, 161)
   };
 }
 

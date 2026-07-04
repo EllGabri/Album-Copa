@@ -351,3 +351,43 @@ O usuário enviou a foto real da figurinha (arquivo do Drive, não o screenshot 
 **Range real corrigido de Pac Santa Cruz Do Timbo: 155-162 (8 números)**, não 156-162 (7) como eu tinha lido antes. Isso fecha perfeitamente com o fim real de Bela Vista do Toldo (154) — **contínuo, sem gap, sem sobreposição**: 154 (Bela Vista) → 155 (Santa Cruz).
 
 **Pendência residual:** preciso confirmar com o usuário se o restante da minha leitura desse template (par 158/159, depois 160,161,162 solo) também está certo, ou se todos os números da página deslizaram em 1 (ou seja: seria 155/156 pair, 157/158 pair, 159,160,161 solo — TERMINANDO EM 161, não 162?). Isso importa porque "162" é um número historicamente confirmado como existente-mas-sem-figurinha (`NUMEROS_SEM_FIGURINHA_CONFIRMADOS = {162}` em `validate_slot_map.py`) — se a leitura certa termina em 161, "162" pode não ter slot físico nenhum no template (precisa ser tratado como um número "fora do template", só reservado na numeração, não uma caixa real).
+
+### Investigação RESOLVIDA e CORREÇÃO APLICADA (2026-07-05)
+
+Usuário confirmou os 2 pontos finais em aberto:
+1. **Santa Cruz do Timbó real = 155-161** (7 números: par 155/156, par 157/158, solo 159/160/161) — "162" NÃO é impresso nesse template.
+2. **Duplicidade do "41"** (Canoinhas × Lages Ii): decisão do usuário — **Canoinhas mantém "41"**; o slot duplicado em Lages Ii é **renumerado para "162"**.
+
+Com isso o mapeamento fechou perfeitamente: **162 números únicos, cobrindo 1-162 sem gaps nem duplicatas** (validado por `scripts/validate_slot_map.py` e `scripts/audit_slot_geometry.py`).
+
+**Tabela final aplicada** (real, já em produção no código):
+
+| Template | Range final |
+|---|---|
+| Comissão Técnica | 1-10 |
+| Pac São Joaquim I | 11-19 |
+| Pac São Joaquim Ii | 20-28 |
+| Pac Canoinhas | 29-41 |
+| Pac Lages Ii (Guarujá) | 42-50 + **162** |
+| Pac Lages (Santa Helena) | 51-61 |
+| Pac Porto União | 62-71 |
+| Pac Otacilio Costa | 72-82 |
+| Pac Correia Pinto | 83-91 |
+| Pac Irineópolis | 92-102 (11, sem o slot fantasma) |
+| Pac Major Vieira | 103-113 |
+| Pac Bom Jardim Da Serra | 114-120 |
+| Pac Timbó Grande | 121-128 |
+| Pac Monte Castelo | 129-137 (9, slot "129" recuperado do `grupoPar`, sem mais pular retângulo) |
+| Pac Ponte Alta | 138-145 |
+| Pac Bela Vista Do Toldo | 146-154 |
+| Pac Santa Cruz Do Timbo | 155-161 |
+
+**Mudanças de código aplicadas:**
+- `slotMap.json` (raiz) e `apps-script/SlotMap.html` (fonte real usada pelo WebApp): todo `numero` de cada slot renumerado via script Python para bater com a tabela acima. Coordenadas (x/y/largura/altura) preservadas — só o rótulo numérico mudou. Slot fantasma de Irineópolis removido. Slot "129" de Monte Castelo reconstruído a partir do `grupoPar` do antigo "131" (a geometria não tinha sido perdida, só descartada da numeração pelo `SKIP_FIRST_N`).
+- `codigo.gs`: `obterSlotsPorAgencia()` e `obterMapeamentoCompletoDeSlots()` atualizados com os novos ranges; "Pac Lages Ii" ganhou o número avulso 162 via `.concat([162])`.
+- `scripts/generate_slot_map.py`: `EXPECTED_RANGES`/`AGENCY_POOLS` atualizados; `SKIP_FIRST_N` zerado (o achado de duplicata "130" de 2026-07-03 foi revertido/corrigido); comentários documentam os 2 casos especiais (slot fantasma de Irineópolis, renumeração manual do "41"→"162" em Lages Ii) para quando o script for rodado de novo no futuro contra os PNGs reais.
+- `scripts/validate_slot_map.py`: `POOL_POR_AGENCIA` corrigido (também corrigia uma inversão antiga Lages/Lages Ii que nunca tinha sido atualizada); `NUMEROS_SEM_FIGURINHA_CONFIRMADOS` esvaziado (162 agora tem dono).
+
+**⚠️ AÇÃO MANUAL NECESSÁRIA DO USUÁRIO (fora do código):** o arquivo de foto no Drive que hoje está nomeado com o número duplicado "41" (o que pertence a Lages Ii, não a Canoinhas) precisa ser **renomeado para "162-NOME.png"** (mantendo o mesmo padrão de nome usado pelos outros arquivos). Depois disso, rodar **🧩 Reconciliar Figurinhas do Drive** de novo para a aba "Figurinhas" gravar o ID 162 correto para essa pessoa. Sem esse passo, a foto continua com ID "41" na planilha (duplicando com a figurinha real de Canoinhas) mesmo com o código já corrigido.
+
+**Para aplicar no WebApp:** colar `codigo.gs` e `apps-script/SlotMap.html` (e `Album.html`, se ainda não estiver) no editor do Apps Script e republicar o deployment.

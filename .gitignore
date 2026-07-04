@@ -12,3 +12,4 @@ session-log.md
 settings.local.json
 launch.json
 .vscode/
+__pycache__/
