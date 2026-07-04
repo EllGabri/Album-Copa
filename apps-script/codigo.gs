@@ -914,11 +914,12 @@ function reconciliarFigurinhas() {
       var infoExistente = linha ? figSheet.getRange(linha, 5).getValue() : "";
       // Nome: usa o nome do arquivo; senão o Info (col. E) já preenchido;
       // senão um rótulo de fallback (evita células em branco). Arquivos
-      // "<n1>-<n2>.png" são imagens ÚNICAS (fachada/estádio) que cobrem 2
-      // slots — não têm nome de pessoa, então recebem "Fachada — <agência>"
-      // e os 2 números apontam pro MESMO FileID de propósito (o álbum usa
-      // isso para o recorte panorâmico; não é duplicidade indevida).
-      var fallbackNome = reg.ehPar ? ("Fachada — " + equipe) : equipe;
+      // "<n1>-<n2>.png" são a FOTO DA EQUIPE dividida em 2 metades que
+      // cobrem 2 slots vizinhos — não têm nome de pessoa, então recebem
+      // "Equipe — <agência>", e os 2 números apontam pro MESMO FileID de
+      // propósito (o álbum usa isso pro recorte panorâmico; não é
+      // duplicidade indevida).
+      var fallbackNome = reg.ehPar ? ("Equipe — " + equipe) : equipe;
       var nomeFinal = reg.nome || infoExistente || fallbackNome || "";
 
       if (linha) {

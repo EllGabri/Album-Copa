@@ -50,13 +50,6 @@
       outline: 3px solid #facc15;
     }
 
-    /* Realce da página inteira como zona de soltar (a figurinha vai pro
-       slot dela; não é preciso mirar no retângulo exato). */
-    .pagina-drop-over {
-      outline: 4px dashed #facc15;
-      outline-offset: -8px;
-    }
-
     .pagina-template-bg {
       width: 100%;
       background-size: contain;
@@ -237,7 +230,7 @@
       agenciaAtual: null,
       pacotes: 0,
       inventario: [],          // array de numeros de slot (int)
-      coladas: [],             // array de numeros de slot (int)
+      coladas: [],             // [{s: numero do slot, f: numero da figurinha colada nele}]
       figurinhasComImagem: [], // [{id:numero, nome, agencia, fileId, imageUrl}]
       templates: {},           // { nomeTemplate: urlDaImagem }
       paginasDoAlbum: [],      // [{tipo:'capa'|'contracapa'|'pagina', template?}]
@@ -562,7 +555,13 @@
       ESTADO.agenciaAtual = dadosSalvos.agencia;
       ESTADO.pacotes = parseInt(dadosSalvos.pacotinhos) || 0;
       ESTADO.inventario = (dadosSalvos.inventario || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
-      ESTADO.coladas = (dadosSalvos.coladas || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+      // coladas = [{s: slot, f: figurinha}]. Compat com dados antigos
+      // (array de números, quando figurinha == slot).
+      ESTADO.coladas = (dadosSalvos.coladas || []).map(c => {
+        if (c && typeof c === 'object') return { s: parseInt(c.s, 10), f: parseInt(c.f, 10) };
+        const n = parseInt(c, 10);
+        return { s: n, f: n };
+      }).filter(c => !isNaN(c.s) && !isNaN(c.f));
 
       ESTADO.paginasDoAlbum = construirPaginasDoAlbum(ESTADO.agenciaAtual);
       ESTADO.poolDaAgencia = construirPoolGlobal();
@@ -639,7 +638,11 @@
       const img = document.createElement('img');
       img.alt = `Figurinha ${numero}`;
 
-      if (slot.grupoPar && obterVizinhoCompartilhado(slot, numero)) {
+      // Recorte panorâmico só quando a figurinha está na CASA dela
+      // (numero == slot.numero): duas metades de uma foto de equipe que
+      // cobre 2 slots vizinhos. Se a figurinha foi colada em outro slot
+      // (colagem livre), mostra a imagem inteira com object-cover.
+      if (numero === slot.numero && slot.grupoPar && obterVizinhoCompartilhado(slot, numero)) {
         // Imagem panorâmica compartilhada: renderiza em largura dobrada e
         // desloca pra mostrar só a metade correta (técnica de sprite).
         slotDiv.style.overflow = 'hidden';
@@ -697,14 +700,6 @@
       wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
       aplicarFundoTemplate(wrapper, nomeTemplate);
 
-      // A PÁGINA INTEIRA é zona de soltar: soltar uma figurinha em qualquer
-      // lugar a cola no slot dela (o número da figurinha), sem exigir mira
-      // exata sobre o retângulo certo.
-      wrapper.setAttribute('ondragover', 'allowDrop(event)');
-      wrapper.setAttribute('ondrop', 'dropNaPagina(event)');
-      wrapper.setAttribute('ondragenter', 'dragEnterPagina(event)');
-      wrapper.setAttribute('ondragleave', 'dragLeavePagina(event)');
-
       slots.forEach(slot => {
         const slotDiv = document.createElement('div');
         slotDiv.className = "absolute slot-figurinha-numero";
@@ -714,8 +709,17 @@
         slotDiv.style.height = (slot.altura / dim[1] * 100) + "%";
         slotDiv.id = `slot_${slot.numero}`;
 
-        if (ESTADO.coladas.includes(slot.numero)) {
-          renderizarImagemNoSlot(slotDiv, slot, slot.numero);
+        // colada = qual figurinha está neste slot ({s: slot, f: figurinha}).
+        const colada = ESTADO.coladas.find(c => c.s === slot.numero);
+        if (colada) {
+          renderizarImagemNoSlot(slotDiv, slot, colada.f);
+        } else {
+          // Slot vazio: alvo de soltar (destaca em amarelo no dragover).
+          // Sem trava de número — aceita qualquer figurinha arrastada.
+          slotDiv.setAttribute('ondragover', 'allowDrop(event)');
+          slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
+          slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
+          slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
         }
 
         wrapper.appendChild(slotDiv);
@@ -763,7 +767,7 @@
 
       ESTADO.inventario.forEach((numero, index) => {
         const fig = obterFigurinhaPorNumero(numero);
-        const isRepetida = ESTADO.coladas.includes(numero);
+        const isRepetida = ESTADO.coladas.some(c => c.f === numero);
         const nomeExibicao = escaparHtml((fig && fig.nome) ? fig.nome : `Nº ${numero}`);
 
         const card = document.createElement('div');
@@ -828,23 +832,21 @@
       ev.dataTransfer.dropEffect = "move";
     }
 
-    function dragEnterPagina(ev) {
+    function dragEnter(ev) {
       ev.preventDefault();
-      const w = ev.currentTarget;
-      if (w) w.classList.add('pagina-drop-over');
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.add('drag-over');
     }
 
-    function dragLeavePagina(ev) {
-      const w = ev.currentTarget;
-      // Só remove o realce quando o ponteiro sai de fato do wrapper (não ao
-      // passar por elementos filhos).
-      if (w && !w.contains(ev.relatedTarget)) w.classList.remove('pagina-drop-over');
+    function dragLeave(ev) {
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.remove('drag-over');
     }
 
-    function dropNaPagina(ev) {
+    function drop(ev, slotNumero) {
       ev.preventDefault();
-      const w = ev.currentTarget;
-      if (w) w.classList.remove('pagina-drop-over');
+      const slot = ev.target.closest('.slot-figurinha-numero');
+      if (slot) slot.classList.remove('drag-over');
 
       let data = ev.dataTransfer.getData("text/plain");
       if (!data) data = dragDataCache;
@@ -855,22 +857,19 @@
       const invIndex = parseInt(partes[1], 10);
       if (isNaN(dragNumero) || isNaN(invIndex)) return;
 
-      // A figurinha vai sempre para o slot dela (o número da figurinha),
-      // independentemente de onde foi solta na página.
-      colarFigurinha(dragNumero, invIndex);
+      // SEM trava de número: a figurinha arrastada é colada no slot em que
+      // foi solta, seja qual for o número dela.
+      colarFigurinha(slotNumero, dragNumero, invIndex);
     }
 
-    function colarFigurinha(numero, inventarioIndex) {
+    function colarFigurinha(slotNumero, figNumero, inventarioIndex) {
       if (inventarioIndex >= 0 && inventarioIndex < ESTADO.inventario.length) {
         ESTADO.inventario.splice(inventarioIndex, 1);
       }
-      if (!ESTADO.coladas.includes(numero)) {
-        ESTADO.coladas.push(numero);
-        mostrarToast("Figurinha Nº " + numero + " colada com sucesso!");
-      } else {
-        // Já estava colada (era repetida): consome do inventário sem duplicar.
-        mostrarToast("Você já tinha colado a Nº " + numero + " (repetida).", "warning");
-      }
+      const existente = ESTADO.coladas.find(c => c.s === slotNumero);
+      if (existente) existente.f = figNumero;               // substitui (slot cheio não deveria receber drop)
+      else ESTADO.coladas.push({ s: slotNumero, f: figNumero });
+      mostrarToast("Figurinha Nº " + figNumero + " colada!");
       renderizarPaginaAtual();
       atualizarUI();
     }
@@ -934,7 +933,7 @@
 
       numeros.forEach((numero, i) => {
         const fig = obterFigurinhaPorNumero(numero);
-        const jaTinha = ESTADO.coladas.includes(numero) || ESTADO.inventario.filter(n => n === numero).length > 1;
+        const jaTinha = ESTADO.coladas.some(c => c.f === numero) || ESTADO.inventario.filter(n => n === numero).length > 1;
 
         const wrapper = document.createElement('div');
         wrapper.className = "perspective-1000 w-32 h-48 md:w-40 md:h-56 cursor-pointer";
