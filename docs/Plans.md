@@ -292,3 +292,23 @@ Usuário enviou prints limpos (sem figurinhas coladas) de 5 templates. Lendo os 
 - Pac Santa Cruz do Timbo / Porto União D. Sta Cruz (156-162)
 
 **Nenhuma mudança de código feita ainda.** Isso confirma que a decisão de "por onde começar a corrigir" não pode ser feita com dados parciais — os 2 (ou mais) pontos de miscontagem precisam ser localizados com precisão antes de eu tocar em qualquer `EXPECTED_RANGES`/`obterMapeamentoCompletoDeSlots()`, já que mudar o range de um template sem saber o range real de TODOS os outros da cadeia geraria mais inconsistência, não menos.
+
+### Atualização da investigação (mesmo dia, 3ª leva): padrão maior que um bug isolado
+
+Mais 5 templates lidos diretamente dos prints (limpos, sem figurinhas coladas):
+
+| Template | Números impressos (reais) | Range assumido hoje | Resultado |
+|---|---|---|---|
+| **Pac Lages** (Santa Helena) | 51-61 (11 números) | 52-62 (11) | ❌ deslocado -1 |
+| **Pac Lages Ii** (Guarujá) | 41-50 (10 números) | 42-51 (10) | ❌ deslocado -1 |
+| **Pac Major Vieira** | 103-113 (11 números) | 105-115 (11) | ❌ deslocado -2 (bate com a resposta anterior do usuário: "começa em 103") |
+| **Pac Otacilio Costa** | 72-82 (11 números) | 73-83 (11) | ❌ deslocado -1 |
+| **Pac Monte Castelo** | **129-137 (9 números)** | 131-138 (8 números, após `SKIP_FIRST_N=1` descartar 1 retângulo) | ❌ o sistema está **descartando um slot real** (129) por engano — ver análise abaixo |
+
+**Achado importante sobre Monte Castelo:** o código atual (`generate_slot_map.py`) pula o primeiro retângulo detectado dessa página,假 assumindo que é uma duplicata do "130" que também aparece em Timbó Grande (achado documentado em 2026-07-03). Mas o print mostra que o PRIMEIRO número impresso em Monte Castelo é **129**, não 130 — ou seja, o retângulo descartado pelo `SKIP_FIRST_N` provavelmente é o **129 de verdade** (um funcionário real, nunca recebendo figurinha no sistema hoje), e a suposta "duplicata de 130" pode ter sido um diagnóstico equivocado feito antes desta investigação mais profunda.
+
+**Conclusão maior desta leva:** o padrão não é um problema isolado de detecção (tipo a logo da Copa confundida com um slot em Irineópolis) — é um **deslocamento cumulativo de -1 que já está presente desde ANTES de Canoinhas** (Lages Ii, Lages e Otacilio Costa também mostram -1, todos ANTES de Correia Pinto na sequência numérica) **e aumenta para -2 a partir de Irineópolis**. Isso é consistente com o achado JÁ CONHECIDO e documentado (2026-07-03) de que **números de fronteira entre agências aparecem duplicados de propósito na arte do Canva** (ex.: "130" em Timbó Grande E Monte Castelo) — é plausível que esse mesmo tipo de duplicidade de fronteira aconteça em VÁRIOS pontos da sequência de 15 páginas (ex.: "41" duplicado entre Canoinhas/Lages Ii, "51" duplicado entre Lages Ii/Lages etc.), não só uma vez.
+
+**Isso é uma questão de dados muito maior do que uma correção pontual de CSS/JS.** Requer mapear com precisão TODOS os 15 templates antes de decidir, para cada número de fronteira duplicado, a qual das duas agências ele realmente pertence (decisão que idealmente segue o que já está cadastrado na aba `Figurinhas`/roster, não um palpite).
+
+**Ainda faltam ver:** Pac São Joaquim I e II, Pac Porto União, Pac Timbó Grande, Pac Ponte Alta, Pac Santa Cruz do Timbo — o usuário já avisou que vai mandar o restante.
