@@ -222,3 +222,30 @@ A tabela de pontuação foi lida da aba `Configuracoes_Dashboard` (colunas C/D/E
 - **10.4 é uma 1ª passada de design.** Não deu para testar visualmente no sandbox (o Tailwind vem de CDN, bloqueada aqui). Rever no navegador real e ajustar tamanhos/espacos conforme o gosto ("cara de site premium" é iterativo). Pontos candidatos a ajuste fino: altura-base da moldura (`.album-page-frame { height: min(100%, calc(93vw / 1.4144)) }`), intensidade do anel dourado e posição das setas.
 - Os **nomes das equipes e números** que aparecem pequenos são **pixels do template do Canva** — a única alavanca no código é aumentar a página (feito). Se ainda ficarem pequenos, o caminho definitivo é reexportar os PNGs do Canva com textos maiores.
 - Confirmar se o roster de figurinhas (coluna "Equipe" da aba Figurinhas) deve ser re-rodado (**🧩 Reconciliar Figurinhas do Drive**) para os números 42-62 saírem rotulados com a agência certa após a troca em `obterMapeamentoCompletoDeSlots()`.
+
+---
+
+## Fase 11: Comissão Técnica primeiro + investigação de desalinhamento (2026-07-05)
+
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 11.1 | **Comissão Técnica agora é a 1ª página de conteúdo** (logo após a Capa, antes das 15 agências). Antes vinha depois das 15 agências, antes da Contracapa | cc:完了 |
+| 11.2 | **Margem interna de segurança (2%) nas fotos coladas** (exceto as panorâmicas de par): absorve pequena imprecisão de detecção do retângulo do slot, e agora deixa visível uma fina borda do template ao redor de cada foto — útil também para *diagnosticar* visualmente se o retângulo detectado bate com o impresso | cc:完了 |
+| 11.3 | Novo script `scripts/audit_slot_geometry.py`: audita `slotMap.json` por estouro de limites, sobreposição entre slots e outliers de tamanho dentro do mesmo template (sem precisar dos PNGs). Rodado: só 1 achado, **Pac Correia Pinto #85** (298x327 vs. mediana do template 297.5x391 — bem mais baixo que os vizinhos, candidato a checar visualmente) | cc:完了 (achado a confirmar) |
+
+### 🔴 Investigação em aberto: figurinha 98 "ao lado" do slot em Pac Irineópolis
+
+Reportado pelo usuário: ao colar a figurinha 98 (Lukas Buse) em `Pac Irineopolis.png`, a foto apareceu fora/ao lado da área branca do slot correspondente.
+
+**O que eu (Claude) consegui checar sem acesso aos PNGs** (a pasta `TEMPLATE - ALBUM/` usada por `generate_slot_map.py` nunca foi versionada neste repo — só existe no Drive/máquina do usuário):
+- `scripts/audit_slot_geometry.py` não encontrou sobreposição nem estouro de limites em `Pac Irineopolis` — os 12 slots (93-104) são geometricamente consistentes ENTRE SI.
+- **Hipótese mais provável, a partir do próprio screenshot do usuário**: os números BRANCOS IMPRESSOS no template (que fazem parte da arte do PNG, não são desenhados pelo nosso código) aparecem como **92, 93, 94...101** na página do usuário — ou seja, a numeração impressa nesse template parece **começar em 92**, não em 93 como `EXPECTED_RANGES["Pac Irineopolis"]` assume em `generate_slot_map.py` (baseado em "inspeção visual manual" que pode ter errado só para este template). Como não há OCR no gerador (`generate_slot_map.py` usa só ordem de leitura geométrica, não lê os números impressos), se a numeração impressa realmente começa em 92, **toda a sequência de Irineópolis ficaria deslocada em 1** em relação ao que o sistema atribui — a foto da figurinha 98 acabaria caindo geometricamente na caixa que, na arte, tem "97" ou "99" impresso ao lado, exatamente o efeito "ficou ao lado" relatado.
+- Já existe um precedente idêntico documentado: `Pac Monte Castelo`/`Pac Timbo Grande` compartilham o número "130" por duplicidade real na arte do Canva (`SKIP_FIRST_N` trata isso). É plausível que `Pac Correia Pinto` (termina em 92) e `Pac Irineopolis` tenham a mesma duplicidade de "92" nas duas artes, e o gerador não tratou esse caso para Irineópolis como tratou para Monte Castelo/Timbó Grande.
+
+**Isso NÃO pode ser confirmado ou corrigido sem acesso às imagens reais.** Antes de mudar `EXPECTED_RANGES`/`obterMapeamentoCompletoDeSlots()` (o que reatribuiria os números 93-104 de figurinhas já cadastradas — mudança de dado, não só de exibição, mesma categoria de risco do caso Lages), **preciso que o usuário confirme**: o primeiro círculo branco impresso em `Pac Irineopolis.png` mostra "92" ou "93"?
+
+**Próximos passos sugeridos para amanhã:**
+1. Usuário confirma visualmente (no Drive/Canva) qual número está impresso no primeiro slot de `Pac Irineopolis.png`.
+2. Se for 92: ajustar `EXPECTED_RANGES["Pac Irineopolis"]` para `(92, 103)`, tratar a duplicidade de "92" com Correia Pinto via `SKIP_FIRST_N` (mesma técnica do caso Monte Castelo/Timbó Grande), e re-rodar `generate_slot_map.py` — mas isso exige que o usuário rode o script localmente (ele tem a pasta `TEMPLATE - ALBUM/`; eu não tenho acesso a ela nesta sessão) ou envie os PNGs para eu rodar aqui.
+3. Enquanto isso, revisar visualmente TODOS os templates com o novo indicador de margem (11.2) para achar outros casos de desalinhamento parecidos — a fina borda visível ao redor de cada foto colada agora ajuda a enxergar se o retângulo bate com o impresso.
+4. Revisitar também o achado do `audit_slot_geometry.py` para `Pac Correia Pinto #85` (formato destoante dos vizinhos).

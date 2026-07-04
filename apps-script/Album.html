@@ -573,7 +573,12 @@
     // destacar a página de origem do login, não para filtrar quais
     // páginas aparecem.
     function construirPaginasDoAlbum(agenciaPropria) {
-      const paginas = [{ tipo: 'capa' }];
+      // Comissão Técnica é a primeira página de conteúdo (logo após a Capa),
+      // antes das 15 agências (pedido do usuário em 2026-07-04).
+      const paginas = [
+        { tipo: 'capa' },
+        { tipo: 'pagina', template: 'Comissao Tecnica', agencia: 'Comissao Tecnica' }
+      ];
       Object.keys(SLOT_MAP.paginasPorAgencia).sort().forEach(ag => {
         // O rótulo da página vem da AGÊNCIA (nome do login), não do nome
         // do arquivo de template. Mapeamento confirmado com o usuário
@@ -591,7 +596,6 @@
           propria: ag === agenciaPropria
         }));
       });
-      paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica', agencia: 'Comissao Tecnica' });
       paginas.push({ tipo: 'contracapa' });
       return paginas;
     }
@@ -721,7 +725,12 @@
         img.style.top = "0";
         img.style.left = (slot.ladoPar === 'esquerda') ? "0" : "-100%";
       } else {
-        img.className = "w-full h-full object-cover";
+        // Pequena margem interna de segurança: absorve imprecisão de poucos
+        // pixels na detecção offline do retângulo do slot (generate_slot_map.py),
+        // evitando que a foto pareça "vazar" para fora do contorno impresso
+        // no template.
+        img.className = "absolute object-cover rounded-[2px]";
+        img.style.inset = "2%";
       }
       slotDiv.appendChild(img);
       resolverImagemFigurinha(fig, (src) => { if (src) img.src = src; });
