@@ -204,3 +204,21 @@ A tabela de pontuação foi lida da aba `Configuracoes_Dashboard` (colunas C/D/E
 | 9.4 | Rótulo das figurinhas duplas corrigido de "Fachada" para **"Equipe — <agência>"** (são metades da foto da equipe da agência) | cc:完了 |
 
 > **Sobre os "IDs duplicados" (47/48, 49/50, etc.):** NÃO é bug. Os arquivos `<n1>-<n2>.png` são **uma única foto da equipe** dividida em duas metades que cobrem dois slots vizinhos; por isso os dois números apontam para o MESMO FileID — é o que o álbum usa para recortar cada metade (crop-sprite). Se o desejo for que cada número seja uma figurinha individual com foto própria, é preciso fornecer **arquivos separados** por número no Drive (aí a reconciliação grava FileIDs distintos automaticamente).
+
+---
+
+## Fase 10: Correção Lages, mover/devolver figurinha e layout premium (2026-07-04)
+
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 10.1 | **Snapshot** dos códigos atuais no GitHub (branch `claude/album-copa-review-6jtvph`) | cc:完了 |
+| 10.2 | **Inversão Lages/Guarujá CORRIGIDA de vez.** O app implantado lê o `SLOT_MAP` de `apps-script/SlotMap.html` (via `include('SlotMap')`), **não** o `slotMap.json` da raiz — por isso a correção anterior (que mexeu só no JSON/`codigo.gs`) não surtia efeito no álbum. Agora `paginasPorAgencia` em `SlotMap.html` também deixou de trocar Lages↔Lages Ii. Mapeamento confirmado: login **"Pac Lages" = Lages - Santa Helena** (arquivo `Pac Lages.png`, slots 52-62); login **"Pac Lages Ii" = Lages - Guarujá** (arquivo `Pac Lages Ii.png`, slots 42-51) | cc:完了 |
+| 10.3 | **Descolar/mover figurinha após colada.** (a) **Clicar** numa figurinha colada devolve ela ao inventário (selo ✕ vermelho aparece no hover). (b) **Arrastar** uma figurinha de um slot para outro: se o destino estiver vazio ela **move**; se estiver ocupado, as duas **trocam de lugar** (swap). (c) Soltar do inventário num slot já ocupado devolve o antigo ocupante ao inventário. Cobre o caso de colar no lugar errado. Modelo `Coladas` `[{s,f}]` mantido | cc:完了 |
+| 10.4 | **Layout premium da página do álbum (1ª passada).** A página do template agora é dimensionada por **altura disponível** (CSS puro, sem o JS de resize que foi rejeitado antes), preenchendo de HD a 4K em vez de ficar pequena no centro com margens verdes enormes — isso torna legíveis os nomes de equipe e números que são **impressos no próprio PNG do template**. Setas de navegação viraram botões circulares flutuantes nas laterais; título com respiro e filete dourado; moldura da página com sombra profunda + anel dourado (via `box-shadow`, sem alterar a caixa 2000:1414, para os slots continuarem alinhados) | cc:完了 (rever visualmente) |
+
+> **Importante — como testar/aplicar:** colar `apps-script/Album.html` **e** `apps-script/SlotMap.html` no editor do Apps Script (o `SlotMap.html` é o que efetivamente corrige a inversão de Lages no WebApp) e **republicar o deployment**. Depois: logar em **Lages** → deve destacar a página **Santa Helena**; em **Lages Ii** → **Guarujá**. Testar o drag entre slots, o clique-para-devolver e o novo tamanho da página em um monitor grande.
+
+### Pendências / a revisar amanhã
+- **10.4 é uma 1ª passada de design.** Não deu para testar visualmente no sandbox (o Tailwind vem de CDN, bloqueada aqui). Rever no navegador real e ajustar tamanhos/espacos conforme o gosto ("cara de site premium" é iterativo). Pontos candidatos a ajuste fino: altura-base da moldura (`.album-page-frame { height: min(100%, calc(93vw / 1.4144)) }`), intensidade do anel dourado e posição das setas.
+- Os **nomes das equipes e números** que aparecem pequenos são **pixels do template do Canva** — a única alavanca no código é aumentar a página (feito). Se ainda ficarem pequenos, o caminho definitivo é reexportar os PNGs do Canva com textos maiores.
+- Confirmar se o roster de figurinhas (coluna "Equipe" da aba Figurinhas) deve ser re-rodado (**🧩 Reconciliar Figurinhas do Drive**) para os números 42-62 saírem rotulados com a agência certa após a troca em `obterMapeamentoCompletoDeSlots()`.

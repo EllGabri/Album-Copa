@@ -49,12 +49,65 @@
       background-color: rgba(250, 204, 21, 0.25);
       outline: 3px solid #facc15;
     }
+    /* Figurinha já colada: arrastável (mover/trocar) e clicável (devolver). */
+    .slot-colado { cursor: grab; }
+    .slot-colado:active { cursor: grabbing; }
+    .slot-colado .slot-remover {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 9999px;
+      background: rgba(220, 38, 38, 0.95);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 22px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+    }
+    .slot-colado:hover .slot-remover { opacity: 1; transform: scale(1); }
+    .slot-colado:hover { outline: 3px solid rgba(250, 204, 21, 0.7); outline-offset: -3px; }
 
     .pagina-template-bg {
-      width: 100%;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+    }
+
+    /* ---- Layout premium da página do álbum ----
+       A página (template 2000x1414) é dimensionada por ALTURA disponível,
+       preservando o aspecto, para preencher a tela de HD a 4K sem depender
+       de JS. Em telas largas ela cresce em vez de ficar pequena no centro
+       com margens verdes enormes. Os slots são posicionados em % e
+       acompanham o tamanho automaticamente. */
+    .pagina-viewport {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .album-page-frame {
+      position: relative;
+      height: min(100%, calc(93vw / 1.4144));
+      max-height: 100%;
+      max-width: 93vw;
+      aspect-ratio: 2000 / 1414;
+      background-color: #0a3d1f;
+      /* Sombra profunda + anel dourado fino = "cara de site premium". Usa
+         box-shadow (não padding/borda) para NÃO alterar a caixa 2000:1414 —
+         assim o fundo `contain` preenche exatamente e os slots (posicionados
+         em %) continuam alinhados. */
+      box-shadow:
+        0 35px 80px -25px rgba(0,0,0,0.8),
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 0 0 6px rgba(15,23,42,0.55),
+        0 0 0 7px rgba(250,204,21,0.25);
     }
 
     .perspective-1000 { perspective: 1000px; }
@@ -159,24 +212,32 @@
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+    <div class="flex-1 overflow-y-auto px-3 md:px-8 pt-3 md:pt-4 pb-2 flex flex-col items-center">
 
-      <div class="w-full max-w-7xl flex justify-between items-center mb-6 bg-slate-900/40 p-2 rounded-2xl backdrop-blur-sm border border-slate-700/50">
-        <button onclick="mudarPagina(-1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        <div class="text-center">
-          <h2 id="pagina-titulo" class="text-2xl md:text-4xl font-sport text-white uppercase tracking-widest drop-shadow-md">Carregando...</h2>
-          <p class="text-xs text-yellow-400 font-bold uppercase tracking-widest">Página <span id="pagina-atual">1</span> / <span id="pagina-total">15</span></p>
+      <!-- Barra de título: nome da página + indicador, com respiro. -->
+      <div class="w-full max-w-3xl flex flex-col items-center mb-3 shrink-0">
+        <h2 id="pagina-titulo" class="text-2xl md:text-4xl font-sport text-white uppercase tracking-[0.15em] text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">Carregando...</h2>
+        <div class="mt-1 flex items-center gap-2">
+          <span class="h-px w-8 bg-gradient-to-r from-transparent to-yellow-400/70"></span>
+          <p class="text-[11px] text-yellow-400 font-bold uppercase tracking-[0.3em]">Página <span id="pagina-atual">1</span> / <span id="pagina-total">15</span></p>
+          <span class="h-px w-8 bg-gradient-to-l from-transparent to-yellow-400/70"></span>
         </div>
-        <button onclick="mudarPagina(1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
       </div>
 
-      <!-- Página do álbum: fundo = template Canva (aspect-ratio 2000:1414),
-           figurinhas coladas em overlay posicionado por SLOT_MAP. -->
-      <div id="pagina-container" class="w-full max-w-5xl mx-auto pb-32 flex items-center justify-center">
+      <!-- Palco da página: setas flutuantes nas laterais + página do álbum.
+           Fundo = template Canva (aspect-ratio 2000:1414), figurinhas coladas
+           em overlay posicionado por SLOT_MAP. -->
+      <div class="relative w-full flex-1 min-h-0 flex items-center justify-center gap-2 md:gap-4">
+        <button onclick="mudarPagina(-1)" aria-label="Página anterior" class="shrink-0 z-10 bg-slate-900/70 hover:bg-yellow-500 hover:text-slate-900 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center border border-yellow-400/30 shadow-lg backdrop-blur transition-all disabled:opacity-20">
+          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <div id="pagina-container" class="pagina-viewport flex-1 min-w-0 h-full">
+        </div>
+
+        <button onclick="mudarPagina(1)" aria-label="Próxima página" class="shrink-0 z-10 bg-slate-900/70 hover:bg-yellow-500 hover:text-slate-900 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center border border-yellow-400/30 shadow-lg backdrop-blur transition-all disabled:opacity-20">
+          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+        </button>
       </div>
     </div>
 
@@ -638,6 +699,10 @@
 
       const img = document.createElement('img');
       img.alt = `Figurinha ${numero}`;
+      // O <img> não pode iniciar seu próprio drag nativo: quem arrasta é o
+      // slotDiv (para mover a figurinha entre slots).
+      img.draggable = false;
+      img.style.pointerEvents = 'none';
 
       // Recorte panorâmico só quando a figurinha está na CASA dela
       // (numero == slot.numero): duas metades de uma foto de equipe que
@@ -680,14 +745,20 @@
       });
     }
 
+    // Cria a "moldura premium" da página (elemento externo dimensionado por
+    // CSS) e a página interna que recebe o fundo do template + os slots.
+    // Retorna a página interna (offsetParent dos slots posicionados em %).
+    function criarMolduraPagina(container, nomeTemplate) {
+      const frame = document.createElement('div');
+      frame.className = "album-page-frame pagina-template-bg rounded-xl";
+      aplicarFundoTemplate(frame, nomeTemplate);
+      container.appendChild(frame);
+      return frame;
+    }
+
     function renderizarPaginaEstatica(container, nomeTemplate, rotulo) {
       document.getElementById('pagina-titulo').innerText = rotulo;
-
-      const wrapper = document.createElement('div');
-      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
-      wrapper.style.aspectRatio = `${SLOT_MAP.dimensaoReferencia[0]} / ${SLOT_MAP.dimensaoReferencia[1]}`;
-      aplicarFundoTemplate(wrapper, nomeTemplate);
-      container.appendChild(wrapper);
+      criarMolduraPagina(container, nomeTemplate);
     }
 
     function renderizarPaginaComSlots(container, nomeTemplate, rotulo) {
@@ -696,10 +767,7 @@
       const slots = (tpl && tpl.slots) || [];
       const dim = SLOT_MAP.dimensaoReferencia;
 
-      const wrapper = document.createElement('div');
-      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
-      wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
-      aplicarFundoTemplate(wrapper, nomeTemplate);
+      const wrapper = criarMolduraPagina(container, nomeTemplate);
 
       slots.forEach(slot => {
         const slotDiv = document.createElement('div');
@@ -710,23 +778,34 @@
         slotDiv.style.height = (slot.altura / dim[1] * 100) + "%";
         slotDiv.id = `slot_${slot.numero}`;
 
+        // Todo slot é alvo de soltar (destaca em amarelo no dragover).
+        // Sem trava de número — aceita qualquer figurinha arrastada, seja
+        // vinda do inventário ou de outro slot.
+        slotDiv.setAttribute('ondragover', 'allowDrop(event)');
+        slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
+        slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
+        slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
+
         // colada = qual figurinha está neste slot ({s: slot, f: figurinha}).
         const colada = ESTADO.coladas.find(c => c.s === slot.numero);
         if (colada) {
           renderizarImagemNoSlot(slotDiv, slot, colada.f);
-        } else {
-          // Slot vazio: alvo de soltar (destaca em amarelo no dragover).
-          // Sem trava de número — aceita qualquer figurinha arrastada.
-          slotDiv.setAttribute('ondragover', 'allowDrop(event)');
-          slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
-          slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
-          slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
+          // Figurinha já colada: pode ser ARRASTADA para outro slot (mover/
+          // trocar) ou CLICADA para voltar ao inventário. Cobre o caso de
+          // ter colado no lugar errado.
+          slotDiv.classList.add('slot-colado');
+          slotDiv.draggable = true;
+          slotDiv.title = 'Arraste para mover de lugar • Clique para devolver ao inventário';
+          slotDiv.setAttribute('ondragstart', `dragStartSlot(event, ${colada.f}, ${slot.numero})`);
+          slotDiv.setAttribute('ondragend', 'dragEnd(event)');
+          slotDiv.setAttribute('onclick', `devolverFigurinha(${slot.numero})`);
+          // Selo de "devolver" que aparece no hover.
+          slotDiv.insertAdjacentHTML('beforeend',
+            '<div class="slot-remover">✕</div>');
         }
 
         wrapper.appendChild(slotDiv);
       });
-
-      container.appendChild(wrapper);
     }
 
     function renderizarPaginaAtual() {
@@ -779,6 +858,7 @@
         card.draggable = true;
         card.id = `inv_${numero}_${index}`;
         card.setAttribute('ondragstart', `dragStart(event, ${numero}, '${index}')`);
+        card.setAttribute('ondragend', 'dragEnd(event)');
 
         // Imagem com aspect-ratio de cromo (2:3), grande o suficiente para
         // ler nome/número impressos na arte da figurinha.
@@ -816,16 +896,27 @@
 
     let dragDataCache = null;
 
+    // Origem = inventário: "inv|||<numero>|||<indice>".
     function dragStart(ev, numero, inventarioIndex) {
-      const dataStr = numero + "|||" + inventarioIndex;
+      const dataStr = "inv|||" + numero + "|||" + inventarioIndex;
       ev.dataTransfer.setData("text/plain", dataStr);
       dragDataCache = dataStr;
       ev.dataTransfer.effectAllowed = "move";
       setTimeout(() => ev.target.classList.add('opacity-50'), 0);
     }
 
+    // Origem = slot já colado: "slot|||<figurinha>|||<slotOrigem>".
+    function dragStartSlot(ev, figNumero, origemSlot) {
+      const dataStr = "slot|||" + figNumero + "|||" + origemSlot;
+      ev.dataTransfer.setData("text/plain", dataStr);
+      dragDataCache = dataStr;
+      ev.dataTransfer.effectAllowed = "move";
+      const el = ev.currentTarget;
+      setTimeout(() => el.classList.add('opacity-40'), 0);
+    }
+
     function dragEnd(ev) {
-      ev.target.classList.remove('opacity-50');
+      ev.target.classList.remove('opacity-50', 'opacity-40');
     }
 
     function allowDrop(ev) {
@@ -851,26 +942,73 @@
 
       let data = ev.dataTransfer.getData("text/plain");
       if (!data) data = dragDataCache;
+      dragDataCache = null;
       if (!data) return;
 
       const partes = data.split("|||");
-      const dragNumero = parseInt(partes[0], 10);
-      const invIndex = parseInt(partes[1], 10);
-      if (isNaN(dragNumero) || isNaN(invIndex)) return;
+      const origem = partes[0];
 
-      // SEM trava de número: a figurinha arrastada é colada no slot em que
-      // foi solta, seja qual for o número dela.
-      colarFigurinha(slotNumero, dragNumero, invIndex);
+      // SEM trava de número: a figurinha é colada no slot em que foi solta,
+      // seja qual for o número dela.
+      if (origem === "inv") {
+        const dragNumero = parseInt(partes[1], 10);
+        const invIndex = parseInt(partes[2], 10);
+        if (isNaN(dragNumero) || isNaN(invIndex)) return;
+        colarFigurinhaDoInventario(slotNumero, dragNumero, invIndex);
+      } else if (origem === "slot") {
+        const figNumero = parseInt(partes[1], 10);
+        const origemSlot = parseInt(partes[2], 10);
+        if (isNaN(figNumero) || isNaN(origemSlot) || origemSlot === slotNumero) return;
+        moverEntreSlots(origemSlot, slotNumero);
+      }
     }
 
-    function colarFigurinha(slotNumero, figNumero, inventarioIndex) {
+    // Cola uma figurinha vinda do inventário. Se o slot de destino já estiver
+    // ocupado, o antigo ocupante volta para o inventário (troca).
+    function colarFigurinhaDoInventario(slotNumero, figNumero, inventarioIndex) {
       if (inventarioIndex >= 0 && inventarioIndex < ESTADO.inventario.length) {
         ESTADO.inventario.splice(inventarioIndex, 1);
       }
       const existente = ESTADO.coladas.find(c => c.s === slotNumero);
-      if (existente) existente.f = figNumero;               // substitui (slot cheio não deveria receber drop)
-      else ESTADO.coladas.push({ s: slotNumero, f: figNumero });
+      if (existente) {
+        ESTADO.inventario.push(existente.f);
+        existente.f = figNumero;
+      } else {
+        ESTADO.coladas.push({ s: slotNumero, f: figNumero });
+      }
       mostrarToast("Figurinha Nº " + figNumero + " colada!");
+      renderizarPaginaAtual();
+      atualizarUI();
+    }
+
+    // Move a figurinha de um slot para outro. Se o destino já tiver uma
+    // figurinha, as duas trocam de lugar (swap).
+    function moverEntreSlots(origemSlot, destinoSlot) {
+      const origem = ESTADO.coladas.find(c => c.s === origemSlot);
+      if (!origem) return;
+      const destino = ESTADO.coladas.find(c => c.s === destinoSlot);
+      if (destino) {
+        const tmp = destino.f;
+        destino.f = origem.f;
+        origem.f = tmp;
+        mostrarToast("Figurinhas trocadas de lugar.");
+      } else {
+        ESTADO.coladas.push({ s: destinoSlot, f: origem.f });
+        ESTADO.coladas = ESTADO.coladas.filter(c => c.s !== origemSlot);
+        mostrarToast("Figurinha Nº " + origem.f + " movida.");
+      }
+      renderizarPaginaAtual();
+      atualizarUI();
+    }
+
+    // Devolve a figurinha de um slot ao inventário (clique sobre a colada).
+    function devolverFigurinha(slotNumero) {
+      const idx = ESTADO.coladas.findIndex(c => c.s === slotNumero);
+      if (idx === -1) return;
+      const figNumero = ESTADO.coladas[idx].f;
+      ESTADO.coladas.splice(idx, 1);
+      ESTADO.inventario.push(figNumero);
+      mostrarToast("Figurinha Nº " + figNumero + " devolvida ao inventário.");
       renderizarPaginaAtual();
       atualizarUI();
     }
