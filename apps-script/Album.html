@@ -728,9 +728,16 @@
         // Pequena margem interna de segurança: absorve imprecisão de poucos
         // pixels na detecção offline do retângulo do slot (generate_slot_map.py),
         // evitando que a foto pareça "vazar" para fora do contorno impresso
-        // no template.
+        // no template. IMPORTANTE: <img> é um elemento substituído - "inset"
+        // sozinho (sem width/height explícitos) NÃO garante que o navegador
+        // estique a imagem para preencher o espaço; alguns navegadores usam
+        // o tamanho NATURAL do arquivo, fazendo a foto "vazar" bem para fora
+        // do slot. Por isso width/height são setados explicitamente aqui.
         img.className = "absolute object-cover rounded-[2px]";
-        img.style.inset = "2%";
+        img.style.top = "2%";
+        img.style.left = "2%";
+        img.style.width = "96%";
+        img.style.height = "96%";
       }
       slotDiv.appendChild(img);
       resolverImagemFigurinha(fig, (src) => { if (src) img.src = src; });

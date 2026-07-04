@@ -391,3 +391,11 @@ Com isso o mapeamento fechou perfeitamente: **162 números únicos, cobrindo 1-1
 **⚠️ AÇÃO MANUAL NECESSÁRIA DO USUÁRIO (fora do código):** o arquivo de foto no Drive que hoje está nomeado com o número duplicado "41" (o que pertence a Lages Ii, não a Canoinhas) precisa ser **renomeado para "162-NOME.png"** (mantendo o mesmo padrão de nome usado pelos outros arquivos). Depois disso, rodar **🧩 Reconciliar Figurinhas do Drive** de novo para a aba "Figurinhas" gravar o ID 162 correto para essa pessoa. Sem esse passo, a foto continua com ID "41" na planilha (duplicando com a figurinha real de Canoinhas) mesmo com o código já corrigido.
 
 **Para aplicar no WebApp:** colar `codigo.gs` e `apps-script/SlotMap.html` (e `Album.html`, se ainda não estiver) no editor do Apps Script e republicar o deployment.
+
+---
+
+## Fase 12: Bug de CSS fazendo fotos coladas "vazarem" do slot (2026-07-05)
+
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 12.1 | **Fotos coladas aparecendo fora do contorno do slot** (reportado em Bela Vista do Toldo #152/153/154, Correia Pinto #84, Comissão Técnica #3/4/5, Irineópolis #98, Ponte Alta #138/139). Causa raiz: a margem de segurança de 2% adicionada na Fase 11 (`img.style.inset = "2%"`) não garante o tamanho da imagem em todos os navegadores - `<img>` é um elemento SUBSTITUÍDO; `inset` sozinho sem `width`/`height` explícitos pode fazer o navegador usar o tamanho NATURAL do arquivo da foto em vez de esticar para caber no slot, fazendo a foto "vazar" bem para fora do contorno. **Confirmado que não é um problema de numeração/geometria** (a Comissão Técnica não foi tocada na correção de numeração de hoje e apresentou o mesmo sintoma) — é puramente esse bug de CSS, afetando qualquer foto colada em qualquer slot (a app estava sendo testada com colagem livre, por isso a mesma figurinha aparecia em páginas diferentes). Corrigido trocando `inset` por `top`/`left`/`width`/`height` explícitos (2%/2%/96%/96%), que força o tamanho renderizado independente do navegador | cc:完了 |
