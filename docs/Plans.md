@@ -191,3 +191,14 @@ A tabela de pontuação foi lida da aba `Configuracoes_Dashboard` (colunas C/D/E
 | 8.4 | **Fotos de figurinhas às vezes não carregavam ao abrir o pacote**: abrir um pacote dispara ~13 chamadas base64 simultâneas (+ template) e o backend sobrecarregava, falhando algumas. `resolverImagemPorFileId` agora usa fila com concorrência limitada (3) + retry (até 3 tentativas com backoff) | cc:完了 |
 
 > Obs.: o arquivo de template de Canoinhas está grafado **"Pac Conoinhas"** no Drive (typo). O código já trata via alias, mas o ideal é renomear o arquivo para **"Pac Canoinhas.png"** no Drive para manter tudo consistente.
+
+---
+
+## Fase 9: Colagem livre e nomes das figurinhas duplas (2026-07-03)
+
+| Task | Conteúdo | Status |
+|------|------|--------|
+| 9.1 | **Remover a obrigação de colar a figurinha exatamente no slot dela**: antes, soltar a figurinha 103 fora do slot 103 dava "Figurinha errada para este espaço". Agora a PÁGINA INTEIRA é zona de soltar (`dropNaPagina`) e a figurinha vai sempre para o slot dela (o próprio número), sem exigir mira. Realce visual da página no dragover. Repetida colada não duplica em `Coladas` (é consumida do inventário) | cc:完了 |
+| 9.2 | **Nomes em branco na aba Figurinhas** para 25/26, 27/28, 35/36, 37/38, 47/48, 49/50 etc.: são os arquivos `<n1>-<n2>.png` (imagem única de fachada/estádio que cobre 2 slots — não têm nome de pessoa). `reconciliarFigurinhas` agora preenche um rótulo `"Fachada — <agência>"` nesses casos (e a agência como fallback nos demais sem nome), eliminando as células vazias | cc:完了 |
+
+> **Sobre os "IDs duplicados" (47/48, 49/50, etc.):** NÃO é bug. Os arquivos `<n1>-<n2>.png` são **uma única imagem panorâmica** (fachada da agência/estádio) que cobre dois slots; por isso os dois números apontam para o MESMO FileID — é exatamente o que o álbum usa para recortar cada metade (crop-sprite). Se o desejo for que cada número seja uma figurinha individual com foto própria, é preciso fornecer **arquivos separados** por número no Drive (aí a reconciliação passa a gravar FileIDs distintos automaticamente).

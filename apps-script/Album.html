@@ -50,6 +50,13 @@
       outline: 3px solid #facc15;
     }
 
+    /* Realce da página inteira como zona de soltar (a figurinha vai pro
+       slot dela; não é preciso mirar no retângulo exato). */
+    .pagina-drop-over {
+      outline: 4px dashed #facc15;
+      outline-offset: -8px;
+    }
+
     .pagina-template-bg {
       width: 100%;
       background-size: contain;
@@ -690,6 +697,14 @@
       wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
       aplicarFundoTemplate(wrapper, nomeTemplate);
 
+      // A PÁGINA INTEIRA é zona de soltar: soltar uma figurinha em qualquer
+      // lugar a cola no slot dela (o número da figurinha), sem exigir mira
+      // exata sobre o retângulo certo.
+      wrapper.setAttribute('ondragover', 'allowDrop(event)');
+      wrapper.setAttribute('ondrop', 'dropNaPagina(event)');
+      wrapper.setAttribute('ondragenter', 'dragEnterPagina(event)');
+      wrapper.setAttribute('ondragleave', 'dragLeavePagina(event)');
+
       slots.forEach(slot => {
         const slotDiv = document.createElement('div');
         slotDiv.className = "absolute slot-figurinha-numero";
@@ -699,15 +714,8 @@
         slotDiv.style.height = (slot.altura / dim[1] * 100) + "%";
         slotDiv.id = `slot_${slot.numero}`;
 
-        const isColada = ESTADO.coladas.includes(slot.numero);
-
-        if (isColada) {
+        if (ESTADO.coladas.includes(slot.numero)) {
           renderizarImagemNoSlot(slotDiv, slot, slot.numero);
-        } else {
-          slotDiv.setAttribute('ondragover', 'allowDrop(event)');
-          slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
-          slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
-          slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
         }
 
         wrapper.appendChild(slotDiv);
@@ -820,21 +828,23 @@
       ev.dataTransfer.dropEffect = "move";
     }
 
-    function dragEnter(ev) {
+    function dragEnterPagina(ev) {
       ev.preventDefault();
-      const slot = ev.target.closest('.slot-figurinha-numero');
-      if (slot) slot.classList.add('drag-over');
+      const w = ev.currentTarget;
+      if (w) w.classList.add('pagina-drop-over');
     }
 
-    function dragLeave(ev) {
-      const slot = ev.target.closest('.slot-figurinha-numero');
-      if (slot) slot.classList.remove('drag-over');
+    function dragLeavePagina(ev) {
+      const w = ev.currentTarget;
+      // Só remove o realce quando o ponteiro sai de fato do wrapper (não ao
+      // passar por elementos filhos).
+      if (w && !w.contains(ev.relatedTarget)) w.classList.remove('pagina-drop-over');
     }
 
-    function drop(ev, slotNumero) {
+    function dropNaPagina(ev) {
       ev.preventDefault();
-      const slot = ev.target.closest('.slot-figurinha-numero');
-      if (slot) slot.classList.remove('drag-over');
+      const w = ev.currentTarget;
+      if (w) w.classList.remove('pagina-drop-over');
 
       let data = ev.dataTransfer.getData("text/plain");
       if (!data) data = dragDataCache;
@@ -843,18 +853,24 @@
       const partes = data.split("|||");
       const dragNumero = parseInt(partes[0], 10);
       const invIndex = parseInt(partes[1], 10);
+      if (isNaN(dragNumero) || isNaN(invIndex)) return;
 
-      if (dragNumero === slotNumero) {
-        colarFigurinha(dragNumero, invIndex);
-      } else {
-        mostrarToast("Figurinha errada para este espaço!", "error");
-      }
+      // A figurinha vai sempre para o slot dela (o número da figurinha),
+      // independentemente de onde foi solta na página.
+      colarFigurinha(dragNumero, invIndex);
     }
 
     function colarFigurinha(numero, inventarioIndex) {
-      ESTADO.inventario.splice(inventarioIndex, 1);
-      ESTADO.coladas.push(numero);
-      mostrarToast("Figurinha Colada com Sucesso!");
+      if (inventarioIndex >= 0 && inventarioIndex < ESTADO.inventario.length) {
+        ESTADO.inventario.splice(inventarioIndex, 1);
+      }
+      if (!ESTADO.coladas.includes(numero)) {
+        ESTADO.coladas.push(numero);
+        mostrarToast("Figurinha Nº " + numero + " colada com sucesso!");
+      } else {
+        // Já estava colada (era repetida): consome do inventário sem duplicar.
+        mostrarToast("Você já tinha colado a Nº " + numero + " (repetida).", "warning");
+      }
       renderizarPaginaAtual();
       atualizarUI();
     }

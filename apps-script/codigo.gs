@@ -888,8 +888,9 @@ function reconciliarFigurinhas() {
         continue;
       }
       var fileId = arquivo.getId();
+      var ehPar = parsed.numeros.length > 1; // arquivo "<n1>-<n2>.png": imagem única (fachada) compartilhada por 2 slots
       parsed.numeros.forEach(function (numero) {
-        registros[numero] = { nome: parsed.nome, fileId: fileId };
+        registros[numero] = { nome: parsed.nome, fileId: fileId, ehPar: ehPar };
       });
     }
 
@@ -911,7 +912,14 @@ function reconciliarFigurinhas() {
       var equipe = obterAgenciaDoSlot(numero);
       var linha = linhaPorId[numero];
       var infoExistente = linha ? figSheet.getRange(linha, 5).getValue() : "";
-      var nomeFinal = reg.nome || infoExistente || "";
+      // Nome: usa o nome do arquivo; senão o Info (col. E) já preenchido;
+      // senão um rótulo de fallback (evita células em branco). Arquivos
+      // "<n1>-<n2>.png" são imagens ÚNICAS (fachada/estádio) que cobrem 2
+      // slots — não têm nome de pessoa, então recebem "Fachada — <agência>"
+      // e os 2 números apontam pro MESMO FileID de propósito (o álbum usa
+      // isso para o recorte panorâmico; não é duplicidade indevida).
+      var fallbackNome = reg.ehPar ? ("Fachada — " + equipe) : equipe;
+      var nomeFinal = reg.nome || infoExistente || fallbackNome || "";
 
       if (linha) {
         figSheet.getRange(linha, 1, 1, 4).setValues([[numero, nomeFinal, equipe, reg.fileId]]);
