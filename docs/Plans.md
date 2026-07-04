@@ -249,3 +249,15 @@ Reportado pelo usuário: ao colar a figurinha 98 (Lukas Buse) em `Pac Irineopoli
 2. Se for 92: ajustar `EXPECTED_RANGES["Pac Irineopolis"]` para `(92, 103)`, tratar a duplicidade de "92" com Correia Pinto via `SKIP_FIRST_N` (mesma técnica do caso Monte Castelo/Timbó Grande), e re-rodar `generate_slot_map.py` — mas isso exige que o usuário rode o script localmente (ele tem a pasta `TEMPLATE - ALBUM/`; eu não tenho acesso a ela nesta sessão) ou envie os PNGs para eu rodar aqui.
 3. Enquanto isso, revisar visualmente TODOS os templates com o novo indicador de margem (11.2) para achar outros casos de desalinhamento parecidos — a fina borda visível ao redor de cada foto colada agora ajuda a enxergar se o retângulo bate com o impresso.
 4. Revisitar também o achado do `audit_slot_geometry.py` para `Pac Correia Pinto #85` (formato destoante dos vizinhos).
+
+### Atualização da investigação (mesmo dia): deslocamento pode não ser pontual
+
+Perguntei ao usuário para checar os números impressos em 3 pontos-chave e as respostas **não bateram** com a hipótese simples de duplicata isolada (tipo Monte Castelo/Timbó Grande):
+
+- Último círculo de **Pac Correia Pinto.png**: usuário confirmou que **NÃO é 92** (outro número, ex. 91 ou diferente) — ou seja, não há duplicata simples de "92" entre Correia Pinto e Irineópolis.
+- Primeiro círculo de **Pac Irineopolis.png**: confirmado **92** (já sabíamos).
+- Primeiro círculo de **Pac Major Vieira.png**: usuário respondeu **103** — que é exatamente o número em que Irineópolis (92 + 12 slots = 92..103) termina. Isso sugere que a duplicata/deslocamento está entre o FIM de Irineópolis e o INÍCIO de Major Vieira, não entre Correia Pinto e Irineópolis.
+
+**Conclusão:** o deslocamento não é um caso isolado de 1 dígito como Monte Castelo/Timbó Grande — parece se estender por pelo menos 3 templates seguidos (Correia Pinto → Irineópolis → Major Vieira), e possivelmente mais adiante na cadeia (Bom Jardim da Serra, Timbó Grande, Monte Castelo, Ponte Alta, Santa Cruz do Timbo). Perguntas de múltipla escolha não são eficientes para mapear isso com precisão — o próximo passo é o usuário enviar screenshots das páginas do álbum (ou dos PNGs originais) mostrando os números impressos em CADA template a partir de Correia Pinto até o fim da lista, para eu ler diretamente e recalcular os intervalos corretos de uma vez.
+
+**Não fiz nenhuma mudança de código para este achado ainda** — os ranges em `codigo.gs`/`generate_slot_map.py`/`slotMap.json`/`SlotMap.html` permanecem como estavam (93-104 para Irineópolis, 105-115 para Major Vieira etc.), até termos visibilidade completa da cadeia. Mexer agora, com informação parcial, arriscaria reatribuir números de figurinhas já cadastradas incorretamente.
