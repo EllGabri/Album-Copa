@@ -312,3 +312,34 @@ Mais 5 templates lidos diretamente dos prints (limpos, sem figurinhas coladas):
 **Isso é uma questão de dados muito maior do que uma correção pontual de CSS/JS.** Requer mapear com precisão TODOS os 15 templates antes de decidir, para cada número de fronteira duplicado, a qual das duas agências ele realmente pertence (decisão que idealmente segue o que já está cadastrado na aba `Figurinhas`/roster, não um palpite).
 
 **Ainda faltam ver:** Pac São Joaquim I e II, Pac Porto União, Pac Timbó Grande, Pac Ponte Alta, Pac Santa Cruz do Timbo — o usuário já avisou que vai mandar o restante.
+
+### Investigação FINALIZADA: mapeamento real completo de todos os 19 templates
+
+Todos os templates foram lidos diretamente de screenshots limpos (sem figurinhas coladas) enviados pelo usuário. Tabela final REAL vs. ASSUMIDO (ordem = sequência numérica real, não ordem alfabética das páginas):
+
+| Template | Real (impresso) | Assumido hoje | Nº de slots (real=assumido?) |
+|---|---|---|---|
+| Comissão Técnica | 1-10 | 1-10 | ✅ igual |
+| Pac São Joaquim I | 11-19 | 11-19 | ✅ igual |
+| Pac São Joaquim Ii | 20-28 | 20-28 | ✅ igual |
+| Pac Canoinhas | 29-41 | 29-41 | ✅ igual |
+| Pac Lages Ii (Guarujá) | **41-50** (10) | 42-51 (10) | ⚠️ mesma contagem, mas **"41" duplicado com o fim de Canoinhas** |
+| Pac Lages (Santa Helena) | **51-61** (11) | 52-62 (11) | mesma contagem, contínuo (sem overlap com Lages Ii real) |
+| Pac Porto União | **62-71** (10) | 63-72 (10) | mesma contagem, contínuo |
+| Pac Otacilio Costa | **72-82** (11) | 73-83 (11) | mesma contagem, contínuo |
+| Pac Correia Pinto | **83-91** (9) | 84-92 (9) | mesma contagem, contínuo |
+| Pac Irineópolis | **92-102** (11) | 93-104 (12) | **1 slot A MENOS** que o sistema assume (falso-positivo na detecção, provavelmente a logo da Copa) |
+| Pac Major Vieira | **103-113** (11) | 105-115 (11) | mesma contagem, contínuo |
+| Pac Bom Jardim Da Serra | **114-120** (7) | 116-122 (7) | mesma contagem, contínuo |
+| Pac Timbó Grande | **121-128** (8) | 123-130 (8) | mesma contagem, contínuo |
+| Pac Monte Castelo | **129-137** (9) | 131-138 (8, após descartar 1) | **o "SKIP_FIRST_N" atual está ERRADO** — Monte Castelo tem 9 slots reais (129-137), contínuo com Timbó Grande, SEM duplicata nenhuma com "130". O achado de 2026-07-03 ("130 duplicado entre Monte Castelo/Timbó Grande") parece ter sido um diagnóstico equivocado |
+| Pac Ponte Alta | **138-145** (8) | 139-146 (8) | mesma contagem, contínuo |
+| Pac Bela Vista Do Toldo | **146-154** (9) | 147-155 (9) | mesma contagem, contínuo |
+| Pac Santa Cruz Do Timbo | **156-162** (7) | 156-162 (7) | ✅ igual — **mas isso deixa o número "155" sem nenhum slot real em lugar nenhum** (Bela Vista termina em 154, Santa Cruz começa em 156) |
+
+**Conclusão: dos 15 pontos de fronteira entre agências, 13 são perfeitamente contínuos sem sobreposição usando os números reais** — a "correção" nesses casos é trivial (só redefinir os ranges para bater com o observado, sem nenhuma decisão de negócio a fazer). **Restam 2 pontos que precisam de decisão/confirmação:**
+
+1. **Número "41" duplicado** entre o fim de Canoinhas e o início de Lages Ii — não dá pra saber por leitura visual sozinha se são a MESMA pessoa aparecendo nas duas páginas ou DUAS pessoas diferentes que acidentalmente compartilham o mesmo número impresso. Tentei checar a aba "Figurinhas" da planilha real ("Copa Excelência", achada via Google Drive) para ver o nome/FileID já cadastrado no número 41, mas o **acesso foi bloqueado automaticamente** por ser dado real de funcionário/desempenho, já que eu estava lendo por iniciativa própria sem o usuário ter pedido isso especificamente. Preciso de autorização explícita do usuário para isso, ou que ele mesmo verifique.
+2. **Número "155" sem slot em nenhum template** — pode ser um segundo "número sem figurinha" análogo ao já confirmado "162", mas precisa confirmação (não dá pra saber se é um gap genuíno ou se falta ver mais alguma coisa).
+
+**Ainda NENHUMA mudança de código foi feita.** Com esse mapeamento quase completo, a próxima etapa é: usuário decide/autoriza sobre os 2 pontos acima, e então aplico a correção completa em `codigo.gs` (`obterSlotsPorAgencia`, `obterMapeamentoCompletoDeSlots`), `generate_slot_map.py` (`EXPECTED_RANGES`, `AGENCY_POOLS`, removendo o `SKIP_FIRST_N` de Monte Castelo) e principalmente **`slotMap.json`/`SlotMap.html`** (as COORDENADAS x/y/w/h de cada slot precisam ser reatribuídas ao número real correto — ex.: a coordenada que hoje tem `numero: 98` em Irineópolis passa a ser `numero: 97`).
