@@ -34,24 +34,24 @@
         },
         {
           "numero": 3,
-          "x": 678,
-          "y": 149,
-          "largura": 298,
+          "x": 25,
+          "y": 566,
+          "largura": 297,
           "altura": 392
         },
         {
           "numero": 4,
-          "x": 196,
+          "x": 352,
           "y": 566,
           "largura": 297,
-          "altura": 391
+          "altura": 392
         },
         {
           "numero": 5,
-          "x": 523,
+          "x": 678,
           "y": 566,
-          "largura": 297,
-          "altura": 391
+          "largura": 298,
+          "altura": 392
         },
         {
           "numero": 6,
@@ -176,24 +176,24 @@
         },
         {
           "numero": 152,
-          "x": 1679,
-          "y": 35,
-          "largura": 298,
+          "x": 1026,
+          "y": 458,
+          "largura": 297,
           "altura": 392
         },
         {
           "numero": 153,
-          "x": 1203,
+          "x": 1352,
           "y": 458,
           "largura": 298,
           "altura": 392
         },
         {
           "numero": 154,
-          "x": 1530,
-          "y": 458,
+          "x": 1679,
+          "y": 275,
           "largura": 298,
-          "altura": 392
+          "altura": 390
         }
       ],
       "status": "ok"
@@ -434,9 +434,9 @@
         {
           "numero": 84,
           "x": 358,
-          "y": 576,
+          "y": 511,
           "largura": 298,
-          "altura": 327
+          "altura": 392
         },
         {
           "numero": 85,
@@ -570,7 +570,7 @@
         },
         {
           "numero": 98,
-          "x": 180,
+          "x": 23,
           "y": 940,
           "largura": 297,
           "altura": 392
@@ -1204,16 +1204,16 @@
         {
           "numero": 138,
           "x": 175,
-          "y": 343,
+          "y": 310,
           "largura": 297,
-          "altura": 345
+          "altura": 388
         },
         {
           "numero": 139,
           "x": 502,
-          "y": 351,
+          "y": 310,
           "largura": 297,
-          "altura": 337
+          "altura": 388
         },
         {
           "numero": 140,
