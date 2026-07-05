@@ -725,19 +725,24 @@
         img.style.top = "0";
         img.style.left = (slot.ladoPar === 'esquerda') ? "0" : "-100%";
       } else {
-        // Pequena margem interna de segurança: absorve imprecisão de poucos
-        // pixels na detecção offline do retângulo do slot (generate_slot_map.py),
-        // evitando que a foto pareça "vazar" para fora do contorno impresso
-        // no template. IMPORTANTE: <img> é um elemento substituído - "inset"
-        // sozinho (sem width/height explícitos) NÃO garante que o navegador
-        // estique a imagem para preencher o espaço; alguns navegadores usam
-        // o tamanho NATURAL do arquivo, fazendo a foto "vazar" bem para fora
-        // do slot. Por isso width/height são setados explicitamente aqui.
-        img.className = "absolute object-cover rounded-[2px]";
-        img.style.top = "2%";
-        img.style.left = "2%";
-        img.style.width = "96%";
-        img.style.height = "96%";
+        // Foto normal (não panorâmica): preenche EXATAMENTE o retângulo do
+        // slot. Espelha o mesmo esquema robusto do ramo panorâmico acima
+        // (overflow:hidden no slotDiv + maxWidth:none + tamanho explícito),
+        // que é o único jeito que funciona de forma confiável no navegador
+        // do WebApp. <img> é um elemento substituído: sem overflow:hidden no
+        // pai E sem width/height explícitos, o navegador pode renderizar a
+        // imagem no TAMANHO NATURAL do arquivo, fazendo a foto "vazar" para
+        // fora do slot (bug observado nos álbuns de Bela Vista, Correia
+        // Pinto, Comissão Técnica, Irineópolis e Ponte Alta). Com o slotDiv
+        // recortando (overflow:hidden) a foto fica presa dentro do slot
+        // aconteça o que acontecer.
+        slotDiv.style.overflow = 'hidden';
+        img.className = "absolute object-cover";
+        img.style.maxWidth = "none";
+        img.style.top = "0";
+        img.style.left = "0";
+        img.style.width = "100%";
+        img.style.height = "100%";
       }
       slotDiv.appendChild(img);
       resolverImagemFigurinha(fig, (src) => { if (src) img.src = src; });
