@@ -107,9 +107,9 @@
               <h3 class="font-extrabold text-white text-sm uppercase tracking-wider">Grupo 1 <span class="text-blue-200 text-[10px] ml-1 font-normal">(Cabeças de Chave)</span></h3>
               <span class="text-xs">🌍</span>
             </div>
-            <table class="w-full text-left text-sm text-slate-700">
+            <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo1" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -120,9 +120,9 @@
               <h3 class="font-extrabold text-white text-sm uppercase tracking-wider">Grupo 2 <span class="text-green-200 text-[10px] ml-1 font-normal">(Intermediárias)</span></h3>
               <span class="text-xs">⚡</span>
             </div>
-            <table class="w-full text-left text-sm text-slate-700">
+            <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo2" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -133,9 +133,9 @@
               <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Grupo 3 <span class="text-slate-800/70 text-[10px] ml-1 font-normal">(Desafiantes)</span></h3>
               <span class="text-xs">🔥</span>
             </div>
-            <table class="w-full text-left text-sm text-slate-700">
+            <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr><th class="px-4 py-3 text-center w-12">Pos</th><th class="px-4 py-3">Seleção (Agência)</th><th class="px-4 py-3 text-right w-24">Gols ⚽</th></tr>
+                <tr><th class="px-3 py-3 text-center w-10">Pos</th><th class="px-3 py-3">Seleção (Agência)</th><th class="px-3 py-3 text-right w-32">Gols ⚽</th></tr>
               </thead>
               <tbody id="tabela-grupo3" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -262,14 +262,14 @@
            <div class="bg-green-700 px-6 py-4 border-b border-green-800">
               <h3 class="font-extrabold text-white text-lg uppercase tracking-wider text-left">Ranking Geral - Atingimento da Meta</h3>
            </div>
-           <table class="w-full text-left text-sm text-slate-700">
+           <table class="w-full text-left text-sm text-slate-700 table-fixed">
               <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th class="px-6 py-4 text-center w-16">Pos</th>
-                  <th class="px-6 py-4">Agência (Seleção)</th>
-                  <th class="px-6 py-4 text-center">Gols Feitos</th>
-                  <th class="px-6 py-4 text-center">Meta Gols</th>
-                  <th class="px-6 py-4 text-right">Atingimento</th>
+                  <th class="px-3 py-4 text-center w-12">Pos</th>
+                  <th class="px-3 py-4">Agência (Seleção)</th>
+                  <th class="px-2 py-4 text-center w-28">Gols Feitos</th>
+                  <th class="px-2 py-4 text-center w-28">Meta Gols</th>
+                  <th class="px-3 py-4 text-right w-24">Atingimento</th>
                 </tr>
               </thead>
               <tbody id="tabela-ranking-agencias" class="divide-y divide-slate-100">
@@ -401,97 +401,10 @@
       document.getElementById(`btn-${aba}`).className = "px-4 py-2 bg-yellow-400 text-green-900 rounded-full text-xs font-bold uppercase tracking-wider shadow-md transition-colors whitespace-nowrap";
     }
 
-    function converterParaGols(indicador, realizado, meta, dataStr) {
-      let ind = (indicador || "").toString().trim().toLowerCase();
-      let r = parseFloat(realizado) || 0;
-      let m = parseFloat(meta) || 0;
-      let gols = 0, metaEsperadaGols = 0;
-
-      if (ind.includes("cheque") || ind.includes("boleto") || ind.includes("solcap") || ind.includes("adquirência") || ind.includes("maquininha") || ind.includes("domicílio") || ind.includes("domicilio")) {
-        return { gols: 0, metaGols: 0 };
-      }
-
-      if (ind === "inad 15" || ind.includes("inad")) {
-        let metaBase = m > 0 ? m : 2.5;
-        metaEsperadaGols = 5; 
-        if (r < metaBase) gols = Math.floor(metaBase - r) * 2; 
-        else if (r > metaBase) gols = Math.floor(r - metaBase) * -5; 
-      }
-      else if (ind.includes("ativo comercial") || ind.includes("conta")) {
-        if (r > 150) {
-          gols = Math.floor(r / 50) * 1;
-          metaEsperadaGols = Math.floor(m / 50) * 1;
-        } else {
-          gols = Math.floor(r) * 1;
-          metaEsperadaGols = Math.floor(m) * 1;
-        }
-      }
-      else if (ind.includes("cartão") || ind.includes("cartao")) {
-        if (r > 150) {
-          gols = Math.floor(r / 2000) * 1;
-          metaEsperadaGols = Math.floor(m / 2000) * 1;
-        } else {
-          gols = Math.floor(r) * 1;
-          metaEsperadaGols = Math.floor(m) * 1;
-        }
-      }
-      else if (ind.includes("seguro de vida") || ind.includes("vida") || ind.includes("residência") || ind.includes("residencia")) {
-        if (ind.includes("auto") || ind.includes("danos") || ind.includes("frota") || ind.includes("agrícola") || ind.includes("agricola") || ind.includes("maquinário") || ind.includes("maquinario")) {
-          if (r > 150) { 
-            gols = Math.floor(r / 2500) * 4;
-            metaEsperadaGols = Math.floor(m / 2500) * 4;
-          } else { 
-            gols = Math.floor(r) * 4;
-            metaEsperadaGols = Math.floor(m) * 4;
-          }
-        } else {
-          if (r > 150) { 
-            gols = Math.floor(r / 500) * 2; 
-            metaEsperadaGols = Math.floor(m / 500) * 2;
-          } else { 
-            gols = Math.floor(r) * 2; 
-            metaEsperadaGols = Math.floor(m) * 2;
-          }
-        }
-      }
-      else if (ind.includes("consórcio") || ind.includes("consorcio")) {
-        if (r > 1000) { 
-          gols = Math.floor(r / 50000) * 4; 
-          metaEsperadaGols = Math.floor(m / 50000) * 4; 
-        } else { 
-          gols = Math.floor(r) * 4; 
-          metaEsperadaGols = Math.floor(m) * 4; 
-        }
-      }
-      else if (ind.includes("depósitos totais") || ind.includes("depositos totais") || ind.includes("captação") || ind.includes("captacao") || ind.includes("rdc") || ind.includes("poupança") || ind.includes("lca")) {
-        gols = Math.floor(r / 10000) * 4; 
-        metaEsperadaGols = Math.floor(m / 10000) * 4;
-      }
-      else if (ind.includes("crédito comercial") || ind.includes("credito comercial") || ind.includes("custeio")) {
-        gols = Math.floor(r / 10000) * 4; 
-        metaEsperadaGols = Math.floor(m / 10000) * 4;
-      }
-      else if (ind.includes("pré-aprovado") || ind.includes("pre-aprovado") || ind.includes("pre aprovado")) {
-        gols = Math.floor(r / 5000) * 1;
-        metaEsperadaGols = Math.floor(m / 5000) * 1;
-      }
-      else if (ind === "capital social" || ind.includes("procap")) {
-        if (r >= 10000) { 
-          gols = Math.floor(r / 10000) * 5; 
-          metaEsperadaGols = Math.floor(m / 10000) * 5; 
-        }
-      }
-
-      if (dataStr) {
-        let parts = dataStr.toString().split('/');
-        if (parts.length === 3 && parseInt(parts[1], 10) === 7) {
-          gols = gols * 1.5;
-          metaEsperadaGols = metaEsperadaGols * 1.5;
-        }
-      }
-
-      return { gols: Math.round(gols * 10) / 10, metaGols: Math.round(metaEsperadaGols * 10) / 10 };
-    }
+    // (Removida a função converterParaGols: era código morto, nunca chamada,
+    // e usava divisores que não batiam com a aba Configuracoes_Dashboard —
+    // a lógica de gols vigente está em calcularGolsGerente + o loop de
+    // processarCalculosCopa, alinhada à tabela de pontuação da planilha.)
 
     // INICIALIZAÇÃO COM BACKEND
     window.onload = function() {
@@ -607,13 +520,30 @@
           }
           
           if (placarGerentes[gerente]) {
-            // USAR NOVA LÓGICA DE CÁLCULO com calcularGolsGerente
-            let golsFeitos = calcularGolsGerente(indicador, realizado, 0); // valorAnterior=0 por padrão
-            let golsMeta = calcularGolsGerente(indicador, meta, 0);
-            
+            let golsFeitos, golsMeta;
+
+            if (indicador === "Inad 15") {
+              // Inad 15 é comparação (não valor absoluto): a regra da planilha
+              // é "+2 gols por redução de % / -5 gols por aumento de %" — logo
+              // depende de realizado vs meta juntos (não dá pra calcular a
+              // partir de um valor só). Base = meta de inadimplência.
+              let base = meta > 0 ? meta : 2.5;
+              if (realizado < base)      golsFeitos = Math.floor(base - realizado) * 2;   // reduziu -> bom
+              else if (realizado > base) golsFeitos = Math.floor(realizado - base) * -5;  // aumentou -> ruim
+              else                       golsFeitos = 0;
+              golsMeta = 5; // atingir a meta de inadimplência vale 5 gols de referência
+            } else {
+              golsFeitos = calcularGolsGerente(indicador, realizado);
+              golsMeta   = calcularGolsGerente(indicador, meta);
+            }
+
+            // Fase de julho ("O MATA-MATA"): gols valem 1.5x (ds_periodo = "MM/AAAA").
+            let mesNum = parseInt((mes.split('/')[0] || '').trim(), 10);
+            if (mesNum === 7) { golsFeitos *= 1.5; golsMeta *= 1.5; }
+
             placarGerentes[gerente].gols += golsFeitos;
             placarGerentes[gerente].metaGols += golsMeta;
-            
+
             // Marcar como já contabilizado
             chaveRealizado[chaveUnica] = true;
           }
@@ -674,53 +604,48 @@
       }
     }
 
-    function calcularGolsGerente(indicador, valorAtual, valorAnterior) {
+    // Converte o valor de um indicador (realizado ou meta) em gols, conforme
+    // a tabela de pontuação da aba "Configuracoes_Dashboard" (colunas C/D/E).
+    // Inad 15 NÃO passa por aqui (é comparação realizado×meta, tratada no loop).
+    function calcularGolsGerente(indicador, valor) {
       var gols = 0;
-      
+      valor = parseFloat(valor) || 0;
+
       switch (indicador) {
-        // CATEGORIA 1: Regra Unitária
+        // Regra unitária: 1 gol por unidade.
         case "Ativo Comercial":
-          gols = valorAtual * 1;
+        case "Cartão":
+          gols = valor * 1;
           break;
-          
+
+        // 4 gols por unidade.
         case "Seguro de Vida":
         case "Consórcio":
-          gols = valorAtual * 4;
+          gols = valor * 4;
           break;
-          
-        // CATEGORIA 2: Blocos Fechados
+
+        // Blocos fechados: X gols a cada 10.000 de realizado.
         case "Depósitos Totais":
         case "Crédito Comercial":
-          gols = Math.floor(valorAtual / 10000) * 4;
+          gols = Math.floor(valor / 10000) * 4;
           break;
-          
+
         case "Capital Social":
-          gols = Math.floor(valorAtual / 10000) * 5;
+          gols = Math.floor(valor / 10000) * 5;
           break;
-          
-        // CATEGORIA 3: Variação (Inad 15)
-        case "Inad 15":
-          var variacaoPercentual = (valorAtual - valorAnterior) * 100;
-          
-          if (variacaoPercentual < 0) {
-            gols = Math.abs(variacaoPercentual) * 2;
-          } 
-          else if (variacaoPercentual > 0) {
-            gols = variacaoPercentual * (-5);
-          }
-          break;
-          
+
         default:
           gols = 0;
       }
-      
+
       return Number(gols.toFixed(2));
     }
 
+    // Formata gols em PT-BR: inteiro, com ponto (.) como separador de
+    // milhar e SEM casas decimais (ex.: 15138304 -> "15.138.304").
     function formatGols(g) {
       if (!g || isNaN(g)) return "0";
-      if (g % 1 === 0) return Math.floor(g).toString();
-      return g.toFixed(1).replace('.', ',');
+      return Math.round(g).toLocaleString('pt-BR');
     }
 
     function renderizarAbaSelecoes(gerentesRank, agenciasRank, isForaDaJanela) {
@@ -760,11 +685,14 @@
 
           return `
           <tr class="hover:bg-green-50/50 transition-colors border-b border-slate-100 last:border-0 h-14">
-            <td class="px-4 py-3 text-center ${posColor} align-middle whitespace-nowrap">${i + 1}º</td>
-            <td class="px-4 py-3 font-semibold text-slate-700 flex items-center justify-between align-middle flex-1">
-              <span class="truncate pr-2">${nomeTime} <span class="text-xs text-slate-400 font-normal">(${ag.nome})</span></span><span class="text-xs drop-shadow-sm">${medalha}</span>
+            <td class="px-3 py-3 text-center ${posColor} align-middle whitespace-nowrap">${i + 1}º</td>
+            <td class="px-3 py-3 font-semibold text-slate-700 align-middle">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="truncate">${nomeTime} <span class="text-xs text-slate-400 font-normal">(${ag.nome})</span></span>
+                <span class="text-xs drop-shadow-sm shrink-0">${medalha}</span>
+              </div>
             </td>
-            <td class="px-4 py-3 text-right font-black text-green-700 text-base whitespace-nowrap align-middle min-w-20 max-w-20">${formatGols(ag.gols)}</td>
+            <td class="px-3 py-3 text-right font-black text-green-700 text-sm whitespace-nowrap align-middle tabular-nums">${formatGols(ag.gols)}</td>
           </tr>`}).join('');
       });
 
@@ -827,15 +755,22 @@
       
       for (let tecNome in golsPorTecnico) {
         let tec = golsPorTecnico[tecNome];
-        if (tec.chaveamento === "Norte") golsNorte += tec.gols;
-        if (tec.chaveamento === "Serra") golsSerra += tec.gols;
+        // O chaveamento vem da planilha como "Chaveamento Norte"/"Chaveamento
+        // Serra" (não apenas "Norte"/"Serra"); comparar por conteúdo.
+        let chave = normalizarString(tec.chaveamento);
+        if (chave.includes("norte")) golsNorte += tec.gols;
+        if (chave.includes("serra")) golsSerra += tec.gols;
       }
 
       document.getElementById('gols-tecnico-norte').innerText = formatGols(golsNorte);
       document.getElementById('gols-tecnico-serra').innerText = formatGols(golsSerra);
 
-      // AUXILIARES: somar gols por segmento (nm_carteira)
+      // AUXILIARES: somar gols por segmento (nm_carteira). Dedup por
+      // gerente+segmento: um gerente pode ter várias linhas de carteira no
+      // mesmo segmento, e sem o guard os gols dele seriam contados várias
+      // vezes, inflando o placar do segmento.
       let placarSegmento = {};
+      let contadoSegmento = {}; // "segmento|||gerente" -> true
       rawCarteiras.forEach(row => {
         let segmento = normalizarSegmento(getProp(row, 'nm_carteira'));
         let gerente = (getProp(row, 'Gerente') || "Desconhecido").toString().trim();
@@ -847,7 +782,11 @@
         if (DB.usuariosExcluidos && DB.usuariosExcluidos.includes(genLimpa)) return;
 
         if (!placarSegmento[segmento]) placarSegmento[segmento] = 0;
-        
+
+        let chaveSeg = segmento + "|||" + genLimpa;
+        if (contadoSegmento[chaveSeg]) return; // gerente já somado neste segmento
+        contadoSegmento[chaveSeg] = true;
+
         // Encontrar gols deste gerente
         gerentesRank.forEach(g => {
           if (normalizarString(g.nome) === normalizarString(gerente)) {
@@ -890,13 +829,16 @@
 
               return `
               <tr class="${bgRow} transition-colors border-b border-slate-100 last:border-0">
-                <td class="px-6 py-4 text-center ${posColor}">${i + 1}º</td>
-                <td class="px-6 py-4 font-semibold text-slate-700 flex items-center">
-                  <span class="truncate pr-2">${nomeTime} <span class="text-xs text-slate-500 font-normal">(${ag.nome})</span></span><span class="text-sm drop-shadow-sm ml-2">${medalha}</span>
+                <td class="px-3 py-4 text-center ${posColor}">${i + 1}º</td>
+                <td class="px-3 py-4 font-semibold text-slate-700">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="truncate">${nomeTime} <span class="text-xs text-slate-500 font-normal">(${ag.nome})</span></span>
+                    <span class="text-sm drop-shadow-sm shrink-0">${medalha}</span>
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-center text-slate-600">${formatGols(ag.gols)}</td>
-                <td class="px-6 py-4 text-center text-slate-500">${formatGols(ag.metaGols)}</td>
-                <td class="px-6 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px]">${ag.perc.toFixed(1)}%</td>
+                <td class="px-2 py-4 text-center text-slate-600 text-sm tabular-nums">${formatGols(ag.gols)}</td>
+                <td class="px-2 py-4 text-center text-slate-500 text-sm tabular-nums">${formatGols(ag.metaGols)}</td>
+                <td class="px-3 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px] tabular-nums">${ag.perc.toFixed(1)}%</td>
               </tr>`;
           }).join('');
       }

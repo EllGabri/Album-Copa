@@ -116,16 +116,25 @@ coordenadas).
 
 ## 5. Motor do álbum (frontend)
 
-- Cada AGÊNCIA (login/PIN) corresponde a uma ou mais PÁGINAS DE TEMPLATE.
-  Regra geral: 1 agência → 1 arquivo de template (nome do arquivo == chave
-  da agência). Exceção confirmada: **"Pac São Joaquim" é 1 único
-  login/PIN/pool de pacotes (slots 11-28), mas exibido em SEQUÊNCIA através
-  de 2 arquivos de template** (`Pac Sao Joaquim I.png` = 11-19,
-  `Pac Sao Joaquim Ii.png` = 20-28). Isso é só uma questão de
-  layout/paginação, não duas contas.
-- Além da(s) página(s) da própria agência, **toda agência logada também
-  tem uma página "Comissão Técnica"** (`Comissao Tecnica.png`, slots 1-10),
-  com estado de colagem próprio daquela agência (ver seção 6).
+> **Mudança confirmada em 2026-07-03**: o álbum passou de "cada agência só
+> preenche a própria página" para **um álbum ÚNICO e igual para as 15
+> agências** — toda agência logada navega e preenche as páginas de TODAS
+> as 15 agências (não só a sua), além de Capa, Contra Capa e Comissão
+> Técnica. A página(s) da própria agência é destacada na navegação
+> (rótulo "— SUA AGÊNCIA") e é a página inicial ao logar, mas não é a
+> única disponível.
+
+- Existem 15 chaves de agência (login/PIN), cada uma correspondendo a uma
+  ou mais PÁGINAS DE TEMPLATE (`SLOT_MAP.paginasPorAgencia`). Regra geral:
+  1 agência → 1 arquivo de template. Exceção: **"Pac São Joaquim" é 1 único
+  login/PIN (slots 11-28), exibido em SEQUÊNCIA através de 2 arquivos de
+  template** (`Pac Sao Joaquim I.png` = 11-19, `Pac Sao Joaquim Ii.png` =
+  20-28) — questão de layout/paginação, não duas contas.
+- O álbum de QUALQUER login mostra, em ordem: Capa → páginas de TODAS as
+  15 agências (ordem alfabética das chaves) → Comissão Técnica → Contra
+  Capa. O estado de colagem (`Coladas`) salvo por login cobre todos esses
+  números — o objetivo é completar o álbum inteiro (161 números), como um
+  álbum de figurinhas de Copa do Mundo tradicional.
 - Cada página do álbum é renderizada com o PNG do template como imagem de
   fundo (posicionado em um contêiner com aspect-ratio 2000:1414), sem
   recriar bordas/números/textos via CSS.
@@ -137,25 +146,39 @@ coordenadas).
 - Capa e Contra Capa entram como primeira/última "página" da navegação.
 - Resolução de imagem da figurinha passa a ser por **número do slot**
   (chave determinística), não mais por fuzzy match de nome.
+- **As imagens (figurinhas e templates) NÃO são carregadas por hotlink a
+  `drive.google.com`.** Em rede interna corporativa (ex.: Cresol) o acesso
+  a hosts externos costuma ser bloqueado — o browser não carrega
+  `https://drive.google.com/uc?id=...` (nem Dropbox/outros), então o
+  layout do template e as figurinhas ficam em branco. Solução: o próprio
+  backend (`obterImagemBase64(fileId)`) lê o arquivo do Drive com a
+  permissão do dono do script e devolve os bytes em base64
+  (`data:image/png;base64,...`); o cliente injeta como `data URI`. Todo o
+  tráfego fica na mesma origem `*.googleusercontent.com`/`script.google.com`
+  que o WebApp já usa (e que a rede interna libera, pois o app abre). As
+  imagens são buscadas sob demanda (uma por vez, com cache por `fileId` no
+  cliente) para manter cada resposta pequena. Consequência: os arquivos do
+  Drive **não precisam** (e não devem) ser públicos — as fotos de
+  funcionários ficam acessíveis só via o script, não por link aberto.
 
 ## 6. Abertura de pacote (mecânica e visual)
 
 - Pacotes contêm 12 a 13 figurinhas — manter essa faixa.
-- Sorteio restrito à UNIÃO de dois pools: o pool de números de slot da
-  própria agência (`obterSlotsPorAgencia`, ex.: 29-41 para Pac Canoinhas) e
-  o **pool global "Comissão Técnica"** (slots 1-10, constante
-  `SLOTS_COMISSAO_TECNICA`), que é o mesmo para todas as agências — qualquer
-  agência pode tirar uma figurinha da Comissão Técnica de um pacote seu.
-  Inclui repetidas (dentro de cada pool).
-- `obterSlotsPorAgencia()` **não muda** para "Pac São Joaquim" (já está
-  correto: uma única chave, 11-28) — a Comissão Técnica **não** é uma chave
-  desse mapa (não é "dona" de nenhuma agência); ela é somada como pool
-  adicional no momento do sorteio.
-- Estado de colagem (`Coladas`) de cada agência inclui tanto os números da
-  sua própria página quanto os da Comissão Técnica que ela já colou — cada
-  agência coleciona a Comissão Técnica de forma independente (não é um
-  progresso compartilhado entre agências, só o *pool de sorteio* é
-  compartilhado).
+- **Sorteio GLOBAL** (mudança confirmada em 2026-07-03, decorrente da
+  seção 5): cada pacote sorteia entre TODOS os números de slot existentes
+  (as 15 agências + Comissão Técnica, 161 números no total), não mais
+  restrito à própria agência. É a única forma de uma agência conseguir
+  figurinhas das outras 14 páginas que agora fazem parte do seu álbum.
+  Inclui repetidas.
+- `obterSlotsPorAgencia()` (codigo.gs) continua existindo e correto como
+  mapa de referência agência→números (usado por `obterAgenciaDoSlot` /
+  reconciliação), mas **não é mais usado para restringir o pool de
+  sorteio do pacote** — isso agora é feito no frontend (`construirPoolGlobal()`
+  em `Album.html`), que une os números de TODOS os templates do `SLOT_MAP`.
+- Estado de colagem (`Coladas`) de cada login cobre qualquer número
+  colado, de qualquer agência ou da Comissão Técnica — progresso
+  independente por login (Store_Album), pool de sorteio compartilhado
+  entre todos.
 - Visual da animação de abertura (embrulho fechado, texto, cores) deve usar
   a identidade visual dos templates Canva (laranja Cresol, faixa verde,
   brasão "COPA EXCELÊNCIA DE NEGÓCIOS"), substituindo o tema

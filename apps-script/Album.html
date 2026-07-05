@@ -49,12 +49,65 @@
       background-color: rgba(250, 204, 21, 0.25);
       outline: 3px solid #facc15;
     }
+    /* Figurinha já colada: arrastável (mover/trocar) e clicável (devolver). */
+    .slot-colado { cursor: grab; }
+    .slot-colado:active { cursor: grabbing; }
+    .slot-colado .slot-remover {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 9999px;
+      background: rgba(220, 38, 38, 0.95);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 22px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+    }
+    .slot-colado:hover .slot-remover { opacity: 1; transform: scale(1); }
+    .slot-colado:hover { outline: 3px solid rgba(250, 204, 21, 0.7); outline-offset: -3px; }
 
     .pagina-template-bg {
-      width: 100%;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+    }
+
+    /* ---- Layout premium da página do álbum ----
+       A página (template 2000x1414) é dimensionada por ALTURA disponível,
+       preservando o aspecto, para preencher a tela de HD a 4K sem depender
+       de JS. Em telas largas ela cresce em vez de ficar pequena no centro
+       com margens verdes enormes. Os slots são posicionados em % e
+       acompanham o tamanho automaticamente. */
+    .pagina-viewport {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .album-page-frame {
+      position: relative;
+      height: min(100%, calc(93vw / 1.4144));
+      max-height: 100%;
+      max-width: 93vw;
+      aspect-ratio: 2000 / 1414;
+      background-color: #0a3d1f;
+      /* Sombra profunda + anel dourado fino = "cara de site premium". Usa
+         box-shadow (não padding/borda) para NÃO alterar a caixa 2000:1414 —
+         assim o fundo `contain` preenche exatamente e os slots (posicionados
+         em %) continuam alinhados. */
+      box-shadow:
+        0 35px 80px -25px rgba(0,0,0,0.8),
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 0 0 6px rgba(15,23,42,0.55),
+        0 0 0 7px rgba(250,204,21,0.25);
     }
 
     .perspective-1000 { perspective: 1000px; }
@@ -71,17 +124,7 @@
       100% { transform: translate(1px, -1px) rotate(0deg); }
     }
 
-    /* ==================== NOVO: Inventário Expansível ==================== */
-    .inventario-bar {
-      max-height: 60px;
-      overflow: hidden;
-      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .inventario-bar:hover {
-      max-height: 180px;
-    }
-
+    /* ==================== Inventário ==================== */
     .card-inventario {
       position: relative;
     }
@@ -96,7 +139,7 @@
       opacity: 1;
       visibility: visible;
     }
-    /* ==================== FIM NOVO ==================== */
+    /* ==================== FIM ==================== */
   </style>
   <?!= include('SlotMap'); ?>
 </head>
@@ -149,7 +192,11 @@
           <h1 class="text-2xl md:text-3xl font-sport tracking-wider text-yellow-400 uppercase leading-none">Álbum Oficial</h1>
           <p class="text-[10px] text-green-100 font-bold tracking-widest uppercase">Seleção: <span id="header-agencia-nome" class="text-white">...</span></p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="voltarDashboard()" class="bg-white/10 hover:bg-white/20 text-white border border-slate-600 h-10 px-4 rounded-full flex items-center gap-2 transition-colors" title="Voltar ao Dashboard da Copa">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"></path></svg>
+            <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Dashboard</span>
+          </button>
           <div class="bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 flex items-center gap-3">
             <span class="text-2xl">📦</span>
             <div>
@@ -165,38 +212,46 @@
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+    <div class="flex-1 overflow-y-auto px-3 md:px-8 pt-3 md:pt-4 pb-2 flex flex-col items-center">
 
-      <div class="w-full max-w-7xl flex justify-between items-center mb-6 bg-slate-900/40 p-2 rounded-2xl backdrop-blur-sm border border-slate-700/50">
-        <button onclick="mudarPagina(-1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        <div class="text-center">
-          <h2 id="pagina-titulo" class="text-2xl md:text-4xl font-sport text-white uppercase tracking-widest drop-shadow-md">Carregando...</h2>
-          <p class="text-xs text-yellow-400 font-bold uppercase tracking-widest">Página <span id="pagina-atual">1</span> / <span id="pagina-total">15</span></p>
+      <!-- Barra de título: nome da página + indicador, com respiro. -->
+      <div class="w-full max-w-3xl flex flex-col items-center mb-3 shrink-0">
+        <h2 id="pagina-titulo" class="text-2xl md:text-4xl font-sport text-white uppercase tracking-[0.15em] text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">Carregando...</h2>
+        <div class="mt-1 flex items-center gap-2">
+          <span class="h-px w-8 bg-gradient-to-r from-transparent to-yellow-400/70"></span>
+          <p class="text-[11px] text-yellow-400 font-bold uppercase tracking-[0.3em]">Página <span id="pagina-atual">1</span> / <span id="pagina-total">15</span></p>
+          <span class="h-px w-8 bg-gradient-to-l from-transparent to-yellow-400/70"></span>
         </div>
-        <button onclick="mudarPagina(1)" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl backdrop-blur transition-all disabled:opacity-30">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
       </div>
 
-      <!-- Página do álbum: fundo = template Canva (aspect-ratio 2000:1414), figurinhas coladas em overlay posicionado por SLOT_MAP -->
-      <div id="pagina-container" class="w-full max-w-5xl mx-auto pb-32 flex items-center justify-center">
+      <!-- Palco da página: setas flutuantes nas laterais + página do álbum.
+           Fundo = template Canva (aspect-ratio 2000:1414), figurinhas coladas
+           em overlay posicionado por SLOT_MAP. -->
+      <div class="relative w-full flex-1 min-h-0 flex items-center justify-center gap-2 md:gap-4">
+        <button onclick="mudarPagina(-1)" aria-label="Página anterior" class="shrink-0 z-10 bg-slate-900/70 hover:bg-yellow-500 hover:text-slate-900 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center border border-yellow-400/30 shadow-lg backdrop-blur transition-all disabled:opacity-20">
+          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <div id="pagina-container" class="pagina-viewport flex-1 min-w-0 h-full">
+        </div>
+
+        <button onclick="mudarPagina(1)" aria-label="Próxima página" class="shrink-0 z-10 bg-slate-900/70 hover:bg-yellow-500 hover:text-slate-900 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center border border-yellow-400/30 shadow-lg backdrop-blur transition-all disabled:opacity-20">
+          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+        </button>
       </div>
     </div>
 
     <!-- ==================== AJUSTE 5: Inventário Expansível ==================== -->
     <div class="shrink-0 bg-slate-900 border-t-4 border-slate-700 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-40">
       <div class="max-w-[1400px] mx-auto">
-        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-2 flex items-center gap-2">
           <span>🎒 O Seu Inventário (Figurinhas por Colar)</span>
           <span class="bg-slate-800 px-2 py-0.5 rounded-md text-white border border-slate-600" id="inventario-count">0</span>
+          <span class="text-[10px] text-slate-500 font-medium normal-case tracking-normal">Arraste a figurinha e largue na silhueta correta da página.</span>
         </h3>
-        <p class="text-[10px] text-slate-500 mb-2">Dica: Passe o mouse para expandir. Arraste a figurinha e largue na silhueta correta da página.</p>
 
-        <!-- Barra expansível com hover -->
         <div class="inventario-bar bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-3 backdrop-blur-sm">
-          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[50px] items-center px-2">
+          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[180px] items-center px-2">
             <div class="text-slate-600 text-xs italic py-2" id="inventario-vazio">Sem figurinhas novas. Abra um pacote!</div>
           </div>
         </div>
@@ -236,15 +291,131 @@
       agenciaAtual: null,
       pacotes: 0,
       inventario: [],          // array de numeros de slot (int)
-      coladas: [],             // array de numeros de slot (int)
+      coladas: [],             // [{s: numero do slot, f: numero da figurinha colada nele}]
       figurinhasComImagem: [], // [{id:numero, nome, agencia, fileId, imageUrl}]
       templates: {},           // { nomeTemplate: urlDaImagem }
       paginasDoAlbum: [],      // [{tipo:'capa'|'contracapa'|'pagina', template?}]
-      poolDaAgencia: [],       // numeros sorteáveis em pacote (própria página + Comissão Técnica)
+      poolDaAgencia: [],       // numeros sorteáveis em pacote (pool GLOBAL: todas as agências + Comissão Técnica)
       paginaAtualIndex: 0
     };
 
     const CARGAS_PENDENTES = new Set();
+
+    // ---------------------------------------------------------------
+    // Cache/resolução de imagens por FileID (base64 servido pelo WebApp).
+    //
+    // Em rede interna que bloqueia hosts externos, o browser NÃO carrega
+    // https://drive.google.com/uc?id=... (nem Dropbox/etc.). Então cada
+    // imagem (figurinha ou template de fundo) é pedida ao backend
+    // (obterImagemBase64) e injetada como data URI. Cache por fileId
+    // evita repedir a mesma imagem; requisições concorrentes pra um
+    // mesmo fileId são agrupadas.
+    // ---------------------------------------------------------------
+    const IMG_CACHE = {};       // fileId -> dataUri
+    const IMG_PENDENTES = {};   // fileId -> [callbacks]
+    // Fila com concorrência limitada: ao abrir um pacote são pedidas ~13
+    // imagens de uma vez (+ o template da página). Disparar todas ao mesmo
+    // tempo sobrecarrega o backend (google.script.run) e algumas falham ->
+    // figurinha sem foto. Aqui limitamos a poucas chamadas simultâneas e
+    // fazemos retry, garantindo que todas carreguem.
+    const IMG_FILA = [];
+    let IMG_ATIVOS = 0;
+    const IMG_MAX_CONCORRENTE = 3;
+    const IMG_MAX_TENTATIVAS = 3;
+
+    function resolverImagemPorFileId(fileId, callback) {
+      if (!fileId) { callback(null); return; }
+      if (IMG_CACHE[fileId]) { callback(IMG_CACHE[fileId]); return; }
+      if (IMG_PENDENTES[fileId]) { IMG_PENDENTES[fileId].push(callback); return; }
+      IMG_PENDENTES[fileId] = [callback];
+      IMG_FILA.push(fileId);
+      processarFilaImagens();
+    }
+
+    function processarFilaImagens() {
+      while (IMG_ATIVOS < IMG_MAX_CONCORRENTE && IMG_FILA.length > 0) {
+        const fileId = IMG_FILA.shift();
+        IMG_ATIVOS++;
+        buscarImagemBackend(fileId, 1);
+      }
+    }
+
+    function buscarImagemBackend(fileId, tentativa) {
+      const concluir = (dataUri) => {
+        if (dataUri) IMG_CACHE[fileId] = dataUri;
+        (IMG_PENDENTES[fileId] || []).forEach(cb => cb(dataUri || null));
+        delete IMG_PENDENTES[fileId];
+        IMG_ATIVOS--;
+        processarFilaImagens();
+      };
+      const falhar = (erro) => {
+        if (tentativa < IMG_MAX_TENTATIVAS) {
+          // Mantém o slot ocupado durante o backoff (segura a concorrência).
+          setTimeout(() => buscarImagemBackend(fileId, tentativa + 1), 400 * tentativa);
+        } else {
+          console.error("Falha ao carregar imagem após " + tentativa + " tentativas", fileId, erro);
+          concluir(null);
+        }
+      };
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            let dataUri = null;
+            try { const r = JSON.parse(jsonRes); if (r.status === 'success') dataUri = r.dataUri; } catch (e) {}
+            if (dataUri) concluir(dataUri); else falhar('resposta sem dataUri');
+          })
+          .withFailureHandler(function(erro) { falhar(erro); })
+          .obterImagemBase64(fileId);
+      } else {
+        concluir(null);
+      }
+    }
+
+    // Resolve a imagem de uma figurinha: prefere base64 por fileId (rede
+    // interna); cai pra imageUrl (ex.: harness local) quando não há fileId.
+    function resolverImagemFigurinha(fig, callback) {
+      if (!fig) { callback(null); return; }
+      if (fig.fileId) { resolverImagemPorFileId(fig.fileId, (d) => callback(d || fig.imageUrl || null)); return; }
+      callback(fig.imageUrl || null);
+    }
+
+    // Normaliza nome de template (sem acento/pontuação/espaço, minúsculo)
+    // para casar apesar das variações de grafia entre as chaves do slotMap
+    // (ex.: "Pac Timbó Grande") e os nomes reais dos arquivos no Drive
+    // (ex.: "Pac Timbo Grande", "Pac Porto Uniao D.Sta Cruz do Timbo").
+    function normalizarNomeTemplate(s) {
+      return (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+
+    // Aliases de grafia divergente de arquivo no Drive (chaves normalizadas).
+    const ALIAS_TEMPLATE = { "pacconoinhas": "paccanoinhas" }; // arquivo "Conoinhas" -> chave "Canoinhas"
+
+    // Índice normalizado de ESTADO.templates (nomeNormalizado -> valor).
+    function obterTemplatesNorm() {
+      const idx = {};
+      Object.keys(ESTADO.templates || {}).forEach(nome => {
+        const val = ESTADO.templates[nome];
+        const norm = normalizarNomeTemplate(nome);
+        idx[norm] = val;
+        if (ALIAS_TEMPLATE[norm]) idx[ALIAS_TEMPLATE[norm]] = val;
+      });
+      return idx;
+    }
+
+    // Resolve o fundo (template) pelo valor guardado em ESTADO.templates.
+    // Tenta o nome exato; se não achar, casa por nome normalizado (tolera
+    // acento/casing/pontuação/typo). O valor é um fileId (ou URL/data-URI
+    // em mocks locais).
+    function resolverImagemTemplate(nomeTemplate, callback) {
+      let valor = ESTADO.templates[nomeTemplate];
+      if (valor === undefined) {
+        valor = obterTemplatesNorm()[normalizarNomeTemplate(nomeTemplate)];
+      }
+      if (!valor) { callback(null); return; }
+      if (/^(data:|https?:)/.test(valor)) { callback(valor); return; }
+      resolverImagemPorFileId(valor, callback);
+    }
 
     // Escapa texto vindo da planilha (aba Figurinhas, coluna Nome) antes de
     // interpolar em innerHTML - defesa contra HTML/script injetado por
@@ -287,10 +458,16 @@
       document.getElementById('login-screen').classList.remove('hidden');
     };
 
+
     function marcarCarregamentoConcluido(chave) {
       CARGAS_PENDENTES.delete(chave);
       if (CARGAS_PENDENTES.size === 0) {
         renderizarPaginaAtual();
+        // Re-renderiza o inventário: na 1ª pintura (iniciarAlbum) as
+        // figurinhas ainda não tinham carregado, então os cards do
+        // inventário ficaram só com o ícone 👤. Agora que
+        // ESTADO.figurinhasComImagem chegou, as imagens resolvem.
+        renderizarInventario();
       }
     }
 
@@ -389,24 +566,54 @@
       return SLOT_MAP.paginasPorAgencia[agencia] || [agencia];
     }
 
-    function construirPaginasDoAlbum(agencia) {
-      const paginas = [{ tipo: 'capa' }];
-      obterTemplatesDaAgencia(agencia).forEach(t => paginas.push({ tipo: 'pagina', template: t }));
-      paginas.push({ tipo: 'pagina', template: 'Comissao Tecnica' });
+    // O álbum é ÚNICO e igual para todas as 15 agências: toda agência
+    // logada colecionar as 15 páginas de agência + Comissão Técnica, não
+    // só a própria (ver spec.md seção 5 - decisão confirmada com o
+    // usuário em 2026-07-03). "agenciaPropria" só é usada para marcar/
+    // destacar a página de origem do login, não para filtrar quais
+    // páginas aparecem.
+    function construirPaginasDoAlbum(agenciaPropria) {
+      // Comissão Técnica é a primeira página de conteúdo (logo após a Capa),
+      // antes das 15 agências (pedido do usuário em 2026-07-04).
+      const paginas = [
+        { tipo: 'capa' },
+        { tipo: 'pagina', template: 'Comissao Tecnica', agencia: 'Comissao Tecnica' }
+      ];
+      Object.keys(SLOT_MAP.paginasPorAgencia).sort().forEach(ag => {
+        // O rótulo da página vem da AGÊNCIA (nome do login), não do nome
+        // do arquivo de template. Mapeamento confirmado com o usuário
+        // (2026-07-04): login "Pac Lages" = agência Santa Helena (arquivo
+        // "Pac Lages.png", slots 52-62) e login "Pac Lages Ii" = agência
+        // Guarujá (arquivo "Pac Lages Ii.png", slots 42-51). "parte" numera
+        // as páginas quando a agência tem mais de um template (ex.: São
+        // Joaquim I e II).
+        const templates = obterTemplatesDaAgencia(ag);
+        templates.forEach((t, i) => paginas.push({
+          tipo: 'pagina',
+          template: t,
+          agencia: ag,
+          parte: templates.length > 1 ? (i + 1) : null,
+          propria: ag === agenciaPropria
+        }));
+      });
       paginas.push({ tipo: 'contracapa' });
       return paginas;
     }
 
-    // Pool de sorteio de pacote: numeros da(s) pagina(s) da propria agencia
-    // UNIAO com o pool global da Comissao Tecnica (spec.md secao 6).
-    function construirPoolDaAgencia(agencia) {
+    const ROMANOS = ['', 'I', 'II', 'III', 'IV', 'V'];
+
+    // Pool de sorteio de pacote: GLOBAL - união de todos os números de
+    // TODAS as agências + Comissão Técnica (ver spec.md seção 6, decisão
+    // confirmada com o usuário em 2026-07-03: como o álbum de cada
+    // agência precisa ser preenchido com as 15 agências, o pacote precisa
+    // poder sortear qualquer uma das 161 figurinhas, não só as da própria
+    // agência).
+    function construirPoolGlobal() {
       const numeros = new Set();
-      obterTemplatesDaAgencia(agencia).forEach(t => {
-        const tpl = SLOT_MAP.templates[t];
+      Object.keys(SLOT_MAP.templates).forEach(nomeTemplate => {
+        const tpl = SLOT_MAP.templates[nomeTemplate];
         (tpl && tpl.slots ? tpl.slots : []).forEach(s => numeros.add(s.numero));
       });
-      const comissao = SLOT_MAP.templates['Comissao Tecnica'];
-      (comissao && comissao.slots ? comissao.slots : []).forEach(s => numeros.add(s.numero));
       return Array.from(numeros);
     }
 
@@ -414,12 +621,23 @@
       ESTADO.agenciaAtual = dadosSalvos.agencia;
       ESTADO.pacotes = parseInt(dadosSalvos.pacotinhos) || 0;
       ESTADO.inventario = (dadosSalvos.inventario || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
-      ESTADO.coladas = (dadosSalvos.coladas || []).map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+      // coladas = [{s: slot, f: figurinha}]. Compat com dados antigos
+      // (array de números, quando figurinha == slot).
+      ESTADO.coladas = (dadosSalvos.coladas || []).map(c => {
+        if (c && typeof c === 'object') return { s: parseInt(c.s, 10), f: parseInt(c.f, 10) };
+        const n = parseInt(c, 10);
+        return { s: n, f: n };
+      }).filter(c => !isNaN(c.s) && !isNaN(c.f));
 
       ESTADO.paginasDoAlbum = construirPaginasDoAlbum(ESTADO.agenciaAtual);
-      ESTADO.poolDaAgencia = construirPoolDaAgencia(ESTADO.agenciaAtual);
-      // Pula a Capa por padrão, abre direto na primeira página da agência.
-      ESTADO.paginaAtualIndex = ESTADO.paginasDoAlbum.length > 1 ? 1 : 0;
+      ESTADO.poolDaAgencia = construirPoolGlobal();
+      // Abre direto na primeira página da própria agência (não na Capa).
+      const indexPropria = ESTADO.paginasDoAlbum.findIndex(p => p.propria);
+      if (indexPropria !== -1) {
+        ESTADO.paginaAtualIndex = indexPropria;
+      } else {
+        ESTADO.paginaAtualIndex = ESTADO.paginasDoAlbum.length > 1 ? 1 : 0;
+      }
 
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('album-screen').classList.remove('hidden');
@@ -481,16 +699,23 @@
 
     function renderizarImagemNoSlot(slotDiv, slot, numero) {
       const fig = obterFigurinhaPorNumero(numero);
-      if (!fig || !fig.imageUrl) return;
+      if (!fig) return;
 
       const img = document.createElement('img');
       img.alt = `Figurinha ${numero}`;
+      // O <img> não pode iniciar seu próprio drag nativo: quem arrasta é o
+      // slotDiv (para mover a figurinha entre slots).
+      img.draggable = false;
+      img.style.pointerEvents = 'none';
 
-      if (slot.grupoPar && obterVizinhoCompartilhado(slot, numero)) {
+      // Recorte panorâmico só quando a figurinha está na CASA dela
+      // (numero == slot.numero): duas metades de uma foto de equipe que
+      // cobre 2 slots vizinhos. Se a figurinha foi colada em outro slot
+      // (colagem livre), mostra a imagem inteira com object-cover.
+      if (numero === slot.numero && slot.grupoPar && obterVizinhoCompartilhado(slot, numero)) {
         // Imagem panorâmica compartilhada: renderiza em largura dobrada e
         // desloca pra mostrar só a metade correta (técnica de sprite).
         slotDiv.style.overflow = 'hidden';
-        img.src = fig.imageUrl;
         img.className = "absolute h-full object-cover";
         // Tailwind preflight aplica "max-width: 100%" em <img>; sem
         // sobrescrever, a largura de 200% usada pra sprite fica limitada a
@@ -500,38 +725,70 @@
         img.style.top = "0";
         img.style.left = (slot.ladoPar === 'esquerda') ? "0" : "-100%";
       } else {
-        img.src = fig.imageUrl;
-        img.className = "w-full h-full object-cover";
+        // Foto normal (não panorâmica): preenche EXATAMENTE o retângulo do
+        // slot. Espelha o mesmo esquema robusto do ramo panorâmico acima
+        // (overflow:hidden no slotDiv + maxWidth:none + tamanho explícito),
+        // que é o único jeito que funciona de forma confiável no navegador
+        // do WebApp. <img> é um elemento substituído: sem overflow:hidden no
+        // pai E sem width/height explícitos, o navegador pode renderizar a
+        // imagem no TAMANHO NATURAL do arquivo, fazendo a foto "vazar" para
+        // fora do slot (bug observado nos álbuns de Bela Vista, Correia
+        // Pinto, Comissão Técnica, Irineópolis e Ponte Alta). Com o slotDiv
+        // recortando (overflow:hidden) a foto fica presa dentro do slot
+        // aconteça o que acontecer.
+        slotDiv.style.overflow = 'hidden';
+        img.className = "absolute object-cover";
+        img.style.maxWidth = "none";
+        img.style.top = "0";
+        img.style.left = "0";
+        img.style.width = "100%";
+        img.style.height = "100%";
       }
       slotDiv.appendChild(img);
+      resolverImagemFigurinha(fig, (src) => { if (src) img.src = src; });
+    }
+
+    // Aplica o PNG do template como imagem de fundo, resolvendo os bytes
+    // via base64 (rede interna). Mostra um aviso de carregando/erro
+    // enquanto não chega (ou se o template não estiver reconciliado).
+    function aplicarFundoTemplate(wrapper, nomeTemplate) {
+      const aviso = document.createElement('div');
+      aviso.className = "absolute inset-0 flex items-center justify-center text-white/50 text-sm pointer-events-none";
+      aviso.innerText = `Carregando "${nomeTemplate}"…`;
+      wrapper.appendChild(aviso);
+      resolverImagemTemplate(nomeTemplate, (src) => {
+        if (src) {
+          wrapper.style.backgroundImage = `url('${src}')`;
+          aviso.remove();
+        } else {
+          aviso.innerText = `Template "${nomeTemplate}" não pôde ser carregado do Drive`;
+        }
+      });
+    }
+
+    // Cria a "moldura premium" da página (elemento externo dimensionado por
+    // CSS) e a página interna que recebe o fundo do template + os slots.
+    // Retorna a página interna (offsetParent dos slots posicionados em %).
+    function criarMolduraPagina(container, nomeTemplate) {
+      const frame = document.createElement('div');
+      frame.className = "album-page-frame pagina-template-bg rounded-xl";
+      aplicarFundoTemplate(frame, nomeTemplate);
+      container.appendChild(frame);
+      return frame;
     }
 
     function renderizarPaginaEstatica(container, nomeTemplate, rotulo) {
       document.getElementById('pagina-titulo').innerText = rotulo;
-      const url = ESTADO.templates[nomeTemplate];
-
-      const wrapper = document.createElement('div');
-      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
-      wrapper.style.aspectRatio = `${SLOT_MAP.dimensaoReferencia[0]} / ${SLOT_MAP.dimensaoReferencia[1]}`;
-      if (url) {
-        wrapper.style.backgroundImage = `url('${url}')`;
-      } else {
-        wrapper.innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-white/50 text-sm">Template "${nomeTemplate}" ainda não configurado no Drive</div>`;
-      }
-      container.appendChild(wrapper);
+      criarMolduraPagina(container, nomeTemplate);
     }
 
     function renderizarPaginaComSlots(container, nomeTemplate, rotulo) {
       document.getElementById('pagina-titulo').innerText = rotulo;
-      const url = ESTADO.templates[nomeTemplate];
       const tpl = SLOT_MAP.templates[nomeTemplate];
       const slots = (tpl && tpl.slots) || [];
       const dim = SLOT_MAP.dimensaoReferencia;
 
-      const wrapper = document.createElement('div');
-      wrapper.className = "relative w-full mx-auto pagina-template-bg rounded-2xl shadow-2xl";
-      wrapper.style.aspectRatio = `${dim[0]} / ${dim[1]}`;
-      if (url) wrapper.style.backgroundImage = `url('${url}')`;
+      const wrapper = criarMolduraPagina(container, nomeTemplate);
 
       slots.forEach(slot => {
         const slotDiv = document.createElement('div');
@@ -542,28 +799,34 @@
         slotDiv.style.height = (slot.altura / dim[1] * 100) + "%";
         slotDiv.id = `slot_${slot.numero}`;
 
-        const isColada = ESTADO.coladas.includes(slot.numero);
+        // Todo slot é alvo de soltar (destaca em amarelo no dragover).
+        // Sem trava de número — aceita qualquer figurinha arrastada, seja
+        // vinda do inventário ou de outro slot.
+        slotDiv.setAttribute('ondragover', 'allowDrop(event)');
+        slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
+        slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
+        slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
 
-        if (isColada) {
-          renderizarImagemNoSlot(slotDiv, slot, slot.numero);
-        } else {
-          slotDiv.setAttribute('ondragover', 'allowDrop(event)');
-          slotDiv.setAttribute('ondrop', `drop(event, ${slot.numero})`);
-          slotDiv.setAttribute('ondragenter', 'dragEnter(event)');
-          slotDiv.setAttribute('ondragleave', 'dragLeave(event)');
+        // colada = qual figurinha está neste slot ({s: slot, f: figurinha}).
+        const colada = ESTADO.coladas.find(c => c.s === slot.numero);
+        if (colada) {
+          renderizarImagemNoSlot(slotDiv, slot, colada.f);
+          // Figurinha já colada: pode ser ARRASTADA para outro slot (mover/
+          // trocar) ou CLICADA para voltar ao inventário. Cobre o caso de
+          // ter colado no lugar errado.
+          slotDiv.classList.add('slot-colado');
+          slotDiv.draggable = true;
+          slotDiv.title = 'Arraste para mover de lugar • Clique para devolver ao inventário';
+          slotDiv.setAttribute('ondragstart', `dragStartSlot(event, ${colada.f}, ${slot.numero})`);
+          slotDiv.setAttribute('ondragend', 'dragEnd(event)');
+          slotDiv.setAttribute('onclick', `devolverFigurinha(${slot.numero})`);
+          // Selo de "devolver" que aparece no hover.
+          slotDiv.insertAdjacentHTML('beforeend',
+            '<div class="slot-remover">✕</div>');
         }
 
         wrapper.appendChild(slotDiv);
       });
-
-      if (!url) {
-        const aviso = document.createElement('div');
-        aviso.className = "absolute inset-0 flex items-center justify-center text-white/50 text-sm pointer-events-none";
-        aviso.innerText = `Template "${nomeTemplate}" ainda não configurado no Drive`;
-        wrapper.appendChild(aviso);
-      }
-
-      container.appendChild(wrapper);
     }
 
     function renderizarPaginaAtual() {
@@ -579,7 +842,9 @@
       } else if (pagina.tipo === 'contracapa') {
         renderizarPaginaEstatica(container, 'Contra Capa', 'Contracapa');
       } else {
-        const rotulo = (pagina.template === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.template;
+        let rotulo = (pagina.agencia === 'Comissao Tecnica') ? 'Comissão Técnica' : pagina.agencia;
+        if (pagina.parte) rotulo += ' ' + (ROMANOS[pagina.parte] || pagina.parte);
+        if (pagina.propria) rotulo += ' — SUA AGÊNCIA';
         renderizarPaginaComSlots(container, pagina.template, rotulo);
       }
     }
@@ -603,33 +868,46 @@
 
       ESTADO.inventario.forEach((numero, index) => {
         const fig = obterFigurinhaPorNumero(numero);
-        const isRepetida = ESTADO.coladas.includes(numero);
+        const isRepetida = ESTADO.coladas.some(c => c.f === numero);
         const nomeExibicao = escaparHtml((fig && fig.nome) ? fig.nome : `Nº ${numero}`);
 
         const card = document.createElement('div');
         // Sem overflow-hidden aqui: o selo "DUP" e o tooltip usam posições
-        // fora da caixa (top/bottom negativos) e seriam cortados. Quem
-        // recorta a imagem é o wrapper interno (imgWrapper) só.
-        card.className = "card-inventario shrink-0 w-20 h-24 bg-white rounded-lg border-2 border-slate-300 shadow-md cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
+        // fora da caixa e seriam cortados. Quem recorta a imagem é o
+        // imgWrapper interno.
+        card.className = "card-inventario shrink-0 w-28 flex flex-col cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
         card.draggable = true;
         card.id = `inv_${numero}_${index}`;
         card.setAttribute('ondragstart', `dragStart(event, ${numero}, '${index}')`);
+        card.setAttribute('ondragend', 'dragEnd(event)');
 
+        // Imagem com aspect-ratio de cromo (2:3), grande o suficiente para
+        // ler nome/número impressos na arte da figurinha.
         const imgWrapper = document.createElement('div');
-        imgWrapper.className = "w-full h-full rounded-md overflow-hidden";
-        imgWrapper.innerHTML = (fig && fig.imageUrl)
-          ? `<img src="${fig.imageUrl}" alt="${nomeExibicao}" class="w-full h-full object-cover">`
-          : `<div class="w-full h-full flex items-center justify-center text-lg bg-slate-100">👤</div>`;
+        imgWrapper.className = "w-28 h-40 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md bg-slate-100";
+        imgWrapper.innerHTML = `<div class="w-full h-full flex items-center justify-center text-3xl text-slate-400">👤</div>`;
         card.appendChild(imgWrapper);
+        if (fig) {
+          resolverImagemFigurinha(fig, (src) => {
+            if (src) imgWrapper.innerHTML = `<img src="${src}" alt="${nomeExibicao}" class="w-full h-full object-cover" draggable="false">`;
+          });
+        }
+
+        // Legenda de nome sob o card (a arte impressa é pequena; o texto
+        // garante leitura mesmo antes de colar).
+        const legenda = document.createElement('div');
+        legenda.className = "w-28 text-center mt-1 leading-tight";
+        legenda.innerHTML = `<p class="text-[11px] font-bold text-slate-100 truncate">${nomeExibicao}</p><p class="text-[9px] text-yellow-400 font-black tracking-widest">Nº ${numero}</p>`;
+        card.appendChild(legenda);
 
         if (isRepetida) {
-          card.insertAdjacentHTML('beforeend', `<div class="absolute -top-1 -right-1 bg-slate-700 text-white text-[7px] font-black px-1 py-0.5 rounded shadow z-10">DUP</div>`);
+          card.insertAdjacentHTML('beforeend', `<div class="absolute top-1 right-1 bg-slate-900/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow z-10">DUP</div>`);
         }
 
         card.insertAdjacentHTML('beforeend', `
-          <div class="tooltip-name absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-900 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-50">
+          <div class="tooltip-name absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-50 shadow-lg">
             <div class="font-bold">${nomeExibicao}</div>
-            <div class="text-slate-300 text-[8px]">Nº ${numero}</div>
+            <div class="text-slate-300 text-[9px]">Nº ${numero}</div>
           </div>
         `);
 
@@ -639,16 +917,27 @@
 
     let dragDataCache = null;
 
+    // Origem = inventário: "inv|||<numero>|||<indice>".
     function dragStart(ev, numero, inventarioIndex) {
-      const dataStr = numero + "|||" + inventarioIndex;
+      const dataStr = "inv|||" + numero + "|||" + inventarioIndex;
       ev.dataTransfer.setData("text/plain", dataStr);
       dragDataCache = dataStr;
       ev.dataTransfer.effectAllowed = "move";
       setTimeout(() => ev.target.classList.add('opacity-50'), 0);
     }
 
+    // Origem = slot já colado: "slot|||<figurinha>|||<slotOrigem>".
+    function dragStartSlot(ev, figNumero, origemSlot) {
+      const dataStr = "slot|||" + figNumero + "|||" + origemSlot;
+      ev.dataTransfer.setData("text/plain", dataStr);
+      dragDataCache = dataStr;
+      ev.dataTransfer.effectAllowed = "move";
+      const el = ev.currentTarget;
+      setTimeout(() => el.classList.add('opacity-40'), 0);
+    }
+
     function dragEnd(ev) {
-      ev.target.classList.remove('opacity-50');
+      ev.target.classList.remove('opacity-50', 'opacity-40');
     }
 
     function allowDrop(ev) {
@@ -674,23 +963,73 @@
 
       let data = ev.dataTransfer.getData("text/plain");
       if (!data) data = dragDataCache;
+      dragDataCache = null;
       if (!data) return;
 
       const partes = data.split("|||");
-      const dragNumero = parseInt(partes[0], 10);
-      const invIndex = parseInt(partes[1], 10);
+      const origem = partes[0];
 
-      if (dragNumero === slotNumero) {
-        colarFigurinha(dragNumero, invIndex);
-      } else {
-        mostrarToast("Figurinha errada para este espaço!", "error");
+      // SEM trava de número: a figurinha é colada no slot em que foi solta,
+      // seja qual for o número dela.
+      if (origem === "inv") {
+        const dragNumero = parseInt(partes[1], 10);
+        const invIndex = parseInt(partes[2], 10);
+        if (isNaN(dragNumero) || isNaN(invIndex)) return;
+        colarFigurinhaDoInventario(slotNumero, dragNumero, invIndex);
+      } else if (origem === "slot") {
+        const figNumero = parseInt(partes[1], 10);
+        const origemSlot = parseInt(partes[2], 10);
+        if (isNaN(figNumero) || isNaN(origemSlot) || origemSlot === slotNumero) return;
+        moverEntreSlots(origemSlot, slotNumero);
       }
     }
 
-    function colarFigurinha(numero, inventarioIndex) {
-      ESTADO.inventario.splice(inventarioIndex, 1);
-      ESTADO.coladas.push(numero);
-      mostrarToast("Figurinha Colada com Sucesso!");
+    // Cola uma figurinha vinda do inventário. Se o slot de destino já estiver
+    // ocupado, o antigo ocupante volta para o inventário (troca).
+    function colarFigurinhaDoInventario(slotNumero, figNumero, inventarioIndex) {
+      if (inventarioIndex >= 0 && inventarioIndex < ESTADO.inventario.length) {
+        ESTADO.inventario.splice(inventarioIndex, 1);
+      }
+      const existente = ESTADO.coladas.find(c => c.s === slotNumero);
+      if (existente) {
+        ESTADO.inventario.push(existente.f);
+        existente.f = figNumero;
+      } else {
+        ESTADO.coladas.push({ s: slotNumero, f: figNumero });
+      }
+      mostrarToast("Figurinha Nº " + figNumero + " colada!");
+      renderizarPaginaAtual();
+      atualizarUI();
+    }
+
+    // Move a figurinha de um slot para outro. Se o destino já tiver uma
+    // figurinha, as duas trocam de lugar (swap).
+    function moverEntreSlots(origemSlot, destinoSlot) {
+      const origem = ESTADO.coladas.find(c => c.s === origemSlot);
+      if (!origem) return;
+      const destino = ESTADO.coladas.find(c => c.s === destinoSlot);
+      if (destino) {
+        const tmp = destino.f;
+        destino.f = origem.f;
+        origem.f = tmp;
+        mostrarToast("Figurinhas trocadas de lugar.");
+      } else {
+        ESTADO.coladas.push({ s: destinoSlot, f: origem.f });
+        ESTADO.coladas = ESTADO.coladas.filter(c => c.s !== origemSlot);
+        mostrarToast("Figurinha Nº " + origem.f + " movida.");
+      }
+      renderizarPaginaAtual();
+      atualizarUI();
+    }
+
+    // Devolve a figurinha de um slot ao inventário (clique sobre a colada).
+    function devolverFigurinha(slotNumero) {
+      const idx = ESTADO.coladas.findIndex(c => c.s === slotNumero);
+      if (idx === -1) return;
+      const figNumero = ESTADO.coladas[idx].f;
+      ESTADO.coladas.splice(idx, 1);
+      ESTADO.inventario.push(figNumero);
+      mostrarToast("Figurinha Nº " + figNumero + " devolvida ao inventário.");
       renderizarPaginaAtual();
       atualizarUI();
     }
@@ -754,7 +1093,7 @@
 
       numeros.forEach((numero, i) => {
         const fig = obterFigurinhaPorNumero(numero);
-        const jaTinha = ESTADO.coladas.includes(numero) || ESTADO.inventario.filter(n => n === numero).length > 1;
+        const jaTinha = ESTADO.coladas.some(c => c.f === numero) || ESTADO.inventario.filter(n => n === numero).length > 1;
 
         const wrapper = document.createElement('div');
         wrapper.className = "perspective-1000 w-32 h-48 md:w-40 md:h-56 cursor-pointer";
@@ -771,17 +1110,19 @@
         // cortado fora da borda.
         const labelRepetida = jaTinha ? `<div class="absolute top-1 right-1 bg-slate-800 text-white text-[9px] font-black px-2 py-1 rounded-md shadow-lg z-10">REPETIDA</div>` : '';
 
-        if (fig && fig.imageUrl) {
-          front.innerHTML = `${labelRepetida}<img src="${fig.imageUrl}" alt="Figurinha ${numero}" class="w-full h-full object-cover">`;
-        } else {
-          front.innerHTML = `
+        const placeholderCarta = `
             ${labelRepetida}
             <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 mb-2 flex items-center justify-center text-4xl shadow-inner">👤</div>
               <p class="text-xs font-extrabold text-slate-800 uppercase leading-tight">Nº ${numero}</p>
-              <div class="mt-auto w-full bg-slate-100 py-1 rounded border border-slate-200"><span class="text-[8px] uppercase tracking-widest font-black text-slate-400">Sem imagem</span></div>
+              <div class="mt-auto w-full bg-slate-100 py-1 rounded border border-slate-200"><span class="text-[8px] uppercase tracking-widest font-black text-slate-400">Carregando…</span></div>
             </div>
           `;
+        front.innerHTML = placeholderCarta;
+        if (fig) {
+          resolverImagemFigurinha(fig, (src) => {
+            if (src) front.innerHTML = `${labelRepetida}<img src="${src}" alt="Figurinha ${numero}" class="w-full h-full object-cover">`;
+          });
         }
 
         const back = document.createElement('div');

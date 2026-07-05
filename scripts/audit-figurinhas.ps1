@@ -1,14 +1,14 @@
 ﻿# Auditoria de arquivos em "Figurinhas Copa Excelencia/"
 # Extrai numero(s) + nome do padrao de nome de arquivo e cruza com os numeros
 # de slot esperados por obterSlotsPorAgencia() (codigo.gs).
-# Gera relatorio em RELATORIO_AUDITORIA_FIGURINHAS.md na raiz do projeto.
+# Gera relatorio em docs/RELATORIO_AUDITORIA_FIGURINHAS.md na raiz do projeto.
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-$root = "C:\Users\Gabriel\Desktop\Projeto Album"
+$root = Split-Path -Parent $PSScriptRoot
 $figDir = Join-Path $root "Figurinhas Copa Excelencia"
-$outFile = Join-Path $root "RELATORIO_AUDITORIA_FIGURINHAS.md"
+$outFile = Join-Path $root "docs\RELATORIO_AUDITORIA_FIGURINHAS.md"
 
 # Mapeamento REAL confirmado contra os templates em "TEMPLATE - ALBUM/" (2026-07-02).
 # codigo.gs:obterSlotsPorAgencia() ainda está desatualizado em relação a isto - ver
