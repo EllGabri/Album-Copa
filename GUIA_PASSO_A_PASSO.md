@@ -114,80 +114,129 @@ NOTA: Usar PONTO-E-VÍRGULA (;) entre argumentos
 Célula D2:
 =CONTARSES(Store_Gerente!G:G; A2; 
            Store_Gerente!H:H; "Ativo Comercial";
-           Store_Gerente!A:A; ">="&DATA(2026;6;1);
-           Store_Gerente!A:A; "<="&DATA(2026;8;31);
+           Store_Gerente!B:B; "06/2026";
            Store_Gerente!J:J; ">0")
++ 
+CONTARSES(Store_Gerente!G:G; A2; 
+          Store_Gerente!H:H; "Ativo Comercial";
+          Store_Gerente!B:B; "07/2026";
+          Store_Gerente!J:J; ">0")
++
+CONTARSES(Store_Gerente!G:G; A2; 
+          Store_Gerente!H:H; "Ativo Comercial";
+          Store_Gerente!B:B; "08/2026";
+          Store_Gerente!J:J; ">0")
 
 Copiar para todas as linhas (D:D)
 Resultado: 1 gol por unidade
 
-NOTA: Filtro de data usa coluna A (dt_base).
-      Coluna B (ds_periodo) contém período em formato "MM/AAAA" se preferir filtrar por período específico.
+NOTA: Filtra por período (coluna B) nos formatos "06/2026", "07/2026", "08/2026"
+      Soma os três períodos (junho, julho, agosto)
 ```
 
 ### Passo 2.6: Calcular Seguro de Vida (Coluna E)
 ```
 Célula E2:
-=CONTARSES(Store_Gerente!G:G; A2;
-           Store_Gerente!H:H; "Seguro de Vida";
-           Store_Gerente!A:A; ">="&DATA(2026;6;1);
-           Store_Gerente!A:A; "<="&DATA(2026;8;31);
-           Store_Gerente!J:J; ">0") * 2
+=(CONTARSES(Store_Gerente!G:G; A2;
+            Store_Gerente!H:H; "Seguro de Vida";
+            Store_Gerente!B:B; "06/2026";
+            Store_Gerente!J:J; ">0")
+ + CONTARSES(Store_Gerente!G:G; A2;
+             Store_Gerente!H:H; "Seguro de Vida";
+             Store_Gerente!B:B; "07/2026";
+             Store_Gerente!J:J; ">0")
+ + CONTARSES(Store_Gerente!G:G; A2;
+             Store_Gerente!H:H; "Seguro de Vida";
+             Store_Gerente!B:B; "08/2026";
+             Store_Gerente!J:J; ">0")) * 2
 
 Copiar para todas as linhas (E:E)
 Resultado: 2 gols por unidade
+NOTA: Soma os três períodos (06, 07, 08/2026), depois multiplica por 2
 ```
 
 ### Passo 2.7: Calcular Consórcio (Coluna F)
 ```
 Célula F2:
-=CONTARSES(Store_Gerente!G:G; A2;
-           Store_Gerente!H:H; "Consórcio";
-           Store_Gerente!A:A; ">="&DATA(2026;6;1);
-           Store_Gerente!A:A; "<="&DATA(2026;8;31);
-           Store_Gerente!J:J; ">0") * 4
+=(CONTARSES(Store_Gerente!G:G; A2;
+            Store_Gerente!H:H; "Consórcio";
+            Store_Gerente!B:B; "06/2026";
+            Store_Gerente!J:J; ">0")
+ + CONTARSES(Store_Gerente!G:G; A2;
+             Store_Gerente!H:H; "Consórcio";
+             Store_Gerente!B:B; "07/2026";
+             Store_Gerente!J:J; ">0")
+ + CONTARSES(Store_Gerente!G:G; A2;
+             Store_Gerente!H:H; "Consórcio";
+             Store_Gerente!B:B; "08/2026";
+             Store_Gerente!J:J; ">0")) * 4
 
 Copiar para todas as linhas (F:F)
 Resultado: 4 gols por unidade
+NOTA: Soma os três períodos, depois multiplica por 4
 ```
 
 ### Passo 2.8: Calcular Depósitos Totais (Coluna G)
 ```
 Célula G2:
-=INT(SOMASES(Store_Gerente!J:J;
-             Store_Gerente!G:G; A2;
-             Store_Gerente!H:H; "Depósitos Totais";
-             Store_Gerente!A:A; ">="&DATA(2026;6;1);
-             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 4
+=INT((SOMASES(Store_Gerente!J:J;
+              Store_Gerente!G:G; A2;
+              Store_Gerente!H:H; "Depósitos Totais";
+              Store_Gerente!B:B; "06/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Depósitos Totais";
+                Store_Gerente!B:B; "07/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Depósitos Totais";
+                Store_Gerente!B:B; "08/2026")) / 10000) * 4
 
 Copiar para todas as linhas (G:G)
 Resultado: 4 gols a cada R$ 10.000
+NOTA: Soma Depósitos dos três períodos, divide por 10mil, multiplica por 4
 ```
 
 ### Passo 2.9: Calcular Crédito Comercial (Coluna H)
 ```
 Célula H2:
-=INT(SOMASES(Store_Gerente!J:J;
-             Store_Gerente!G:G; A2;
-             Store_Gerente!H:H; "Crédito Comercial";
-             Store_Gerente!A:A; ">="&DATA(2026;6;1);
-             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 4
+=INT((SOMASES(Store_Gerente!J:J;
+              Store_Gerente!G:G; A2;
+              Store_Gerente!H:H; "Crédito Comercial";
+              Store_Gerente!B:B; "06/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Crédito Comercial";
+                Store_Gerente!B:B; "07/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Crédito Comercial";
+                Store_Gerente!B:B; "08/2026")) / 10000) * 4
 
 Copiar para todas as linhas (H:H)
 Resultado: 4 gols a cada R$ 10.000
+NOTA: Soma Crédito dos três períodos, divide por 10mil, multiplica por 4
 ```
 
 ### Passo 2.10: Calcular Capital Social (Coluna I)
 ```
 Célula I2:
-=INT(SOMASES(Store_Gerente!J:J;
-             Store_Gerente!G:G; A2;
-             Store_Gerente!H:H; "Capital Social";
-             Store_Gerente!A:A; ">="&DATA(2026;6;1);
-             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 5
+=INT((SOMASES(Store_Gerente!J:J;
+              Store_Gerente!G:G; A2;
+              Store_Gerente!H:H; "Capital Social";
+              Store_Gerente!B:B; "06/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Capital Social";
+                Store_Gerente!B:B; "07/2026")
+      + SOMASES(Store_Gerente!J:J;
+                Store_Gerente!G:G; A2;
+                Store_Gerente!H:H; "Capital Social";
+                Store_Gerente!B:B; "08/2026")) / 10000) * 5
 
 Copiar para todas as linhas (I:I)
 Resultado: 5 gols a cada R$ 10.000
+NOTA: Soma Capital Social dos três períodos, divide por 10mil, multiplica por 5
 ```
 
 ---
