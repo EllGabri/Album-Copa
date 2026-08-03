@@ -114,8 +114,8 @@ NOTA: Usar PONTO-E-VÍRGULA (;) entre argumentos
 Célula D2:
 =CONTARSES(Store_Gerente!G:G; A2; 
            Store_Gerente!H:H; "Ativo Comercial";
-           Store_Gerente!A:A; ">="&DATA(2024;6;1);
-           Store_Gerente!A:A; "<="&DATA(2024;8;31);
+           Store_Gerente!A:A; ">="&DATA(2026;6;1);
+           Store_Gerente!A:A; "<="&DATA(2026;8;31);
            Store_Gerente!J:J; ">0")
 
 Copiar para todas as linhas (D:D)
@@ -127,8 +127,8 @@ Resultado: 1 gol por unidade
 Célula E2:
 =CONTARSES(Store_Gerente!G:G; A2;
            Store_Gerente!H:H; "Seguro de Vida";
-           Store_Gerente!A:A; ">="&DATA(2024;6;1);
-           Store_Gerente!A:A; "<="&DATA(2024;8;31);
+           Store_Gerente!A:A; ">="&DATA(2026;6;1);
+           Store_Gerente!A:A; "<="&DATA(2026;8;31);
            Store_Gerente!J:J; ">0") * 2
 
 Copiar para todas as linhas (E:E)
@@ -140,8 +140,8 @@ Resultado: 2 gols por unidade
 Célula F2:
 =CONTARSES(Store_Gerente!G:G; A2;
            Store_Gerente!H:H; "Consórcio";
-           Store_Gerente!A:A; ">="&DATA(2024;6;1);
-           Store_Gerente!A:A; "<="&DATA(2024;8;31);
+           Store_Gerente!A:A; ">="&DATA(2026;6;1);
+           Store_Gerente!A:A; "<="&DATA(2026;8;31);
            Store_Gerente!J:J; ">0") * 4
 
 Copiar para todas as linhas (F:F)
@@ -154,8 +154,8 @@ Célula G2:
 =INT(SOMASES(Store_Gerente!J:J;
              Store_Gerente!G:G; A2;
              Store_Gerente!H:H; "Depósitos Totais";
-             Store_Gerente!A:A; ">="&DATA(2024;6;1);
-             Store_Gerente!A:A; "<="&DATA(2024;8;31)) / 10000) * 4
+             Store_Gerente!A:A; ">="&DATA(2026;6;1);
+             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 4
 
 Copiar para todas as linhas (G:G)
 Resultado: 4 gols a cada R$ 10.000
@@ -167,8 +167,8 @@ Célula H2:
 =INT(SOMASES(Store_Gerente!J:J;
              Store_Gerente!G:G; A2;
              Store_Gerente!H:H; "Crédito Comercial";
-             Store_Gerente!A:A; ">="&DATA(2024;6;1);
-             Store_Gerente!A:A; "<="&DATA(2024;8;31)) / 10000) * 4
+             Store_Gerente!A:A; ">="&DATA(2026;6;1);
+             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 4
 
 Copiar para todas as linhas (H:H)
 Resultado: 4 gols a cada R$ 10.000
@@ -180,8 +180,8 @@ Célula I2:
 =INT(SOMASES(Store_Gerente!J:J;
              Store_Gerente!G:G; A2;
              Store_Gerente!H:H; "Capital Social";
-             Store_Gerente!A:A; ">="&DATA(2024;6;1);
-             Store_Gerente!A:A; "<="&DATA(2024;8;31)) / 10000) * 5
+             Store_Gerente!A:A; ">="&DATA(2026;6;1);
+             Store_Gerente!A:A; "<="&DATA(2026;8;31)) / 10000) * 5
 
 Copiar para todas as linhas (I:I)
 Resultado: 5 gols a cada R$ 10.000
@@ -196,32 +196,32 @@ Resultado: 5 gols a cada R$ 10.000
 Célula J2:
 =SOMASES(Store_Gerente!J:J;
          Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2024;6;1);
+         Store_Gerente!A:A; ">="&DATA(2026;6;1);
          Store_Gerente!A:A; "<="&DATA(2024;6;30);
          Store_Gerente!H:H; "Ativo Comercial")
 + SOMASES(Store_Gerente!J:J;
           Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2024;6;1);
+          Store_Gerente!A:A; ">="&DATA(2026;6;1);
           Store_Gerente!A:A; "<="&DATA(2024;6;30);
           Store_Gerente!H:H; "Seguro de Vida") * 2
 + SOMASES(Store_Gerente!J:J;
           Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2024;6;1);
+          Store_Gerente!A:A; ">="&DATA(2026;6;1);
           Store_Gerente!A:A; "<="&DATA(2024;6;30);
           Store_Gerente!H:H; "Consórcio") * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;6;1);
+              Store_Gerente!A:A; ">="&DATA(2026;6;1);
               Store_Gerente!A:A; "<="&DATA(2024;6;30);
               Store_Gerente!H:H; "Depósitos Totais") / 10000) * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;6;1);
+              Store_Gerente!A:A; ">="&DATA(2026;6;1);
               Store_Gerente!A:A; "<="&DATA(2024;6;30);
               Store_Gerente!H:H; "Crédito Comercial") / 10000) * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;6;1);
+              Store_Gerente!A:A; ">="&DATA(2026;6;1);
               Store_Gerente!A:A; "<="&DATA(2024;6;30);
               Store_Gerente!H:H; "Capital Social") / 10000) * 5
 
@@ -234,33 +234,33 @@ Multiplicador Junho: 1.0x (não precisa multiplicar)
 Célula K2 (MESMA FÓRMULA, MAS MÊS = 7 E DATA 07-01 a 07-31):
 =SOMASES(Store_Gerente!J:J;
          Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2024;7;1);
-         Store_Gerente!A:A; "<="&DATA(2024;7;31);
+         Store_Gerente!A:A; ">="&DATA(2026;7;1);
+         Store_Gerente!A:A; "<="&DATA(2026;7;31);
          Store_Gerente!H:H; "Ativo Comercial")
 + SOMASES(Store_Gerente!J:J;
           Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2024;7;1);
-          Store_Gerente!A:A; "<="&DATA(2024;7;31);
+          Store_Gerente!A:A; ">="&DATA(2026;7;1);
+          Store_Gerente!A:A; "<="&DATA(2026;7;31);
           Store_Gerente!H:H; "Seguro de Vida") * 2
 + SOMASES(Store_Gerente!J:J;
           Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2024;7;1);
-          Store_Gerente!A:A; "<="&DATA(2024;7;31);
+          Store_Gerente!A:A; ">="&DATA(2026;7;1);
+          Store_Gerente!A:A; "<="&DATA(2026;7;31);
           Store_Gerente!H:H; "Consórcio") * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;7;1);
-              Store_Gerente!A:A; "<="&DATA(2024;7;31);
+              Store_Gerente!A:A; ">="&DATA(2026;7;1);
+              Store_Gerente!A:A; "<="&DATA(2026;7;31);
               Store_Gerente!H:H; "Depósitos Totais") / 10000) * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;7;1);
-              Store_Gerente!A:A; "<="&DATA(2024;7;31);
+              Store_Gerente!A:A; ">="&DATA(2026;7;1);
+              Store_Gerente!A:A; "<="&DATA(2026;7;31);
               Store_Gerente!H:H; "Crédito Comercial") / 10000) * 4
 + INT(SOMASES(Store_Gerente!J:J;
               Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2024;7;1);
-              Store_Gerente!A:A; "<="&DATA(2024;7;31);
+              Store_Gerente!A:A; ">="&DATA(2026;7;1);
+              Store_Gerente!A:A; "<="&DATA(2026;7;31);
               Store_Gerente!H:H; "Capital Social") / 10000) * 5
 
 Copiar para K:K
@@ -272,13 +272,13 @@ Multiplicador Julho: 1.5x (será multiplicado em coluna M)
 Célula L2 (MESMA FÓRMULA, MAS MÊS = 8 E DATA 08-01 a 08-31):
 =SOMASES(Store_Gerente!J:J;
          Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2024;8;1);
-         Store_Gerente!A:A; "<="&DATA(2024;8;31);
+         Store_Gerente!A:A; ">="&DATA(2026;8;1);
+         Store_Gerente!A:A; "<="&DATA(2026;8;31);
          Store_Gerente!H:H; "Ativo Comercial")
 + SOMASES(Store_Gerente!J:J;
           Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2024;8;1);
-          Store_Gerente!A:A; "<="&DATA(2024;8;31);
+          Store_Gerente!A:A; ">="&DATA(2026;8;1);
+          Store_Gerente!A:A; "<="&DATA(2026;8;31);
           Store_Gerente!H:H; "Seguro de Vida") * 2
 ... (continuar para todos os indicadores com DATA 08-01 a 08-31)
 
@@ -453,9 +453,9 @@ NOTA: Usar PONTO-E-VÍRGULA (;) e não VÍRGULA (,)
 Célula P1: Ranking_Visivel
 
 Célula P2:
-=SE(HOJE() <= DATA(2024;8;15);
+=SE(HOJE() <= DATA(2026;8;15);
     N2;
-    SE(HOJE() <= DATA(2024;8;31);
+    SE(HOJE() <= DATA(2026;8;31);
        "🔐 OCULTO";
        N2))
 
