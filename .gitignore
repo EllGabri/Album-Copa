@@ -1,0 +1,15 @@
+# Artefatos de sessão/ferramentas locais de planejamento (não fazem parte do produto)
+.last_inbox_check
+changed-files.jsonl
+cursor-notification.md
+pm-notification.md
+plans-state.json
+plans.flock
+session-events.jsonl.lock
+session.events.jsonl
+session.json
+session-log.md
+settings.local.json
+launch.json
+.vscode/
+__pycache__/

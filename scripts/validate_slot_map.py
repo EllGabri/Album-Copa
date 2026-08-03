@@ -19,25 +19,31 @@ from collections import Counter
 SLOT_MAP_PATH = os.path.join(os.path.dirname(__file__), "..", "slotMap.json")
 
 # Espelha codigo.gs: SLOTS_COMISSAO_TECNICA + obterMapeamentoCompletoDeSlots()
+# Ranges corrigidos em 2026-07-05 apos investigacao completa (leitura visual
+# de todos os 19 templates) - ver Fase 11 do Plans.md.
 SLOTS_COMISSAO_TECNICA = list(range(1, 11))
 POOL_POR_AGENCIA = {
-    "Pac Bela Vista Do Toldo": list(range(147, 156)),
+    "Pac Bela Vista Do Toldo": list(range(146, 155)),
     "Pac São Joaquim": list(range(11, 29)),
     "Pac Canoinhas": list(range(29, 42)),
-    "Pac Lages": list(range(42, 52)),
-    "Pac Lages Ii": list(range(52, 63)),
-    "Pac Porto União": list(range(63, 73)),
-    "Pac Otacilio Costa": list(range(73, 84)),
-    "Pac Correia Pinto": list(range(84, 93)),
-    "Pac Irineópolis": list(range(93, 105)),
-    "Pac Major Vieira": list(range(105, 116)),
-    "Pac Bom Jardim Da Serra": list(range(116, 123)),
-    "Pac Timbó Grande": list(range(123, 131)),
-    "Pac Monte Castelo": list(range(131, 139)),
-    "Pac Ponte Alta": list(range(139, 147)),
-    "Pac Santa Cruz Do Timbo": list(range(156, 163)),
+    "Pac Lages": list(range(51, 62)),
+    "Pac Lages Ii": list(range(42, 51)) + [162],
+    "Pac Porto União": list(range(62, 72)),
+    "Pac Otacilio Costa": list(range(72, 83)),
+    "Pac Correia Pinto": list(range(83, 92)),
+    "Pac Irineópolis": list(range(92, 103)),
+    "Pac Major Vieira": list(range(103, 114)),
+    "Pac Bom Jardim Da Serra": list(range(114, 121)),
+    "Pac Timbó Grande": list(range(121, 129)),
+    "Pac Monte Castelo": list(range(129, 138)),
+    "Pac Ponte Alta": list(range(138, 146)),
+    "Pac Santa Cruz Do Timbo": list(range(155, 162)),
 }
-NUMEROS_SEM_FIGURINHA_CONFIRMADOS = {162}
+# "162" deixou de ser um numero sem figurinha: passou a pertencer a
+# Pac Lages Ii (slot que tinha "41" duplicado com Canoinhas, renumerado por
+# decisao do usuario em 2026-07-05). Nenhum numero sem figurinha confirmado
+# no momento.
+NUMEROS_SEM_FIGURINHA_CONFIRMADOS = set()
 
 
 def main():

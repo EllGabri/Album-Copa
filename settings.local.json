@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Gabriel\\\\Desktop\\\\Projeto Album\\\\scripts\\\\audit-figurinhas.ps1\")"
-    ]
-  }
-}
