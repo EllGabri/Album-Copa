@@ -244,16 +244,21 @@
     <!-- ==================== AJUSTE 5: Inventário Expansível ==================== -->
     <div class="shrink-0 bg-slate-900 border-t-4 border-slate-700 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-40">
       <div class="max-w-[1400px] mx-auto">
-        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+        <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest mb-2 flex items-center gap-2 flex-wrap">
           <span>🎒 O Seu Inventário (Figurinhas por Colar)</span>
           <span class="bg-slate-800 px-2 py-0.5 rounded-md text-white border border-slate-600" id="inventario-count">0</span>
           <span class="text-[10px] text-slate-500 font-medium normal-case tracking-normal">Arraste a figurinha e largue na silhueta correta da página.</span>
+          <button onclick="trocarRepetidas()" id="btn-trocar-repetidas" class="hidden ml-auto bg-orange-500 hover:bg-orange-400 text-slate-900 text-[10px] font-black uppercase px-3 py-1.5 rounded transition-colors">
+            🔄 Trocar Repetidas (<span id="trocar-repetidas-count">0</span>)
+          </button>
         </h3>
 
-        <div class="inventario-bar bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-3 backdrop-blur-sm">
-          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[180px] items-center px-2">
+        <div class="inventario-bar bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-3 backdrop-blur-sm relative">
+          <button onclick="rolarInventario(-1)" id="inventario-seta-esq" class="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 items-center justify-center rounded-full bg-slate-900/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg transition-colors">‹</button>
+          <div id="inventario-container" class="flex overflow-x-auto gap-3 hide-scrollbar min-h-[180px] items-center px-2 scroll-smooth">
             <div class="text-slate-600 text-xs italic py-2" id="inventario-vazio">Sem figurinhas novas. Abra um pacote!</div>
           </div>
+          <button onclick="rolarInventario(1)" id="inventario-seta-dir" class="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 items-center justify-center rounded-full bg-slate-900/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg transition-colors">›</button>
         </div>
       </div>
     </div>
@@ -860,6 +865,16 @@
 
       countLabel.innerText = ESTADO.inventario.length;
 
+      const indicesRepetidos = new Set(obterIndicesRepetidos());
+
+      const btnTrocar = document.getElementById('btn-trocar-repetidas');
+      if (indicesRepetidos.size >= MINIMO_PARA_TROCAR_REPETIDAS) {
+        document.getElementById('trocar-repetidas-count').innerText = indicesRepetidos.size;
+        btnTrocar.classList.remove('hidden');
+      } else {
+        btnTrocar.classList.add('hidden');
+      }
+
       if (ESTADO.inventario.length === 0) {
         vazioMsg.style.display = 'block';
         return;
@@ -868,18 +883,21 @@
 
       ESTADO.inventario.forEach((numero, index) => {
         const fig = obterFigurinhaPorNumero(numero);
-        const isRepetida = ESTADO.coladas.some(c => c.f === numero);
+        const isRepetida = indicesRepetidos.has(index);
         const nomeExibicao = escaparHtml((fig && fig.nome) ? fig.nome : `Nº ${numero}`);
 
         const card = document.createElement('div');
-        // Sem overflow-hidden aqui: o selo "DUP" e o tooltip usam posições
-        // fora da caixa e seriam cortados. Quem recorta a imagem é o
-        // imgWrapper interno.
+        // Sem overflow-hidden aqui: o selo "REPETIDA" e o tooltip usam
+        // posições fora da caixa e seriam cortados. Quem recorta a imagem é
+        // o imgWrapper interno.
         card.className = "card-inventario shrink-0 w-28 flex flex-col cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform relative group";
         card.draggable = true;
         card.id = `inv_${numero}_${index}`;
         card.setAttribute('ondragstart', `dragStart(event, ${numero}, '${index}')`);
         card.setAttribute('ondragend', 'dragEnd(event)');
+        if (isRepetida) {
+          card.setAttribute('onclick', `mostrarToast('Figurinha Nº ${numero} está repetida - já colada ou você tem outra cópia.', 'info')`);
+        }
 
         // Imagem com aspect-ratio de cromo (2:3), grande o suficiente para
         // ler nome/número impressos na arte da figurinha.
@@ -901,7 +919,7 @@
         card.appendChild(legenda);
 
         if (isRepetida) {
-          card.insertAdjacentHTML('beforeend', `<div class="absolute top-1 right-1 bg-slate-900/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow z-10">DUP</div>`);
+          card.insertAdjacentHTML('beforeend', `<div class="absolute top-1 right-1 bg-slate-800 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow z-10">REPETIDA</div>`);
         }
 
         card.insertAdjacentHTML('beforeend', `
@@ -1046,6 +1064,35 @@
       document.getElementById('modal-pacote').classList.add('hidden');
     }
 
+    // Sorteia `tamanho` números distintos do pool global (sem repetir dentro
+    // do mesmo sorteio). Se o pool for menor que `tamanho`, completa com o
+    // que sobrar (não repete além do tamanho do pool). Usado tanto na
+    // abertura de pacote quanto na troca de repetidas.
+    function sortearNumeros(tamanho) {
+      const pool = ESTADO.poolDaAgencia || [];
+      const sorteados = [];
+      const usados = new Set();
+      let tentativas = 0;
+      while (sorteados.length < tamanho && tentativas < 200 && pool.length > 0) {
+        const numero = pool[Math.floor(Math.random() * pool.length)];
+        if (!usados.has(numero)) {
+          sorteados.push(numero);
+          usados.add(numero);
+        }
+        tentativas++;
+      }
+      // Pool menor que o tamanho pedido: completa com o que sobrar.
+      if (sorteados.length < tamanho && pool.length > 0) {
+        pool.forEach(numero => {
+          if (sorteados.length < tamanho && !usados.has(numero)) {
+            sorteados.push(numero);
+            usados.add(numero);
+          }
+        });
+      }
+      return sorteados;
+    }
+
     function rasgarPacote() {
       const pack = document.getElementById('pacote-fechado');
       pack.classList.add('anim-shake');
@@ -1053,29 +1100,8 @@
       setTimeout(() => {
         ESTADO.pacotes -= 1;
 
-        const pool = ESTADO.poolDaAgencia || [];
         const tamanho = Math.floor(Math.random() * 2) + 12; // 12 ou 13
-
-        const sorteados = [];
-        const usados = new Set();
-        let tentativas = 0;
-        while (sorteados.length < tamanho && tentativas < 200 && pool.length > 0) {
-          const numero = pool[Math.floor(Math.random() * pool.length)];
-          if (!usados.has(numero)) {
-            sorteados.push(numero);
-            usados.add(numero);
-          }
-          tentativas++;
-        }
-        // Pool menor que o tamanho do pacote: completa com o que sobrar.
-        if (sorteados.length < tamanho && pool.length > 0) {
-          pool.forEach(numero => {
-            if (sorteados.length < tamanho && !usados.has(numero)) {
-              sorteados.push(numero);
-              usados.add(numero);
-            }
-          });
-        }
+        const sorteados = sortearNumeros(tamanho);
 
         sorteados.forEach(numero => ESTADO.inventario.push(numero));
 
@@ -1085,6 +1111,66 @@
         document.getElementById('pacote-aberto').classList.remove('hidden');
         document.getElementById('pacote-aberto').classList.add('flex');
       }, 800);
+    }
+
+    // Retorna os ÍNDICES do inventário que são cópias excedentes: a figurinha
+    // já foi colada em algum slot (esta é 100% sobra) OU já existe uma cópia
+    // anterior dela no próprio inventário (a 1ª cópia continua "precisando
+    // ser colada"; só a 2ª em diante conta como repetida).
+    function obterIndicesRepetidos() {
+      const vistos = new Set();
+      const indices = [];
+      ESTADO.inventario.forEach((numero, idx) => {
+        const jaColada = ESTADO.coladas.some(c => c.f === numero);
+        if (jaColada || vistos.has(numero)) {
+          indices.push(idx);
+        } else {
+          vistos.add(numero);
+        }
+      });
+      return indices;
+    }
+
+    const MINIMO_PARA_TROCAR_REPETIDAS = 5;
+
+    // Troca TODAS as figurinhas repetidas do inventário (cópias excedentes,
+    // ver obterIndicesRepetidos) por um pacote aleatório novo com a mesma
+    // quantidade. Só é chamável quando há pelo menos MINIMO_PARA_TROCAR_REPETIDAS.
+    function trocarRepetidas() {
+      const indicesRepetidos = obterIndicesRepetidos();
+      if (indicesRepetidos.length < MINIMO_PARA_TROCAR_REPETIDAS) return;
+
+      const qtd = indicesRepetidos.length;
+      if (!confirm(`Trocar suas ${qtd} figurinhas repetidas por ${qtd} figurinha(s) nova(s) sorteada(s) aleatoriamente?`)) return;
+
+      // Remove do fim pro início pra não invalidar os índices anteriores.
+      [...indicesRepetidos].sort((a, b) => b - a).forEach(idx => {
+        ESTADO.inventario.splice(idx, 1);
+      });
+
+      const sorteados = sortearNumeros(qtd);
+      sorteados.forEach(numero => ESTADO.inventario.push(numero));
+
+      atualizarUI();
+
+      // Reaproveita o modal de revelação de cartas (mesma experiência de
+      // "novas figurinhas chegaram" usada na abertura de pacote), mas sem
+      // consumir pacote nem mostrar a animação de rasgar embrulho.
+      document.getElementById('modal-pacote').classList.remove('hidden');
+      document.getElementById('pacote-fechado').classList.add('hidden');
+      revelarCartas(sorteados);
+      document.getElementById('pacote-aberto').classList.remove('hidden');
+      document.getElementById('pacote-aberto').classList.add('flex');
+
+      mostrarToast(`Troca concluída: ${qtd} figurinha(s) repetida(s) por ${sorteados.length} nova(s)!`);
+    }
+
+    // Rola o inventário horizontalmente (botões de seta - o scroll por
+    // arraste do mouse não funciona porque os cards são draggable="true",
+    // que sequestra o gesto de clique-e-arraste pro drag-and-drop nativo).
+    function rolarInventario(direcao) {
+      const container = document.getElementById('inventario-container');
+      container.scrollBy({ left: direcao * 320, behavior: 'smooth' });
     }
 
     function revelarCartas(numeros) {
