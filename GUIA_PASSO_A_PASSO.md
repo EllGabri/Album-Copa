@@ -1,228 +1,378 @@
 # 🚀 GUIA PASSO A PASSO - Implementar Dashboard Copa Excelência
+**Estrutura de Dados:** Formato Normalizado (Long Format)
 
-## FASE 1: PREPARAÇÃO (15 minutos)
+## FASE 1: PREPARAÇÃO (10 minutos)
 
-### Passo 1.1: Abrir Google Sheets da Copa
+### Passo 1.1: Verificar Estrutura de Store_Gerente
 ```
-1. Abrir: https://docs.google.com/spreadsheets/
-2. Procurar por: "Copa Excelência" ou "Planilha Copa"
-3. Abrir a planilha
-4. Verificar abas disponíveis (você deve ver):
-   ✓ Store_Agencia
-   ✓ Store_Gerente
-   ✓ Store_Carteira
-   ✓ Configurações_Dashboard (ou similar)
-```
+Coluna A: dt_base (Data)
+Coluna B: ds_periodo (Período)
+Coluna C: cd_cooperativa
+Coluna D: nm_cooperativa
+Coluna E: cd_agencia
+Coluna F: nm_agencia (Agência)
+Coluna G: Gerente
+Coluna H: Indicador (Ativo Comercial, Seguro de Vida, Consórcio, etc.)
+Coluna I: Meta
+Coluna J: Realizado (valor numérico)
+Coluna K: Saldo
 
-### Passo 1.2: Verificar Estrutura de Store_Gerente
-```
-Clicar na aba "Store_Gerente"
-Verificar se tem as colunas:
-✓ Data
-✓ Gerente
-✓ Agência
-✓ Ativo Comercial
-✓ Seguro de Vida
-✓ Consórcio
-✓ Depósitos Totais
-✓ Crédito Comercial
-✓ Capital Social
-✓ Inad 15 (atual)
-
-Se faltarem colunas: PARAR e avisar
+✓ Confirmado? Seguir para Fase 2
 ```
 
-### Passo 1.3: Verificar Estrutura de Store_Agencia
+### Passo 1.2: Verificar Estrutura de Store_Agencia
 ```
-Clicar na aba "Store_Agencia"
-Verificar se tem:
-✓ Agência (nome)
-✓ Grupo (1, 2 ou 3)
-✓ [NOVA] Coluna para Pontos (será criada)
+Coluna A: dt_base
+Coluna B: ds_periodo
+Coluna C: cd_cooperativa
+Coluna D: nm_cooperativa
+Coluna E: cd_agencia
+Coluna F: nm_agencia (Agência)
+Coluna G: Indicador
+Coluna H: Meta
+Coluna I: Realizado
+Coluna J: Saldo
+
+✓ Confirmado? Prosseguir
 ```
 
 ---
 
-## FASE 2: CRIAR COLUNA DE PONTOS PARA GERENTES (30 minutos)
+## FASE 2: CRIAR ABA DE RESUMO POR GERENTE (45 minutos)
 
-### Passo 2.1: Ir para Store_Gerente
-```
-1. Clicar na aba "Store_Gerente"
-2. Descer até encontrar a primeira coluna vazia
-   Exemplo: se as colunas vão até K, usar L
-3. Na primeira linha vazia, adicionar cabeçalho:
-   Escrever: "Pontos_Jun_Ago_Fase1"
-   Pressionar Enter
-```
+**Estratégia:** Usar COUNTIFS e SUMIFS para calcular pontos por gerente
 
-### Passo 2.2: Adicionar Coluna de Fase
+### Passo 2.1: Criar Nova Aba "Resumo_Gerentes"
 ```
-1. Próxima coluna vazia (ex: M), adicionar:
-   "Fase" como cabeçalho
-   
-2. Fórmula para a 2ª linha:
-   =IF(MONTH(A2)=6,1,IF(MONTH(A2)=7,2,IF(MONTH(A2)=8,3,"")))
-   
-   Explicação: Retorna fase (1=Jun, 2=Jul, 3=Ago)
+1. Ir para Google Sheets "Copa Excelência"
+2. Clique no "+" (adicionar aba)
+3. Nomear: "Resumo_Gerentes"
+4. OK
 ```
 
-### Passo 2.3: Adicionar Coluna de Multiplicador
+### Passo 2.2: Criar Cabeçalhos (Linha 1)
 ```
-1. Próxima coluna vazia (ex: N), adicionar:
-   "Multiplicador" como cabeçalho
-   
-2. Fórmula:
-   =IF(M2=2,1.5,1)
-   
-   Explicação: Julho (fase 2) = 1.5x, outros = 1.0x
-```
-
-### Passo 2.4: Adicionar Coluna de Gols Calculados
-```
-1. Próxima coluna vazia (ex: O), adicionar:
-   "Gols_Jun_Ago" como cabeçalho
-   
-2. Fórmula complexa (copiar exatamente):
-   =IF(AND(MONTH(A2)>=6,MONTH(A2)<=8),
-     INT(IF(B2<>"",
-       (IF(C2>0,1,0) +
-        IF(D2>0,2,0) +
-        IF(E2>0,4,0) +
-        INT(F2/10000)*4 +
-        INT(G2/10000)*4 +
-        INT(H2/10000)*5),
-       0)) * N2,
-     0)
+Célula A1: Gerente
+Célula B1: Agencia_Codigo
+Célula C1: Agencia_Nome
+Célula D1: Ativo_Comercial
+Célula E1: Seguro_Vida
+Célula F1: Consorcio
+Célula G1: Depositos_Totais
+Célula H1: Credito_Comercial
+Célula I1: Capital_Social
+Célula J1: Gols_Junho
+Célula K1: Gols_Julho
+Célula L1: Gols_Agosto
+Célula M1: Gols_Julho_1_5x
+Célula N1: Pontos_Finais_Jun_Ago
 ```
 
-### Passo 2.5: Copiar Fórmula para Todas as Linhas
+### Passo 2.3: Listar Gerentes Únicos (Coluna A)
 ```
-1. Clicar na célula com a fórmula (ex: O2)
-2. Copiar (Ctrl+C)
-3. Selecionar a coluna O inteira (de O2 até a última linha)
-4. Colar (Ctrl+V)
-5. Aguardar o cálculo
-```
-
----
-
-## FASE 3: TRATAR INADIMPLÊNCIA (20 minutos)
-
-### Passo 3.1: Criar Coluna de Inad 15 Base (Dezembro)
-```
-1. Próxima coluna vazia (ex: P), adicionar:
-   "Inad15_Base_Dec" como cabeçalho
-   
-2. Fórmula (simular base de dezembro = valor atual):
-   =IF(MONTH(A2)=8, H2, "")
+MANUAL: Copiar lista única de gerentes de Store_Gerente coluna G
+- Colar em Resumo_Gerentes coluna A (a partir de A2)
+- Remover duplicatas (Dados → Remover duplicatas → Coluna A)
+- Resultado: 1 gerente por linha
 ```
 
-### Passo 3.2: Criar Coluna de Inad 15 Atual
+### Passo 2.4: Preencher Agência (Colunas B-C)
 ```
-1. Próxima coluna vazia (ex: Q), adicionar:
-   "Inad15_Atual" como cabeçalho
-   
-2. Fórmula:
-   =IF(MONTH(A2)=8, I2, "")
+Célula B2 (primeiro gerente):
+=IFERROR(INDEX(Store_Gerente!E:E,MATCH(A2,Store_Gerente!G:G,0)),"")
+
+Célula C2:
+=IFERROR(INDEX(Store_Gerente!F:F,MATCH(A2,Store_Gerente!G:G,0)),"")
+
+Copiar B2:C2 para todas as linhas de gerentes
 ```
 
-### Passo 3.3: Calcular Gols de Inadimplência
+### Passo 2.5: Calcular Ativo Comercial (Coluna D)
 ```
-1. Próxima coluna vazia (ex: R), adicionar:
-   "Gols_Inadimplencia" como cabeçalho
-   
-2. Fórmula:
-   =IF(AND(MONTH(A2)>=6,MONTH(A2)<=8),
-     IF(Q2<P2, (P2-Q2)*2, IF(Q2>P2, (Q2-P2)*-5, 0)),
-     0)
+Célula D2:
+=COUNTIFS(Store_Gerente!G:G, A2, 
+          Store_Gerente!H:H, "Ativo Comercial",
+          Store_Gerente!A:A, ">="&DATE(2024,6,1),
+          Store_Gerente!A:A, "<="&DATE(2024,8,31),
+          Store_Gerente!J:J, ">0")
+
+Copiar para todas as linhas (D:D)
+Resultado: 1 gol por unidade
 ```
 
-### Passo 3.4: TOTAL FINAL (com Inadimplência)
+### Passo 2.6: Calcular Seguro de Vida (Coluna E)
 ```
-1. Próxima coluna vazia (ex: S), adicionar:
-   "Pontos_Finais_Jun_Ago" como cabeçalho
-   
-2. Fórmula:
-   =O2 + R2
+Célula E2:
+=COUNTIFS(Store_Gerente!G:G, A2,
+          Store_Gerente!H:H, "Seguro de Vida",
+          Store_Gerente!A:A, ">="&DATE(2024,6,1),
+          Store_Gerente!A:A, "<="&DATE(2024,8,31),
+          Store_Gerente!J:J, ">0") * 2
+
+Copiar para todas as linhas (E:E)
+Resultado: 2 gols por unidade
 ```
 
-### Passo 3.5: Copiar Todas as Fórmulas
+### Passo 2.7: Calcular Consórcio (Coluna F)
 ```
-1. Selecionar coluna P até S (P2:S2)
-2. Copiar (Ctrl+C)
-3. Selecionar P até última linha (P:S)
-4. Colar (Ctrl+V)
-5. Aguardar cálculo
-```
+Célula F2:
+=COUNTIFS(Store_Gerente!G:G, A2,
+          Store_Gerente!H:H, "Consórcio",
+          Store_Gerente!A:A, ">="&DATE(2024,6,1),
+          Store_Gerente!A:A, "<="&DATE(2024,8,31),
+          Store_Gerente!J:J, ">0") * 4
 
----
-
-## FASE 4: AGREGAÇÃO POR AGÊNCIA (25 minutos)
-
-### Passo 4.1: Preparar Store_Agencia
-```
-1. Ir à aba "Store_Agencia"
-2. Inserir coluna nova para "Pontos_Jun_Ago"
-   Exemplo: depois da última coluna usada
+Copiar para todas as linhas (F:F)
+Resultado: 4 gols por unidade
 ```
 
-### Passo 4.2: Criar Fórmula de Soma por Agência
+### Passo 2.8: Calcular Depósitos Totais (Coluna G)
 ```
-1. Na linha 2 da coluna de Pontos, inserir:
-   =SUMIF(Store_Gerente!B:B, A2, Store_Gerente!S:S)
-   
-   Resultado: SOMA de todos os gerentes da agência
-```
+Célula G2:
+=INT(SUMIFS(Store_Gerente!J:J,
+            Store_Gerente!G:G, A2,
+            Store_Gerente!H:H, "Depósitos Totais",
+            Store_Gerente!A:A, ">="&DATE(2024,6,1),
+            Store_Gerente!A:A, "<="&DATE(2024,8,31)) / 10000) * 4
 
-### Passo 4.3: Copiar Fórmula para Todas Agências
-```
-1. Copiar a fórmula
-2. Colar em todas as linhas de agências
-3. Verificar se os valores aparecem
+Copiar para todas as linhas (G:G)
+Resultado: 4 gols a cada R$ 10.000
 ```
 
-### Passo 4.4: VALIDAÇÃO CRÍTICA
+### Passo 2.9: Calcular Crédito Comercial (Coluna H)
 ```
-⚠️ VERIFICAR AGORA:
+Célula H2:
+=INT(SUMIFS(Store_Gerente!J:J,
+            Store_Gerente!G:G, A2,
+            Store_Gerente!H:H, "Crédito Comercial",
+            Store_Gerente!A:A, ">="&DATE(2024,6,1),
+            Store_Gerente!A:A, "<="&DATE(2024,8,31)) / 10000) * 4
 
-1. Abrir Store_Gerente
-2. Ver um gerente qualquer (ex: linha 2)
-3. Anotar a agência dele (coluna B)
-4. Anotar os pontos finais (coluna S)
+Copiar para todas as linhas (H:H)
+Resultado: 4 gols a cada R$ 10.000
+```
 
-5. Ir para Store_Agencia
-6. Procurar pela agência desse gerente
-7. Os pontos devem ser >= ao gerente
+### Passo 2.10: Calcular Capital Social (Coluna I)
+```
+Célula I2:
+=INT(SUMIFS(Store_Gerente!J:J,
+            Store_Gerente!G:G, A2,
+            Store_Gerente!H:H, "Capital Social",
+            Store_Gerente!A:A, ">="&DATE(2024,6,1),
+            Store_Gerente!A:A, "<="&DATE(2024,8,31)) / 10000) * 5
 
-8. Se a agência tem só UM gerente:
-   Os pontos devem ser EXATAMENTE IGUAIS
-   
-Se não forem iguais:
-❌ PARAR e avisar qual é o problema
+Copiar para todas as linhas (I:I)
+Resultado: 5 gols a cada R$ 10.000
 ```
 
 ---
 
-## FASE 5: RANKING E GRUPOS (20 minutos)
+## FASE 3: AGRUPAR PONTOS POR MÊS (30 minutos)
 
-### Passo 5.1: Inserir Coluna de Grupo
+### Passo 3.1: Calcular Gols de Junho (Coluna J)
 ```
-1. Em Store_Agencia, verificar se já tem coluna "Grupo"
-2. Se não tiver, criar e preencher:
-   
-   GRUPO 1:
+Célula J2:
+=SUMIFS(Store_Gerente!J:J,
+        Store_Gerente!G:G, A2,
+        Store_Gerente!A:A, ">="&DATE(2024,6,1),
+        Store_Gerente!A:A, "<="&DATE(2024,6,30),
+        Store_Gerente!H:H, "Ativo Comercial")
++ SUMIFS(Store_Gerente!J:J,
+         Store_Gerente!G:G, A2,
+         Store_Gerente!A:A, ">="&DATE(2024,6,1),
+         Store_Gerente!A:A, "<="&DATE(2024,6,30),
+         Store_Gerente!H:H, "Seguro de Vida") * 2
++ SUMIFS(Store_Gerente!J:J,
+         Store_Gerente!G:G, A2,
+         Store_Gerente!A:A, ">="&DATE(2024,6,1),
+         Store_Gerente!A:A, "<="&DATE(2024,6,30),
+         Store_Gerente!H:H, "Consórcio") * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,6,1),
+             Store_Gerente!A:A, "<="&DATE(2024,6,30),
+             Store_Gerente!H:H, "Depósitos Totais") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,6,1),
+             Store_Gerente!A:A, "<="&DATE(2024,6,30),
+             Store_Gerente!H:H, "Crédito Comercial") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,6,1),
+             Store_Gerente!A:A, "<="&DATE(2024,6,30),
+             Store_Gerente!H:H, "Capital Social") / 10000) * 5
+
+Copiar para J:J
+Multiplicador Junho: 1.0x (não precisa multiplicar)
+```
+
+### Passo 3.2: Calcular Gols de Julho (Coluna K)
+```
+Célula K2 (MESMA FÓRMULA, MAS MÊS = 7 E DATA 07-31):
+=SUMIFS(Store_Gerente!J:J,
+        Store_Gerente!G:G, A2,
+        Store_Gerente!A:A, ">="&DATE(2024,7,1),
+        Store_Gerente!A:A, "<="&DATE(2024,7,31),
+        Store_Gerente!H:H, "Ativo Comercial")
++ SUMIFS(Store_Gerente!J:J,
+         Store_Gerente!G:G, A2,
+         Store_Gerente!A:A, ">="&DATE(2024,7,1),
+         Store_Gerente!A:A, "<="&DATE(2024,7,31),
+         Store_Gerente!H:H, "Seguro de Vida") * 2
++ SUMIFS(Store_Gerente!J:J,
+         Store_Gerente!G:G, A2,
+         Store_Gerente!A:A, ">="&DATE(2024,7,1),
+         Store_Gerente!A:A, "<="&DATE(2024,7,31),
+         Store_Gerente!H:H, "Consórcio") * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,7,1),
+             Store_Gerente!A:A, "<="&DATE(2024,7,31),
+             Store_Gerente!H:H, "Depósitos Totais") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,7,1),
+             Store_Gerente!A:A, "<="&DATE(2024,7,31),
+             Store_Gerente!H:H, "Crédito Comercial") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J,
+             Store_Gerente!G:G, A2,
+             Store_Gerente!A:A, ">="&DATE(2024,7,1),
+             Store_Gerente!A:A, "<="&DATE(2024,7,31),
+             Store_Gerente!H:H, "Capital Social") / 10000) * 5
+
+Copiar para K:K
+Multiplicador Julho: 1.5x (será multiplicado em coluna M)
+```
+
+### Passo 3.3: Calcular Gols de Agosto (Coluna L)
+```
+Célula L2 (MESMA FÓRMULA, MAS MÊS = 8 E DATA 08-01 a 08-31):
+=SUMIFS(Store_Gerente!J:J,
+        Store_Gerente!G:G, A2,
+        Store_Gerente!A:A, ">="&DATE(2024,8,1),
+        Store_Gerente!A:A, "<="&DATE(2024,8,31),
+        Store_Gerente!H:H, "Ativo Comercial")
++ SUMIFS(Store_Gerente!J:J,
+         Store_Gerente!G:G, A2,
+         Store_Gerente!A:A, ">="&DATE(2024,8,1),
+         Store_Gerente!A:A, "<="&DATE(2024,8,31),
+         Store_Gerente!H:H, "Seguro de Vida") * 2
+... (continuar para todos os indicadores com MÊS = 8)
+
+Copiar para L:L
+Multiplicador Agosto: 1.0x (não precisa multiplicar)
+```
+
+---
+
+## FASE 4: TRATAR INADIMPLÊNCIA (20 minutos)
+
+### Passo 4.1: Calcular Gols de Julho com Multiplicador 1.5x (Coluna M)
+```
+Célula M2:
+=K2 * 1.5
+
+Copiar para M:M
+Explicação: Julho recebe multiplicador 1.5x (mata-mata)
+```
+
+### Passo 4.2: Calcular Inadimplência 15 (Coluna O)
+```
+⚠️ Indisponível nos Stores por enquanto
+Por enquanto, deixar coluna vazia ou com 0
+
+Célula O2:
+=0
+
+Futuro: Quando houver dados de Inad15_Base_Dezembro:
+=IF(Inad15_Agosto < Inad15_Dezembro, 
+    (Inad15_Dezembro - Inad15_Agosto) * 2,
+    IF(Inad15_Agosto > Inad15_Dezembro,
+       (Inad15_Agosto - Inad15_Dezembro) * -5,
+       0))
+```
+
+### Passo 4.3: Calcular Total Final de Pontos (Coluna N)
+```
+Célula N2:
+=J2 + M2 + L2 + O2
+
+Explicação:
+- J2 = Gols Junho (1.0x)
+- M2 = Gols Julho (1.5x aplicado)
+- L2 = Gols Agosto (1.0x)
+- O2 = Gols Inadimplência
+
+Copiar para N:N
+```
+
+---
+
+## FASE 5: AGREGAÇÃO POR AGÊNCIA (25 minutos)
+
+### Passo 5.1: Ir para Store_Agencia
+```
+1. Clicar na aba "Store_Agencia"
+2. Localizar primeira coluna vazia após coluna J (Saldo)
+   - Usar coluna L para adicionar cabeçalhos
+```
+
+### Passo 5.2: Criar Coluna de Pontos da Agência (Coluna L)
+```
+Célula L1: Pontos_Finais_Jun_Ago
+
+Célula L2:
+=SUMIF(Resumo_Gerentes!C:C, F2, Resumo_Gerentes!N:N)
+
+Explicação:
+- Procura na coluna F (nm_agencia) de Store_Agencia
+- Localiza a agência em Resumo_Gerentes coluna C (Agencia_Nome)
+- Soma os Pontos_Finais (coluna N) de todos os gerentes dessa agência
+
+Copiar para L:L até última linha com agência
+```
+
+### Passo 5.3: VALIDAÇÃO CRÍTICA - Verificar Agregação
+```
+⚠️ VALIDAR IMEDIATAMENTE:
+
+1. Ir para "Resumo_Gerentes"
+2. Copiar todos os gerentes de UMA agência conhecida
+3. Somar manualmente os Pontos_Finais (coluna N) desses gerentes
+4. Anotar o valor total (ex: 150 pontos)
+
+5. Ir para "Store_Agencia"
+6. Procurar pela mesma agência
+7. Verificar se coluna L mostra EXATAMENTE 150 pontos
+
+✅ DEVE BATER EXATAMENTE
+❌ Se não bater: revisar fórmula do SUMIF
+```
+
+---
+
+## FASE 6: RANKING E GRUPOS (20 minutos)
+
+### Passo 6.1: Verificar Coluna de Grupo (Coluna M)
+```
+1. Em Store_Agencia, verificar se coluna M já tem "Grupo"
+2. Se não tiver, criar cabeçalho em M1: "Grupo"
+3. Preencher manualmente cada agência com 1, 2 ou 3:
+
+GRUPO 1: 1
    - São Joaquim
    - Canoinhas
    - Lages (ambas)
    - Porto União
-   
-   GRUPO 2:
+
+GRUPO 2: 2
    - Correia Pinto
    - Otacílio Costa
    - Irineópolis
    - Major Vieira
-   
-   GRUPO 3:
+
+GRUPO 3: 3
    - Bom Jardim da Serra
    - Timbó Grande
    - Monte Castelo
@@ -231,113 +381,208 @@ Se não forem iguais:
    - Santa Cruz do Timbó
 ```
 
-### Passo 5.2: Ranking Dentro do Grupo
+### Passo 6.2: Criar Coluna de Ranking no Grupo (Coluna N)
 ```
-1. Inserir coluna "Posição_no_Grupo"
-2. Fórmula:
-   =COUNTIFS(Store_Agencia!D:D, D2, Store_Agencia!S:S, ">"&S2) + 1
-   
-   Explicação: Conta quantas agências do mesmo grupo têm pontos maiores + 1
+Célula N1: Posicao_no_Grupo
+
+Célula N2:
+=COUNTIFS(Store_Agencia!M:M, M2, Store_Agencia!L:L, ">"&L2) + 1
+
+Explicação:
+- Procura agências do MESMO grupo (coluna M)
+- Conta quantas têm MAIS pontos (coluna L) que a atual
+- Soma 1 para obter a posição (1º, 2º, 3º, etc)
+
+Copiar para N:N
 ```
 
-### Passo 5.3: Identificar 1º, 2º, 3º Lugar
+### Passo 6.3: Criar Coluna de Premiação (Coluna O)
 ```
-1. Próxima coluna: "Premiação"
-2. Fórmula:
-   =IF(Posicao_Grupo=1,"🥇 1º - R$ 3.000",
-       IF(Posicao_Grupo=2,"🥈 2º - R$ 750",
-          IF(Posicao_Grupo=3,"🥉 3º - R$ 500", "")))
-```
+Célula O1: Premiacao
 
----
+Célula O2:
+=IF(N2=1,"🥇 1º - R$ 3.000",
+    IF(N2=2,"🥈 2º - R$ 750",
+       IF(N2=3,"🥉 3º - R$ 500", "")))
 
-## FASE 6: PLACAR OCULTO (10 minutos)
-
-### Passo 6.1: Criar Coluna de Status
-```
-1. Inserir coluna "Ranking_Visivel"
-2. Fórmula:
-   =IF(TODAY()<=DATE(2024,8,15),
-       POSICAO_NO_GRUPO,
-       IF(TODAY()<=DATE(2024,8,31),
-          "🔐 OCULTO",
-          POSICAO_NO_GRUPO))
-```
-
-### Passo 6.2: Atualizar Visualização do Dashboard
-```
-1. No seu dashboard visual (se tiver um):
-   - Usar coluna "Ranking_Visivel" em vez de "Posicao_no_Grupo"
-   - Quando aparecer "OCULTO", não mostrar número
+Copiar para O:O
+Resultado: Mostra premiação apenas para 1º, 2º e 3º lugar
 ```
 
 ---
 
-## FASE 7: VALIDAÇÃO FINAL (30 minutos)
+## FASE 7: PLACAR OCULTO (10 minutos)
 
-### Passo 7.1: Checklist de Validação
+### Passo 7.1: Criar Coluna de Ranking Visível (Coluna P)
 ```
-☐ Todos os gerentes têm pontos calculados?
-☐ Todas as agências têm soma de gerentes?
-☐ Gerente = Agência quando agência tem 1 gerente?
-☐ Multiplicador 1.5x está aplicado em Julho?
-☐ Inadimplência está calculando corretamente?
-☐ Ranking por grupo está correto?
-☐ 1º, 2º, 3º lugar identificados?
-☐ Placar oculto ativo em 16-31 agosto?
-```
+Célula P1: Ranking_Visivel
 
-### Passo 7.2: Teste de Uma Agência
-```
-Escolher UMA agência conhecida:
+Célula P2:
+=IF(TODAY() <= DATE(2024,8,15),
+    N2,
+    IF(TODAY() <= DATE(2024,8,31),
+       "🔐 OCULTO",
+       N2))
 
-1. Ver quantos gerentes tem em Store_Gerente
-2. Somar pontos finais desses gerentes
-3. Ir em Store_Agencia e conferir se bate
-4. Se não bater, voltar ao Passo 2 e revisar fórmulas
+Copiar para P:P
+
+Explicação:
+- Até 15/08: mostra posição real (1º, 2º, 3º, etc)
+- 16/08 a 31/08: mostra "🔐 OCULTO" (placar escondido)
+- Após 31/08: mostra posição real novamente
 ```
 
-### Passo 7.3: Teste de Ranking
+### Passo 7.2: Usar Ranking_Visivel no Dashboard
 ```
-1. Ir em Store_Agencia
-2. Procurar agência com mais pontos
-3. Verificar se está em 1º lugar
-4. Procurar 2ª e 3ª maiores
-5. Verificar se ranking está correto
+⚠️ NO CÓDIGO DO APPS SCRIPT (codigo.gs):
+   - Substituir referência de Posicao_no_Grupo
+   - Usar coluna P (Ranking_Visivel) para exibir no dashboard
+
+No HTML (Album.html):
+   - Quando campo = "🔐 OCULTO": não exibir número
+   - Exibir apenas o ícone de cadeado
+```
+
+---
+
+## FASE 8: VALIDAÇÃO FINAL (30 minutos)
+
+### Passo 8.1: Validar Aba Resumo_Gerentes
+```
+☐ Todos os gerentes aparecem (lista única)?
+☐ Agência preenchida para cada gerente (lookup)?
+☐ Ativo_Comercial > 0 para alguns gerentes?
+☐ Seguro_Vida * 2 está correto?
+☐ Consórcio * 4 está correto?
+☐ Depósitos_Totais / 10000 * 4 está correto?
+☐ Crédito_Comercial / 10000 * 4 está correto?
+☐ Capital_Social / 10000 * 5 está correto?
+☐ Gols_Junho > 0 para algumas linhas?
+☐ Gols_Julho > 0 para algumas linhas?
+☐ Gols_Julho_1_5x = Gols_Julho * 1.5?
+☐ Pontos_Finais_Jun_Ago = Junho + Julho_1.5x + Agosto?
+```
+
+### Passo 8.2: Validar Store_Agencia (Agregação)
+```
+☐ Coluna L (Pontos_Finais_Jun_Ago) preenchida?
+☐ Todas as agências têm valor > 0?
+☐ Soma de gerentes bate exatamente com agência?
+☐ Coluna M (Grupo) preenchida para todas?
+☐ Coluna N (Posicao_no_Grupo) calculada corretamente?
+☐ Coluna O (Premiacao) mostra 🥇 🥈 🥉?
+☐ Coluna P (Ranking_Visivel) mostra 🔐 OCULTO ou número?
+```
+
+### Passo 8.3: Teste Manual - Agência de Teste
+```
+Escolher 1 agência com 2-3 gerentes:
+
+1. Ir para "Resumo_Gerentes"
+   - Localizar os gerentes dessa agência
+   - Somar Pontos_Finais (coluna N)
+   - Anotar resultado (ex: 500 pontos)
+
+2. Ir para "Store_Agencia"
+   - Localizar a mesma agência
+   - Ver coluna L
+   - Deve ser EXATAMENTE 500 pontos
+
+❌ Se não bater: revisar fórmula SUMIF
+```
+
+### Passo 8.4: Teste Manual - Ranking
+```
+1. Ir para "Store_Agencia"
+2. Procurar agência com MAIOR valor em coluna L
+3. Verificar se coluna N mostra "1"
+4. Procurar agência com SEGUNDO maior valor
+5. Verificar se coluna N mostra "2"
+6. Procurar agência com TERCEIRO maior valor
+7. Verificar se coluna N mostra "3"
+
+❌ Se ranking estiver errado: revisar fórmula COUNTIFS
+```
+
+### Passo 8.5: Teste de Placar Oculto
+```
+Data Atual: verificar em TODAY()
+
+SE data HOJE está entre 16/08 e 31/08:
+   - Coluna P deve mostrar "🔐 OCULTO"
+   - ✓ Correto
+
+SE data HOJE está fora dessa faixa:
+   - Coluna P deve mostrar número (1, 2, 3, etc)
+   - ✓ Correto
+```
+
+### Passo 8.6: Teste de Multiplicador 1.5x
+```
+1. Ir para "Resumo_Gerentes"
+2. Selecionar 1 gerente com Gols_Julho > 0
+3. Verificar: Gols_Julho_1_5x = Gols_Julho * 1.5?
+4. Exemplo: Se Julho = 100, então Julho_1.5x deve ser 150
+   ✓ Correto
+
+5. Verificar Pontos_Finais = Junho + Julho_1.5x + Agosto
+   Exemplo: 80 + 150 + 100 = 330
+   ✓ Correto
 ```
 
 ---
 
 ## 🎯 RESUMO DE AÇÕES
 
-| # | Ação | Tempo | Status |
+| # | Fase | Tempo | Status |
 |---|------|-------|--------|
-| 1 | Preparar e verificar estrutura | 15 min | ⬜ |
-| 2 | Criar colunas de pontos (gerente) | 30 min | ⬜ |
-| 3 | Tratar inadimplência | 20 min | ⬜ |
-| 4 | Agregar para agências | 25 min | ⬜ |
-| 5 | Ranking e grupos | 20 min | ⬜ |
-| 6 | Placar oculto | 10 min | ⬜ |
-| 7 | Validação final | 30 min | ⬜ |
-| **TOTAL** | | **150 min (2.5 horas)** | ⬜ |
+| 1 | Preparação e verificação | 10 min | ⬜ |
+| 2 | Criar aba Resumo_Gerentes + fórmulas | 45 min | ⬜ |
+| 3 | Agrupar pontos por mês (Jun/Jul/Ago) | 30 min | ⬜ |
+| 4 | Tratar inadimplência + total final | 20 min | ⬜ |
+| 5 | Agregação por agência (Store_Agencia) | 25 min | ⬜ |
+| 6 | Ranking e grupos (posição) | 20 min | ⬜ |
+| 7 | Placar oculto (agosto 16-31) | 10 min | ⬜ |
+| 8 | Validação final (testes manuais) | 30 min | ⬜ |
+| **TOTAL** | | **190 min (3.2 horas)** | ⬜ |
 
 ---
 
-## ⚠️ PONTOS DE ATENÇÃO
+## ⚠️ PONTOS CRÍTICOS
 
-1. **Multiplicador 1.5x é CRÍTICO em Julho**
-   - Se esquecer, resultado final fica errado
-   
-2. **Gerente = Agência deve bater EXATAMENTE**
-   - Se não bater, há erro na fórmula
-   
-3. **Período é JUNHO A AGOSTO apenas**
-   - Qualquer outro mês deve ser excluído
-   
-4. **Placar oculto começa em 16/08**
-   - Antes disso mostra ranking
-   - Depois de 31/08 volta a mostrar
+1. **Estrutura de Dados: FORMATO NORMALIZADO**
+   - Cada linha = gerente + indicador (não é pivô)
+   - Use COUNTIFS e SUMIFS com filtro de indicador
+
+2. **Datas: Junho-Agosto APENAS**
+   - Usar DATE(2024,6,1) a DATE(2024,8,31)
+   - Nenhum outro mês deve ser incluído
+
+3. **Multiplicador 1.5x em Julho**
+   - Coluna M = Coluna K * 1.5
+   - Sem isso, pontos finais ficarão errados
+
+4. **Agregação: Gerente = Agência**
+   - Soma de todos os gerentes de 1 agência = pontos da agência
+   - DEVE bater EXATAMENTE (diferença = erro de fórmula)
+
+5. **Ranking por Grupo**
+   - COUNTIFS deve comparar MESMO grupo
+   - Contar quantas agências têm MAIS pontos
+
+6. **Placar Oculto: 16/08 a 31/08**
+   - IF(TODAY() <= DATE(2024,8,31) AND TODAY() >= DATE(2024,8,16))
+   - Mostrar "🔐 OCULTO" neste período
 
 ---
 
-**Próximo:** Após completar tudo, avise para validação final! ✅
+## 📋 CHECKLIST ANTES DE COMEÇAR
+
+- [ ] Leu toda a Fase 1 e confirmou estrutura?
+- [ ] Tem acesso completo ao Google Sheets?
+- [ ] Backup da planilha feito?
+- [ ] Pronto para 3.2 horas de implementação?
+
+---
+
+**Próximo Passo:** Iniciar Phase 1 (Preparação). Após completar cada fase, notifique para validação! ✅
