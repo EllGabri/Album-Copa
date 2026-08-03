@@ -120,6 +120,9 @@ Célula D2:
 
 Copiar para todas as linhas (D:D)
 Resultado: 1 gol por unidade
+
+NOTA: Filtro de data usa coluna A (dt_base).
+      Coluna B (ds_periodo) contém período em formato "MM/AAAA" se preferir filtrar por período específico.
 ```
 
 ### Passo 2.6: Calcular Seguro de Vida (Coluna E)
