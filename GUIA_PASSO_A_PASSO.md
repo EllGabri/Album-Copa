@@ -246,36 +246,12 @@ NOTA: Soma Capital Social dos três períodos, divide por 10mil, multiplica por 
 ### Passo 3.1: Calcular Gols de Junho (Coluna J)
 ```
 Célula J2:
-=SOMASES(Store_Gerente!J:J;
-         Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2026;6;1);
-         Store_Gerente!A:A; "<="&DATA(2024;6;30);
-         Store_Gerente!H:H; "Ativo Comercial")
-+ SOMASES(Store_Gerente!J:J;
-          Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2026;6;1);
-          Store_Gerente!A:A; "<="&DATA(2024;6;30);
-          Store_Gerente!H:H; "Seguro de Vida") * 2
-+ SOMASES(Store_Gerente!J:J;
-          Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2026;6;1);
-          Store_Gerente!A:A; "<="&DATA(2024;6;30);
-          Store_Gerente!H:H; "Consórcio") * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;6;1);
-              Store_Gerente!A:A; "<="&DATA(2024;6;30);
-              Store_Gerente!H:H; "Depósitos Totais") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;6;1);
-              Store_Gerente!A:A; "<="&DATA(2024;6;30);
-              Store_Gerente!H:H; "Crédito Comercial") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;6;1);
-              Store_Gerente!A:A; "<="&DATA(2024;6;30);
-              Store_Gerente!H:H; "Capital Social") / 10000) * 5
+=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0")
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 2
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "06/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "06/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "06/2026") / 10000) * 5
 
 Copiar para J:J
 Multiplicador Junho: 1.0x (não precisa multiplicar)
@@ -283,37 +259,13 @@ Multiplicador Junho: 1.0x (não precisa multiplicar)
 
 ### Passo 3.2: Calcular Gols de Julho (Coluna K)
 ```
-Célula K2 (MESMA FÓRMULA, MAS MÊS = 7 E DATA 07-01 a 07-31):
-=SOMASES(Store_Gerente!J:J;
-         Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2026;7;1);
-         Store_Gerente!A:A; "<="&DATA(2026;7;31);
-         Store_Gerente!H:H; "Ativo Comercial")
-+ SOMASES(Store_Gerente!J:J;
-          Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2026;7;1);
-          Store_Gerente!A:A; "<="&DATA(2026;7;31);
-          Store_Gerente!H:H; "Seguro de Vida") * 2
-+ SOMASES(Store_Gerente!J:J;
-          Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2026;7;1);
-          Store_Gerente!A:A; "<="&DATA(2026;7;31);
-          Store_Gerente!H:H; "Consórcio") * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;7;1);
-              Store_Gerente!A:A; "<="&DATA(2026;7;31);
-              Store_Gerente!H:H; "Depósitos Totais") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;7;1);
-              Store_Gerente!A:A; "<="&DATA(2026;7;31);
-              Store_Gerente!H:H; "Crédito Comercial") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J;
-              Store_Gerente!G:G; A2;
-              Store_Gerente!A:A; ">="&DATA(2026;7;1);
-              Store_Gerente!A:A; "<="&DATA(2026;7;31);
-              Store_Gerente!H:H; "Capital Social") / 10000) * 5
+Célula K2:
+=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0")
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 2
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "07/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "07/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "07/2026") / 10000) * 5
 
 Copiar para K:K
 Multiplicador Julho: 1.5x (será multiplicado em coluna M)
@@ -321,18 +273,13 @@ Multiplicador Julho: 1.5x (será multiplicado em coluna M)
 
 ### Passo 3.3: Calcular Gols de Agosto (Coluna L)
 ```
-Célula L2 (MESMA FÓRMULA, MAS MÊS = 8 E DATA 08-01 a 08-31):
-=SOMASES(Store_Gerente!J:J;
-         Store_Gerente!G:G; A2;
-         Store_Gerente!A:A; ">="&DATA(2026;8;1);
-         Store_Gerente!A:A; "<="&DATA(2026;8;31);
-         Store_Gerente!H:H; "Ativo Comercial")
-+ SOMASES(Store_Gerente!J:J;
-          Store_Gerente!G:G; A2;
-          Store_Gerente!A:A; ">="&DATA(2026;8;1);
-          Store_Gerente!A:A; "<="&DATA(2026;8;31);
-          Store_Gerente!H:H; "Seguro de Vida") * 2
-... (continuar para todos os indicadores com DATA 08-01 a 08-31)
+Célula L2:
+=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0")
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 2
++ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "08/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "08/2026") / 10000) * 4
++ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "08/2026") / 10000) * 5
 
 Copiar para L:L
 Multiplicador Agosto: 1.0x (não precisa multiplicar)
