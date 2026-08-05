@@ -246,43 +246,46 @@ NOTA: Soma Capital Social dos três períodos, divide por 10mil, multiplica por 
 ### Passo 3.1: Calcular Gols de Junho (Coluna J)
 ```
 Célula J2:
-=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0")
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 2
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "06/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "06/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "06/2026") / 10000) * 5
+=COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0")
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 2
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "06/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "06/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "06/2026") / 10000) * 5
 
 Copiar para J:J
 Multiplicador Junho: 1.0x (não precisa multiplicar)
+NOTA: Usar funções em INGLÊS (COUNTIFS, SUMIFS) com separadores PONTO-E-VÍRGULA
 ```
 
 ### Passo 3.2: Calcular Gols de Julho (Coluna K)
 ```
 Célula K2:
-=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0")
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 2
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "07/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "07/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "07/2026") / 10000) * 5
+=COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0")
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 2
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "07/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "07/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "07/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "07/2026") / 10000) * 5
 
 Copiar para K:K
 Multiplicador Julho: 1.5x (será multiplicado em coluna M)
+NOTA: Usar funções em INGLÊS (COUNTIFS, SUMIFS) com separadores PONTO-E-VÍRGULA
 ```
 
 ### Passo 3.3: Calcular Gols de Agosto (Coluna L)
 ```
 Célula L2:
-=CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0")
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 2
-+ CONTARSES(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "08/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "08/2026") / 10000) * 4
-+ INT(SOMASES(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "08/2026") / 10000) * 5
+=COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0")
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 2
++ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "08/2026"; Store_Gerente!J:J; ">0") * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "08/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "08/2026") / 10000) * 4
++ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "08/2026") / 10000) * 5
 
 Copiar para L:L
 Multiplicador Agosto: 1.0x (não precisa multiplicar)
+NOTA: Usar funções em INGLÊS (COUNTIFS, SUMIFS) com separadores PONTO-E-VÍRGULA
 ```
 
 ---
