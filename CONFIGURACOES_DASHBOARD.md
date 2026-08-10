@@ -133,16 +133,12 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 
 **L2 - Gols_Agosto (08/2026):** Trocar `"06/2026"` por `"08/2026"`
 
-**M2 - Multiplicador Julho (1.5x):**
+**M2 - Pontos Finais (Jun-Ago):** Não existe coluna separada de multiplicador — o 1.5x de Julho é aplicado direto na fórmula:
 ```
-=K2 * 1,5
+=J2 + (K2 * 1,5) + L2
 ```
 
-**N2 - Pontos Finais (Jun-Ago):**
-```
-=J2 + M2 + L2 + O2
-```
-(Onde O2 = Inadimplência = 0 por enquanto)
+⚠️ **Confirmado via export real (10/08/2026):** a estrutura da aba Resumo_Gerentes tem apenas 13 colunas (A até M), sem coluna N. J, K e L retornam 0 para todos os gerentes atualmente (fórmulas ainda não aplicadas na planilha), e M contém valores incorretos vindos de uma fórmula antiga que não usa J/K/L — precisa ser substituída pela fórmula acima.
 
 ---
 
@@ -150,7 +146,7 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 
 **Fórmula para excluir colaboradores no Ranking:**
 ```
-=SE(COUNTIF(Configuracoes_Dashboard!A:A; A2) > 0; ""; N2)
+=SE(COUNTIF(Configuracoes_Dashboard!A:A; A2) > 0; ""; M2)
 ```
 
 Esta fórmula verifica se o colaborador está na lista de exclusão e não inclui seus pontos no ranking.

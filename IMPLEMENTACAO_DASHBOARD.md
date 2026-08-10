@@ -26,10 +26,28 @@ Coluna J: Realizado (valor numérico)
 
 ## 📋 ABA: Resumo_Gerentes
 
-### Cabeçalhos (Linha 1)
+### Cabeçalhos (Linha 1) — Estrutura Real Confirmada (13 colunas)
 ```
-A: Gerente | B: Agencia_Codigo | C: Agencia_Nome | D-I: Indicadores | J-L: Gols_Por_Mês | M: Gols_Julho_1.5x | N: Pontos_Finais
+A: Gerente
+B: Agencia_Codigo
+C: Agencia_Nome
+D: Ativo_Comercial
+E: Seguro_Vida
+F: Consorcio
+G: Depositos_Totais
+H: Credito_Comercial
+I: Capital_Social
+J: Gols_Junho
+K: Gols_Julho
+L: Gols_Agosto
+M: Pontos_Finais_Jun_Ago  ← resultado final (NÃO existe coluna N)
 ```
+
+⚠️ **Não existe coluna separada para o multiplicador de 1.5x.** O multiplicador é aplicado diretamente dentro da fórmula de M (Pontos_Finais_Jun_Ago).
+
+### ⚠️ Estado Atual (confirmado via export HTML de 10/08/2026)
+- **J, K e L retornam 0 para TODOS os gerentes** — as fórmulas dos Passos 3 e 4 abaixo ainda não foram aplicadas na planilha real, ou foram sobrescritas.
+- **M (Pontos_Finais_Jun_Ago) contém valores enormes e sem relação com J/K/L** (ex.: -165.737,91 / 11.195.142,78 / 61.549.611,06) — isso prova que a fórmula atual de M **não deriva de J+K*1.5+L**, e sim de algum outro cálculo incorreto (provavelmente multiplicação/soma de colunas inteiras sem filtro por linha, tipo SUMPRODUCT mal configurado). Essa fórmula precisa ser **substituída por completo** pela fórmula correta abaixo.
 
 ### Passo 1: Listar Gerentes Únicos
 - Copiar gerentes únicos de Store_Gerente!G:G
@@ -90,17 +108,14 @@ A: Gerente | B: Agencia_Codigo | C: Agencia_Nome | D-I: Indicadores | J-L: Gols_
 
 **L2 - Gols_Agosto:** (trocar "06/2026" por "08/2026")
 
-### Passo 5: Multiplicadores e Total (M2:N2)
+### Passo 5: Pontos Finais (M2)
 
-**M2 - Multiplicador Julho (1.5x):**
+**M2 - Pontos_Finais_Jun_Ago** (Junho + Julho com multiplicador 1.5x + Agosto, tudo em uma única fórmula, sem coluna auxiliar):
 ```
-=K2*1.5
+=J2+(K2*1.5)+L2
 ```
 
-**N2 - Pontos_Finais:**
-```
-=J2+M2+L2
-```
+🔴 **Ação necessária na planilha real:** apagar a fórmula atual de M2 (que está retornando valores incoerentes como -165.737,91 ou 11.195.142,78) e substituir pela fórmula acima.
 
 ---
 
@@ -110,7 +125,7 @@ A: Gerente | B: Agencia_Codigo | C: Agencia_Nome | D-I: Indicadores | J-L: Gols_
 
 **L2:**
 ```
-=SUMIF(Resumo_Gerentes!C:C;F2;Resumo_Gerentes!N:N)
+=SUMIF(Resumo_Gerentes!C:C;F2;Resumo_Gerentes!M:M)
 ```
 
 **M1:** `Grupo` (preencher com 1, 2 ou 3 manualmente)
@@ -135,7 +150,7 @@ A: Gerente | B: Agencia_Codigo | C: Agencia_Nome | D-I: Indicadores | J-L: Gols_
 
 Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores.
 
-**Aplicar Regra de Exclusão em Coluna P (opcional):**
+**Aplicar Regra de Exclusão em Coluna N (opcional, Resumo_Gerentes):**
 ```
 =IF(COUNTIF(Configuracoes_Dashboard!A:A;A2)>0;"";"exibir ranking")
 ```
@@ -147,14 +162,14 @@ Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores
 - [ ] Todos os gerentes listados em Resumo_Gerentes!A:A
 - [ ] Lookup de agência funcionando (B2:C2)
 - [ ] Indicadores agregados preenchidos (D2:I2)
-- [ ] Gols por período calculados (J2:L2) - **USAR COUNTIFS/SUMIFS EM INGLÊS**
-- [ ] Multiplicador 1.5x aplicado (M2)
-- [ ] Pontos finais somando corretamente (N2)
-- [ ] Agregação por agência funcionando (Store_Agencia!L2)
+- [ ] Gols por período calculados (J2:L2) - **USAR COUNTIFS/SUMIFS EM INGLÊS** — atualmente retornando 0 para todos, aplicar fórmulas do Passo 4
+- [ ] Fórmula quebrada de M2 (Pontos_Finais_Jun_Ago) substituída por `=J2+(K2*1.5)+L2`
+- [ ] Pontos finais somando corretamente (M2)
+- [ ] Agregação por agência funcionando (Store_Agencia!L2, referenciando Resumo_Gerentes!M:M)
 - [ ] Ranking calculado por grupo (Store_Agencia!N2)
 - [ ] Premiação exibida corretamente (Store_Agencia!O2)
 - [ ] Colaboradores excluídos não aparecem no ranking
 
 ---
 
-**Referência:** CONFIGURACOES_DASHBOARD.md | GUIA_PASSO_A_PASSO.md
+**Referência:** CONFIGURACOES_DASHBOARD.md
