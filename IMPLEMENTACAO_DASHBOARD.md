@@ -119,6 +119,20 @@ M: Pontos_Finais_Jun_Ago  ← resultado final (NÃO existe coluna N)
 
 🔴 **Ação necessária na planilha real:** apagar a fórmula atual de M2 (que estava retornando valores incoerentes como -165.737,91 ou 11.195.142,78, ou o erro de sintaxe `1.5`) e substituir pela fórmula acima.
 
+### Passo 6: Excluir Colaboradores do Ranking (N2)
+
+Ver `CONFIGURACOES_DASHBOARD.md` para a lista completa dos 15 colaboradores excluídos (coluna `A` da aba `Configuracoes_Dashboard`).
+
+**Onde aplicar:** ainda na aba `Resumo_Gerentes`, na próxima coluna livre — como `M` é a última usada até aqui, é a coluna **`N`**. Ela não existe ainda; você cria do zero:
+
+1. Em `N1`, digite o cabeçalho `Pontos_Ranking`.
+2. Em `N2`, cole a fórmula abaixo e arraste até a última linha:
+```
+=IF(COUNTIF(Configuracoes_Dashboard!A:A;A2)>0;"";M2)
+```
+
+Se o colaborador (`A2`) estiver na lista de excluídos, `N2` fica vazio; caso contrário, repete `M2`. **Use `N` (não `M`) a partir daqui** para montar rankings e para a agregação por agência no próximo passo, assim os excluídos não entram na soma da agência.
+
 ---
 
 ## 🗂️ Estrutura das Abas Store_* (Dados Brutos)
@@ -188,9 +202,9 @@ A divisão de grupos (1, 2 e 3) vem do chaveamento do dashboard e não existe co
 ⚠️ Se algum nome de agência em `B:B` não bater exatamente com os valores acima (acentos, "Pac" faltando, etc.), o `IFS` retorna `""` para essa linha — nesse caso confira a grafia exata usando `=Store_Gerente!F2` como referência.
 
 ### Passo 4: Pontos Finais por Agência (D2)
-Soma todos os pontos de todos os colaboradores daquela agência (repete o mesmo valor em cada linha da agência):
+Soma os pontos de todos os colaboradores daquela agência, **já excluindo os 15 colaboradores da lista de exclusão** (por isso usa a coluna `N`, criada no Passo 6 da aba `Resumo_Gerentes`, e não `M`):
 ```
-=SUMIF(Resumo_Gerentes!C:C;B2;Resumo_Gerentes!M:M)
+=SUMIF(Resumo_Gerentes!C:C;B2;Resumo_Gerentes!N:N)
 ```
 
 ### Passo 5: Posição no Grupo (E2)
@@ -206,17 +220,6 @@ Ranking dentro do mesmo grupo (compara apenas linhas com o mesmo `C`):
 
 ---
 
-## 🚫 Colaboradores Excluídos do Ranking
-
-Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores.
-
-**Aplicar Regra de Exclusão em Coluna N (opcional, Resumo_Gerentes):**
-```
-=IF(COUNTIF(Configuracoes_Dashboard!A:A;A2)>0;"";"exibir ranking")
-```
-
----
-
 ## ✅ Checklist Final
 
 - [ ] Todos os gerentes listados em Resumo_Gerentes!A:A
@@ -225,9 +228,10 @@ Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores
 - [ ] Gols por período calculados (J2:L2) - **USAR COUNTIFS/SUMIFS EM INGLÊS** — atualmente retornando 0 para todos, aplicar fórmulas do Passo 4
 - [ ] Fórmula de M2 (Pontos_Finais_Jun_Ago) corrigida para `=J2+(K2*1,5)+L2` **(vírgula, não ponto)**
 - [ ] Pontos finais somando corretamente (M2)
+- [ ] Coluna N (Pontos_Ranking) criada em Resumo_Gerentes, excluindo os 15 colaboradores (Passo 6)
 - [ ] Aba `Resumo_Agencias` criada (NÃO usar `Store_Agencia`, que é dado bruto)
 - [ ] Coluna Grupo preenchida automaticamente via fórmula IFS (Resumo_Agencias!C2) — não mais manual
-- [ ] Agregação por agência funcionando (Resumo_Agencias!D2, referenciando Resumo_Gerentes!M:M)
+- [ ] Agregação por agência funcionando (Resumo_Agencias!D2, referenciando Resumo_Gerentes!N:N)
 - [ ] Ranking calculado por grupo (Resumo_Agencias!E2)
 - [ ] Premiação exibida corretamente (Resumo_Agencias!F2)
 - [ ] Colaboradores excluídos não aparecem no ranking

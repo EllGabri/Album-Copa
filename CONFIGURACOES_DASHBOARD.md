@@ -187,10 +187,15 @@ K: Meta | L: Realizado | M: Saldo
 
 ## 9. REGRA DE EXCLUSÃO NO RANKING
 
-**Fórmula para excluir colaboradores no Ranking:**
+**Onde aplicar:** aba `Resumo_Gerentes`, coluna nova `N` (próxima livre após `M`, que é a última usada hoje). Cabeçalho sugerido em `N1`: `Pontos_Ranking`.
+
+**Fórmula (N2, arrastar para baixo):**
 ```
-=SE(COUNTIF(Configuracoes_Dashboard!A:A; A2) > 0; ""; M2)
+=IF(COUNTIF(Configuracoes_Dashboard!A:A; A2) > 0; ""; M2)
 ```
+⚠️ Usar `IF` (inglês), não `SE` (português) — mesma regra das demais fórmulas deste projeto.
+
+Se o colaborador da linha (`A2`) estiver na lista de excluídos (seção 1 deste documento), `N2` fica vazio; caso contrário, repete `M2` (Pontos_Finais_Jun_Ago). Use a coluna `N` — não `M` — para montar rankings e a aba `Resumo_Agencias`, assim os excluídos não entram na soma.
 
 Esta fórmula verifica se o colaborador está na lista de exclusão e não inclui seus pontos no ranking.
 
