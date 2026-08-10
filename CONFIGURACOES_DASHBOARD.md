@@ -137,8 +137,35 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 ```
 =J2 + (K2 * 1,5) + L2
 ```
+⚠️ **Separador decimal:** a planilha está em PT-BR — use vírgula (`1,5`), nunca ponto (`1.5`), senão a fórmula retorna `#ERROR!`.
 
 ⚠️ **Confirmado via export real (10/08/2026):** a estrutura da aba Resumo_Gerentes tem apenas 13 colunas (A até M), sem coluna N. J, K e L retornam 0 para todos os gerentes atualmente (fórmulas ainda não aplicadas na planilha), e M contém valores incorretos vindos de uma fórmula antiga que não usa J/K/L — precisa ser substituída pela fórmula acima.
+
+---
+
+## 8.1 ESTRUTURA DAS ABAS STORE_* (DADOS BRUTOS)
+
+Confirmado via export HTML (10/08/2026). Todas em formato longo (uma linha por combinação de dimensão + indicador + período):
+
+**Store_Gerente:**
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: Indicador | I: Meta | J: Realizado | K: Saldo
+```
+
+**Store_Agencia** (2.964 registros — mesma estrutura de Store_Gerente, sem a coluna Gerente):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: cd_agencia | F: nm_agencia | G: Indicador | H: Meta | I: Realizado | J: Saldo
+```
+
+**Store_Cooperativa** (202 registros — agregado no nível de cooperativa):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: Indicador | F: Meta | G: Realizado | H: Saldo
+```
+
+⚠️ **Importante:** essas três abas são dados brutos (várias linhas por agência/cooperativa), **não** tabelas de resumo. Não é possível colocar fórmulas de ranking diretamente nelas — é necessário criar abas de resumo dedicadas (ex.: `Resumo_Gerentes` já existe; `Resumo_Agencias` precisa ser criada seguindo o mesmo padrão — ver `IMPLEMENTACAO_DASHBOARD.md`).
 
 ---
 

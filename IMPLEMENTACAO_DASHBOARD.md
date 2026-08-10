@@ -112,36 +112,65 @@ M: Pontos_Finais_Jun_Ago  ← resultado final (NÃO existe coluna N)
 
 **M2 - Pontos_Finais_Jun_Ago** (Junho + Julho com multiplicador 1.5x + Agosto, tudo em uma única fórmula, sem coluna auxiliar):
 ```
-=J2+(K2*1.5)+L2
+=J2+(K2*1,5)+L2
 ```
 
-🔴 **Ação necessária na planilha real:** apagar a fórmula atual de M2 (que está retornando valores incoerentes como -165.737,91 ou 11.195.142,78) e substituir pela fórmula acima.
+🔴 **IMPORTANTE — separador decimal:** a planilha está em PT-BR, então o separador decimal é **vírgula**, não ponto. `1.5` gera `#ERROR!` (erro de análise de fórmula). Use sempre `1,5`.
+
+🔴 **Ação necessária na planilha real:** apagar a fórmula atual de M2 (que estava retornando valores incoerentes como -165.737,91 ou 11.195.142,78, ou o erro de sintaxe `1.5`) e substituir pela fórmula acima.
 
 ---
 
-## 📈 ABA: Store_Agencia (Agregação)
+## 🗂️ Estrutura das Abas Store_* (Dados Brutos)
 
-**L1:** `Pontos_Finais_Jun_Ago`
+Todas as abas `Store_*` são tabelas de dados brutos em formato longo (uma linha por combinação de dimensão + indicador + período) — **não são tabelas de resumo/ranking**. Confirmado via export HTML de 10/08/2026:
 
-**L2:**
+**Store_Gerente** (966+ registros/período):
 ```
-=SUMIF(Resumo_Gerentes!C:C;F2;Resumo_Gerentes!M:M)
-```
-
-**M1:** `Grupo` (preencher com 1, 2 ou 3 manualmente)
-
-**N1:** `Posicao_no_Grupo`
-
-**N2:**
-```
-=COUNTIFS(Store_Agencia!M:M;M2;Store_Agencia!L:L;">"&L2)+1
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: Indicador | I: Meta | J: Realizado | K: Saldo
 ```
 
-**O1:** `Premiacao`
-
-**O2:**
+**Store_Agencia** (2.964 registros — mesma estrutura, sem a coluna Gerente):
 ```
-=IF(N2=1;"🥇 R$ 3.000";IF(N2=2;"🥈 R$ 750";IF(N2=3;"🥉 R$ 500";"")))
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: cd_agencia | F: nm_agencia | G: Indicador | H: Meta | I: Realizado | J: Saldo
+```
+
+**Store_Cooperativa** (202 registros — agregado no nível de cooperativa):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: Indicador | F: Meta | G: Realizado | H: Saldo
+```
+
+⚠️ **Por isso a fórmula em `Store_Agencia!L2` retornou 0**: essa aba é dado bruto (2.964 linhas, várias por agência — uma por indicador/período), não uma tabela com uma linha por agência. Uma fórmula de ranking colocada ali não teria como agregar corretamente. É necessário criar uma aba de **resumo** dedicada, análoga à `Resumo_Gerentes`, com um nome como `Resumo_Agencias`.
+
+---
+
+## 📈 NOVA ABA: Resumo_Agencias (criar do zero)
+
+### Cabeçalhos (Linha 1)
+```
+A: Agencia_Nome | B: Grupo (preencher manualmente: 1, 2 ou 3) | C: Pontos_Finais_Jun_Ago | D: Posicao_no_Grupo | E: Premiacao
+```
+
+### Passo 1: Listar Agências Únicas
+- Copiar nomes únicos de `Resumo_Gerentes!C:C` (ou `Store_Agencia!F:F`) para `A2` em diante
+- Remover duplicatas (Dados → Remover duplicatas)
+
+### Passo 2: Somar Pontos por Agência (C2)
+```
+=SUMIF(Resumo_Gerentes!C:C;A2;Resumo_Gerentes!M:M)
+```
+
+### Passo 3: Posição no Grupo (D2)
+```
+=COUNTIFS(Resumo_Agencias!B:B;B2;Resumo_Agencias!C:C;">"&C2)+1
+```
+
+### Passo 4: Premiação (E2)
+```
+=IF(D2=1;"🥇 R$ 3.000";IF(D2=2;"🥈 R$ 750";IF(D2=3;"🥉 R$ 500";"")))
 ```
 
 ---
@@ -163,11 +192,12 @@ Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores
 - [ ] Lookup de agência funcionando (B2:C2)
 - [ ] Indicadores agregados preenchidos (D2:I2)
 - [ ] Gols por período calculados (J2:L2) - **USAR COUNTIFS/SUMIFS EM INGLÊS** — atualmente retornando 0 para todos, aplicar fórmulas do Passo 4
-- [ ] Fórmula quebrada de M2 (Pontos_Finais_Jun_Ago) substituída por `=J2+(K2*1.5)+L2`
+- [ ] Fórmula de M2 (Pontos_Finais_Jun_Ago) corrigida para `=J2+(K2*1,5)+L2` **(vírgula, não ponto)**
 - [ ] Pontos finais somando corretamente (M2)
-- [ ] Agregação por agência funcionando (Store_Agencia!L2, referenciando Resumo_Gerentes!M:M)
-- [ ] Ranking calculado por grupo (Store_Agencia!N2)
-- [ ] Premiação exibida corretamente (Store_Agencia!O2)
+- [ ] Aba `Resumo_Agencias` criada (NÃO usar `Store_Agencia`, que é dado bruto)
+- [ ] Agregação por agência funcionando (Resumo_Agencias!C2, referenciando Resumo_Gerentes!M:M)
+- [ ] Ranking calculado por grupo (Resumo_Agencias!D2)
+- [ ] Premiação exibida corretamente (Resumo_Agencias!E2)
 - [ ] Colaboradores excluídos não aparecem no ranking
 
 ---
