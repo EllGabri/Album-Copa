@@ -143,6 +143,13 @@ A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
 E: Indicador | F: Meta | G: Realizado | H: Saldo
 ```
 
+**Store_Carteira** (11.716 registros — o mais granular, quebra por carteira dentro de cada gerente):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: cd_carteira | I: nm_carteira | J: Indicador
+K: Meta | L: Realizado | M: Saldo
+```
+
 ⚠️ **Por isso a fórmula em `Store_Agencia!L2` retornou 0**: essa aba é dado bruto (2.964 linhas, várias por agência — uma por indicador/período), não uma tabela com uma linha por agência. Uma fórmula de ranking colocada ali não teria como agregar corretamente. É necessário criar uma aba de **resumo** dedicada, análoga à `Resumo_Gerentes`, com um nome como `Resumo_Agencias`.
 
 ---

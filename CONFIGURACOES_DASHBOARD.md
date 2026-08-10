@@ -165,6 +165,13 @@ A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
 E: Indicador | F: Meta | G: Realizado | H: Saldo
 ```
 
+**Store_Carteira** (11.716 registros — o mais granular, quebra por carteira dentro de cada gerente):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: cd_carteira | I: nm_carteira | J: Indicador
+K: Meta | L: Realizado | M: Saldo
+```
+
 ⚠️ **Importante:** essas três abas são dados brutos (várias linhas por agência/cooperativa), **não** tabelas de resumo. Não é possível colocar fórmulas de ranking diretamente nelas — é necessário criar abas de resumo dedicadas (ex.: `Resumo_Gerentes` já existe; `Resumo_Agencias` precisa ser criada seguindo o mesmo padrão — ver `IMPLEMENTACAO_DASHBOARD.md`).
 
 ---
