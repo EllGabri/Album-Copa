@@ -53,24 +53,33 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 
 ## 4. ESTRUTURA DE AGÊNCIAS E TIMES
 
-### Agências e Seus Times
-| Agência | Nome do Time |
-|---------|-------------|
-| Ponte Alta | Morangueiros |
-| Santa Cruz do Timbó | Artilheiros da Meta |
-| Lages Ii | Craques da Coop |
-| Timbó Grande | Golaço Tg |
-| Porto União | Tropa do Xixo |
-| Correia Pinto | Construindo Gigantes |
-| Otacilio Costa | Furacão Laranja |
-| Irineópolis | Pix na Rede FC |
-| Canoinhas | Little Boat |
-| Major Vieira | Sinergia |
-| São Joaquim | Gigantes da Serra |
-| Monte Castelo | Craques da cooperação |
-| Bom Jardim | Real Cooperativo |
-| Bela Vista | Esquadrão Excelência |
-| Lages | Canarinhos da Serra |
+Fonte: `Configuracoes_Dashboard` colunas G (Agência) e H (Nome do Time). O Grupo (1/2/3) não existe como coluna na planilha — foi extraído do dashboard publicado (chaveamento "Classificação das Seleções") e adicionado aqui como referência.
+
+### Agências, Times e Grupos
+| Agência (Config. G) | Nome do Time (Config. H) | Nome Completo (Store_*/Resumo) | Grupo |
+|---|---|---|---|
+| Ponte Alta | Morangueiros | Pac Ponte Alta | 3 |
+| Santa Cruz do Timbó | Artilheiros da Meta | Pac Porto Uniao D. Sta Cruz Do Timbo | 3 |
+| Lages Ii | Craques da Coop | Pac Lages Ii | 1 |
+| Timbó Grande | Golaço Tg | Pac Timbó Grande | 3 |
+| Porto União | Tropa do Xixo | Pac Porto União | 1 |
+| Correia Pinto | Construindo Gigantes | Pac Correia Pinto | 2 |
+| Otacilio Costa | Furacão Laranja | Pac Otacilío Costa | 2 |
+| Irineópolis | Pix na Rede FC | Pac Irineópolis | 2 |
+| Canoinhas | Little Boat | Pac Canoinhas | 1 |
+| Major Vieira | Sinergia | Pac Major Vieira | 2 |
+| São Joaquim | Gigantes da Serra | Pac São Joaquim | 1 |
+| Monte Castelo | Craques da cooperação | Pac Monte Castelo | 3 |
+| Bom Jardim | Real Cooperativo | Pac Bom Jardim Da Serra | 3 |
+| Bela Vista | Esquadrão Excelência | Pac Bela Vista Do Toldo | 3 |
+| Lages | Canarinhos da Serra | Pac Lages | 1 |
+
+**Grupos:**
+- **Grupo 1 (Cabeças de Chave):** São Joaquim, Lages Ii, Porto União, Lages, Canoinhas
+- **Grupo 2 (Intermediárias):** Major Vieira, Irineópolis, Otacilio Costa, Correia Pinto
+- **Grupo 3 (Desafiantes):** Monte Castelo, Ponte Alta, Timbó Grande, Santa Cruz do Timbó, Bom Jardim, Bela Vista
+
+Ver `IMPLEMENTACAO_DASHBOARD.md` para a fórmula `IFS` que atribui o Grupo automaticamente na aba `Resumo_Agencias`.
 
 ---
 

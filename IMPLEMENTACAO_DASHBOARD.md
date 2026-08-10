@@ -154,30 +154,54 @@ K: Meta | L: Realizado | M: Saldo
 
 ---
 
-## 📈 NOVA ABA: Resumo_Agencias (criar do zero)
+## 📈 ABA: Resumo_Agencias
 
-### Cabeçalhos (Linha 1)
+### Cabeçalhos (Linha 1) — Estrutura Real (uma linha por colaborador, igual a Resumo_Gerentes)
 ```
-A: Agencia_Nome | B: Grupo (preencher manualmente: 1, 2 ou 3) | C: Pontos_Finais_Jun_Ago | D: Posicao_no_Grupo | E: Premiacao
-```
-
-### Passo 1: Listar Agências Únicas
-- Copiar nomes únicos de `Resumo_Gerentes!C:C` (ou `Store_Agencia!F:F`) para `A2` em diante
-- Remover duplicatas (Dados → Remover duplicatas)
-
-### Passo 2: Somar Pontos por Agência (C2)
-```
-=SUMIF(Resumo_Gerentes!C:C;A2;Resumo_Gerentes!M:M)
+A: Colaborador | B: Agencia | C: Grupo | D: Pontos_Finais_Jun_Ago | E: Posicao_no_Grupo | F: Premiacao
 ```
 
-### Passo 3: Posição no Grupo (D2)
+⚠️ Diferente do que uma versão anterior deste guia sugeria, esta aba **não** precisa ter uma linha por agência — funciona igual à `Resumo_Gerentes`, com uma linha por colaborador, e a coluna `B` (Agência) repete o mesmo valor para todos os colaboradores da mesma agência. Isso é o formato que já está em uso na planilha; as fórmulas de ranking abaixo funcionam corretamente mesmo com linhas repetidas por agência.
+
+### Passo 1: Colaborador (A2)
+Mesma lista de `Resumo_Gerentes!A:A` (copiar ou usar `=Resumo_Gerentes!A2`).
+
+### Passo 2: Agência (B2)
 ```
-=COUNTIFS(Resumo_Agencias!B:B;B2;Resumo_Agencias!C:C;">"&C2)+1
+=IFERROR(INDEX(Resumo_Gerentes!C:C;MATCH(A2;Resumo_Gerentes!A:A;0));"")
 ```
 
-### Passo 4: Premiação (E2)
+### Passo 3: Grupo (C2)
+A divisão de grupos (1, 2 e 3) vem do chaveamento do dashboard e não existe como coluna pronta em `Configuracoes_Dashboard` — por isso é fixada diretamente na fórmula com `IFS`, usando o nome completo da agência (mesmo valor de `Store_Gerente!F:F` / `Resumo_Gerentes!C:C`, com prefixo "Pac"):
 ```
-=IF(D2=1;"🥇 R$ 3.000";IF(D2=2;"🥈 R$ 750";IF(D2=3;"🥉 R$ 500";"")))
+=IFS(B2="Pac São Joaquim";1;B2="Pac Lages Ii";1;B2="Pac Porto União";1;B2="Pac Lages";1;B2="Pac Canoinhas";1;B2="Pac Major Vieira";2;B2="Pac Irineópolis";2;B2="Pac Otacilío Costa";2;B2="Pac Correia Pinto";2;B2="Pac Monte Castelo";3;B2="Pac Ponte Alta";3;B2="Pac Timbó Grande";3;B2="Pac Porto Uniao D. Sta Cruz Do Timbo";3;B2="Pac Bom Jardim Da Serra";3;B2="Pac Bela Vista Do Toldo";3;TRUE;"")
+```
+
+**Mapa Grupo × Agência (referência):**
+
+| Grupo | Times / Agências |
+|-------|-------------------|
+| 1 — Cabeças de Chave | Gigantes da Serra (São Joaquim), Craques da Coop (Lages Ii), Tropa do Xixo (Porto União), Canarinhos da Serra (Lages), Little Boat (Canoinhas) |
+| 2 — Intermediárias | Sinergia (Major Vieira), Pix na Rede FC (Irineópolis), Furacão Laranja (Otacílio Costa), Construindo Gigantes (Correia Pinto) |
+| 3 — Desafiantes | Craques da Cooperação (Monte Castelo), Morangueiros (Ponte Alta), Golaço Tg (Timbó Grande), Artilheiros da Meta (Santa Cruz do Timbó / Pac Porto Uniao D. Sta Cruz Do Timbo), Real Cooperativo (Bom Jardim), Esquadrão Excelência (Bela Vista) |
+
+⚠️ Se algum nome de agência em `B:B` não bater exatamente com os valores acima (acentos, "Pac" faltando, etc.), o `IFS` retorna `""` para essa linha — nesse caso confira a grafia exata usando `=Store_Gerente!F2` como referência.
+
+### Passo 4: Pontos Finais por Agência (D2)
+Soma todos os pontos de todos os colaboradores daquela agência (repete o mesmo valor em cada linha da agência):
+```
+=SUMIF(Resumo_Gerentes!C:C;B2;Resumo_Gerentes!M:M)
+```
+
+### Passo 5: Posição no Grupo (E2)
+Ranking dentro do mesmo grupo (compara apenas linhas com o mesmo `C`):
+```
+=COUNTIFS($C$2:$C$1000;C2;$D$2:$D$1000;">"&D2)+1
+```
+
+### Passo 6: Premiação (F2)
+```
+=IF(E2=1;"🥇 R$ 3.000";IF(E2=2;"🥈 R$ 750";IF(E2=3;"🥉 R$ 500";"")))
 ```
 
 ---
@@ -202,9 +226,10 @@ Ver arquivo `CONFIGURACOES_DASHBOARD.md` para lista completa de 15 colaboradores
 - [ ] Fórmula de M2 (Pontos_Finais_Jun_Ago) corrigida para `=J2+(K2*1,5)+L2` **(vírgula, não ponto)**
 - [ ] Pontos finais somando corretamente (M2)
 - [ ] Aba `Resumo_Agencias` criada (NÃO usar `Store_Agencia`, que é dado bruto)
-- [ ] Agregação por agência funcionando (Resumo_Agencias!C2, referenciando Resumo_Gerentes!M:M)
-- [ ] Ranking calculado por grupo (Resumo_Agencias!D2)
-- [ ] Premiação exibida corretamente (Resumo_Agencias!E2)
+- [ ] Coluna Grupo preenchida automaticamente via fórmula IFS (Resumo_Agencias!C2) — não mais manual
+- [ ] Agregação por agência funcionando (Resumo_Agencias!D2, referenciando Resumo_Gerentes!M:M)
+- [ ] Ranking calculado por grupo (Resumo_Agencias!E2)
+- [ ] Premiação exibida corretamente (Resumo_Agencias!F2)
 - [ ] Colaboradores excluídos não aparecem no ranking
 
 ---
