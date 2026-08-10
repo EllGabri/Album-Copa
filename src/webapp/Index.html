@@ -307,7 +307,7 @@
       "São Joaquim": "Gigantes da Serra",
       "Canoinhas": "Little Boat",
       "Lages II": "Craques da Coop",
-      "Lages Santa Helena": "Craques da cooperação",
+      "Lages Santa Helena": "Canarinhos da Serra",
       "Porto União": "Tropa do Xixo",
       "Correia Pinto": "Construindo Gigantes",
       "Otacílio Costa": "Furacão Laranja",
@@ -315,8 +315,8 @@
       "Major Vieira": "Sinergia",
       "Bom Jardim Da Serra": "Real Cooperativo",
       "Timbó Grande": "Golaço Tg",
-      "Monte Castelo": "Morangueiros",
-      "Ponte Alta": "Craques da cooperação",
+      "Monte Castelo": "Craques da cooperação",
+      "Ponte Alta": "Morangueiros",
       "Bela Vista Do Toldo": "Esquadrão Excelência",
       "Santa Cruz Do Timbo": "Artilheiros da Meta"
     };
@@ -618,8 +618,12 @@
           gols = valor * 1;
           break;
 
-        // 4 gols por unidade.
+        // 2 gols por unidade.
         case "Seguro de Vida":
+          gols = valor * 2;
+          break;
+
+        // 4 gols por unidade.
         case "Consórcio":
           gols = valor * 4;
           break;
