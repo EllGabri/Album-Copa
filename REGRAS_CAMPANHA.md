@@ -97,3 +97,28 @@ Comparando esta tabela oficial com `CONFIGURACOES_DASHBOARD.md` (indicadores de 
 4. **🟡 "Gol de Ouro" (produtos em dobro em Dias D) e "Placar Oculto" (últimos 15 dias de agosto sem atualização pública):** nenhuma das duas mecânicas está implementada no dashboard atualmente.
 
 Para implementar os itens 2-4, é necessário ver como esses indicadores/regras aparecem nomeados em `Store_Gerente`/`Store_Carteira` (não há amostra de dados ainda para "Seguros Auto/Frota", "bônus pré-aprovado" ou "Solcap").
+
+---
+
+## 📐 Como os Indicadores Chegam na Base (auditoria de 10.678 linhas)
+
+Verificado sobre o export real de `Store_Gerente`. **A unidade do campo `Realizado` varia por indicador** — este é o ponto que mais gerou erro de cálculo:
+
+| Indicador | `Realizado` representa | Faixa observada (Jun-Ago) | Conversão em gols |
+|---|---|---|---|
+| Ativo Comercial | **quantidade** | -16 a 38 | valor × 1 |
+| Cartão | **quantidade** | -11 a 63 | valor × 1 |
+| Seguro de Vida | **R$** (prêmio) | -920 a 2.632 | 1 unidade por mês com valor > 0 → 2 gols |
+| Consórcio | **R$** (valor da cota) | -566.000 a 2.000.000 | 1 unidade por mês com valor > 0 → 4 gols |
+| Depósitos Totais | **R$** (incremento) | -4.109.390 a 7.945.601 | ⌊valor / 10.000⌋ × 4 |
+| Crédito Comercial | **R$** (incremento) | -917.102 a 8.629.504 | ⌊valor / 10.000⌋ × 4 |
+| Capital Social | **R$** (incremento) | -67.473 a 606.006 | ⌊valor / 10.000⌋ × 5 |
+| Inad 15 | **ponto percentual** | 0 a 20,17 | ⌊diferença vs meta⌋ × (+2 se reduziu / -5 se aumentou) |
+
+⚠️ **Premissa em aberto — Consórcio e Seguro de Vida:** a regra oficial pontua por unidade ("cota comercializada", "proposta emitida e paga"), mas a base só traz o **valor em R$**, não a quantidade. O critério adotado (1 unidade por mês com valor positivo) é o mesmo das fórmulas `COUNTIFS` da aba `Resumo_Gerentes`, garantindo que dashboard e planilha batam. **Limitação conhecida:** subconta quem vendeu várias cotas/apólices no mesmo mês. Se a quantidade real passar a existir na base, trocar para multiplicação direta pela quantidade.
+
+⚠️ **`Realizado` é incremento, não saldo.** Pode ser negativo (ex.: Capital Social -48.196 = redução no mês), e é isso que gera gols negativos legítimos. A coluna `Saldo` guarda o acumulado e **não** deve ser usada para pontuação — a regra diz "a cada R$ 10.000,00 **incrementada**".
+
+### Indicadores presentes na base mas sem pontuação definida
+
+Aparecem em `Store_Gerente` e hoje não geram gols (`default: 0`): `Cooperados`, `Inad 90`, `Indicador Geral`, `Liberação de Custeio`, `Receita de Produtos e Serviços`, `Resultado Financeiro`, `Saldo Médio de Uso de Cheque Especial`, `Taxa Ponderada do Crédito RP`. Confirmar se algum deles corresponde a "Cheque Especial" (1 gol) da regra oficial — `Saldo Médio de Uso de Cheque Especial` é candidato, mas mede saldo médio, não "novo limite acima de R$ 1.000,00", então não foi ativado.
