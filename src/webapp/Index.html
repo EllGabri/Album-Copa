@@ -509,10 +509,16 @@
             let golsFeitos, golsMeta;
 
             if (indicador === "Inad 15") {
-              // Inad 15 é comparação (não valor absoluto): a regra da planilha
-              // é "+2 gols por redução de % / -5 gols por aumento de %" — logo
-              // depende de realizado vs meta juntos (não dá pra calcular a
-              // partir de um valor só). Base = meta de inadimplência.
+              // Regra oficial da campanha (ver REGRAS_CAMPANHA.md, categoria
+              // "Defesa"): "Inad 15 crédito comercial, a cada 1 ponto
+              // percentual reduzido: +2 gols" / "a cada 1 ponto percentual
+              // aumentado: -5 gols". Comparação é sempre realizado vs meta
+              // (não dá pra calcular a partir de um valor só).
+              // Meta/Realizado em Store_Gerente já vêm como pontos percentuais
+              // diretos (ex.: 3 = 3%, até ~20 em carteiras problemáticas) —
+              // confirmado em amostra real de 812 linhas do indicador — por
+              // isso NÃO há fator de escala aqui. Base = meta de inadimplência,
+              // ou 2,5% de referência quando a meta não está preenchida.
               let base = meta > 0 ? meta : 2.5;
               if (realizado < base)      golsFeitos = Math.floor(base - realizado) * 2;   // reduziu -> bom
               else if (realizado > base) golsFeitos = Math.floor(realizado - base) * -5;  // aumentou -> ruim

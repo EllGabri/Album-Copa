@@ -1,6 +1,6 @@
 # 📋 Configurações Dashboard - Copa Excelência
 
-Dados de referência extraídos da aba `Configuracoes_Dashboard` e do dashboard publicado. Para fórmulas e passo a passo de implementação, ver `IMPLEMENTACAO_DASHBOARD.md`.
+Dados de referência extraídos da aba `Configuracoes_Dashboard` e do dashboard publicado. Para fórmulas e passo a passo de implementação, ver `IMPLEMENTACAO_DASHBOARD.md`. Para as regras oficiais completas da campanha (fonte de verdade), ver `REGRAS_CAMPANHA.md`.
 
 ## 1. COLABORADORES EXCLUÍDOS DO RANKING
 
@@ -45,13 +45,17 @@ Fonte: `Configuracoes_Dashboard!C2:D15`.
 
 ## 3. INDICADORES ADICIONAIS (Futuros)
 
+Ainda não implementados no dashboard — falta confirmar o nome exato do indicador em `Store_Gerente`/`Store_Carteira` para poder implementar. Ver `REGRAS_CAMPANHA.md` seção "Divergências e Pendências".
+
 | Indicador | Pontuação | Tipo |
 |-----------|-----------|------|
 | Adquirência/Domicílio (Maquininha) | 3 Gols | Un |
 | Cartão | 1 Gol | Un |
 | Cheque Especial | 1 Gol | Un |
 | Emissão de Boletos | 2 Gols | Un |
-| Incremento de Capital Social | 2 Gols | Un |
+| Incremento de Capital Social (Solcap) | 2 Gols | Un |
+| Seguros (Auto/Frota/Agrícola/Empresarial/Maquinário) | 4 Gols | Un |
+| Crédito Comercial — bônus pré-aprovado | +1 Gol | R$ 5.000 liberado (adicional ao Crédito Comercial normal) |
 
 ---
 
