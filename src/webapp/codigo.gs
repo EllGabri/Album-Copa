@@ -91,8 +91,8 @@ function obterDadosCompletos() {
           }
         }
         
-        // LER TABELA DE TÉCNICOS (Colunas L, M, N)
-        var tecnicosValues = configSheet.getRange("L2:N15").getValues();
+        // LER TABELA DE TÉCNICOS (Colunas M, N, O: Agência | Técnico | Chaveamento)
+        var tecnicosValues = configSheet.getRange("M2:O15").getValues();
         for (var i = 0; i < tecnicosValues.length; i++) {
           var agencia = tecnicosValues[i][0];
           var tecnico = tecnicosValues[i][1];

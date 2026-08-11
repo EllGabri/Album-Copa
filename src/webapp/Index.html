@@ -205,21 +205,7 @@
           <p class="text-sm text-green-100 opacity-90 font-medium">Os Assessores somam as assistências dos artilheiros nos seus respectivos Segmentos.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
-          <div class="bg-white border border-purple-200 rounded-3xl p-8 relative overflow-hidden shadow-xl">
-            <div class="flex justify-between items-start mb-6">
-              <div>
-                <p class="text-[10px] text-purple-300 font-black tracking-widest uppercase mb-1">Segmento Empresarial (PJ)</p>
-                <h3 class="text-2xl font-extrabold text-slate-800">Karla</h3>
-              </div>
-              <div class="w-12 h-12 rounded-full bg-purple-200 border-2 border-purple-300 flex items-center justify-center text-xl">👩‍💼</div>
-            </div>
-            <div class="bg-purple-50/80 rounded-xl p-3 border border-purple-100 text-center">
-              <p class="text-[10px] text-purple-400 uppercase tracking-widest mb-1 font-bold">Assistências (Gols do Segmento)</p>
-              <p class="text-4xl font-sport text-purple-600 drop-shadow-sm" id="gols-auxiliar-pj">0</p>
-            </div>
-          </div>
-
+        <div class="grid grid-cols-1 gap-8 items-center max-w-md mx-auto">
           <div class="bg-white border border-orange-200 rounded-3xl p-8 relative overflow-hidden shadow-xl">
             <div class="flex justify-between items-start mb-6">
               <div>
@@ -550,8 +536,12 @@
         });
 
         // SOMAR GOLS DOS GERENTES PARA AS AGÊNCIAS
+        // Gerentes com gols negativos (ex.: indicador Inad 15 com queda forte)
+        // não entram na soma da agência nem aparecem nos rankings — mesmo
+        // critério aplicado em gerentesRank logo abaixo.
         for (let gerenteNome in placarGerentes) {
           let gData = placarGerentes[gerenteNome];
+          if (gData.gols < 0) continue;
           let agOfficialName = encontrarAgenciaOficial(gData.ag);
           if (agOfficialName && placarAgencias[agOfficialName]) {
             placarAgencias[agOfficialName].gols += gData.gols;
@@ -559,7 +549,7 @@
           }
         }
 
-        let gerentesRank = Object.values(placarGerentes).sort((a, b) => {
+        let gerentesRank = Object.values(placarGerentes).filter(g => g.gols >= 0).sort((a, b) => {
            if (b.gols !== a.gols) return b.gols - a.gols;
            return a.nome.localeCompare(b.nome);
         });
@@ -799,10 +789,10 @@
         });
       });
 
-      let golsPJ = placarSegmento['EMPRESARIAL'] || 0;
+      // Segmento Empresarial (PJ) removido: sem auxiliar técnico atribuído
+      // (Karla Melo saiu da função). Mantido apenas PF & Agro.
       let golsPFAgro = (placarSegmento['PF'] || 0) + (placarSegmento['AGRO'] || 0);
 
-      document.getElementById('gols-auxiliar-pj').innerText = formatGols(golsPJ);
       document.getElementById('gols-auxiliar-pfagro').innerText = formatGols(golsPFAgro);
     }
 
