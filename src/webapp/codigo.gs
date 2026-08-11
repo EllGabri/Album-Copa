@@ -112,7 +112,27 @@ function obterDadosCompletos() {
     var agencias = lerDadosDeAbaFlexivel(spread, "Store_Agencia", diagnostico);
     var gerentes = lerDadosDeAbaFlexivel(spread, "Store_Gerente", diagnostico);
     var carteiras = lerDadosDeAbaFlexivel(spread, "Store_Carteira", diagnostico);
-    
+
+    // LER FIGURINHAS (aba "Figurinhas": A=numero, B=nome, C=equipe, D=fileId)
+    // Usadas no dashboard para ilustrar os cards de artilheiros e da
+    // comissão técnica com a foto/figurinha da pessoa.
+    var figurinhas = [];
+    try {
+      var figSheetDash = spread.getSheetByName("Figurinhas");
+      if (figSheetDash) {
+        var figDados = figSheetDash.getDataRange().getValues();
+        for (var f = 1; f < figDados.length; f++) {
+          var figNome = (figDados[f][1] || "").toString().trim();
+          var figFileId = (figDados[f][3] || "").toString().trim();
+          if (figNome && figFileId) {
+            figurinhas.push({ nome: figNome, fileId: figFileId });
+          }
+        }
+      }
+    } catch (e) {
+      diagnostico.errosAbas["Figurinhas"] = "Falha ao ler figurinhas.";
+    }
+
     if (agencias.length === 0 && gerentes.length === 0) {
       return JSON.stringify({ status: "diagnostic", message: "As abas 'Store_' estão vazias.", diagnostico: diagnostico });
     }
@@ -126,6 +146,7 @@ function obterDadosCompletos() {
         carteiras: carteiras,
         tabelaPontuacao: tabelaPontuacao,
         tabelaTecnicos: tabelaTecnicos,
+        figurinhas: figurinhas,
         webAppUrl: ScriptApp.getService().getUrl()
       } 
     });

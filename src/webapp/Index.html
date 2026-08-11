@@ -174,7 +174,7 @@
                 <p class="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1">Chaveamento Norte</p>
                 <h3 class="text-3xl font-extrabold text-slate-800">Marcos</h3>
               </div>
-              <div class="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center text-3xl">👤</div>
+              <div id="foto-tecnico-norte" class="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-200 overflow-hidden flex items-center justify-center text-3xl">👤</div>
             </div>
             <div class="bg-blue-50/80 rounded-xl p-4 border border-blue-100 text-center">
               <p class="text-[10px] text-blue-400 uppercase tracking-widest mb-1 font-bold">Soma de Gols dos Artilheiros</p>
@@ -189,7 +189,7 @@
                 <p class="text-[10px] text-green-500 font-black tracking-widest uppercase mb-1">Chaveamento Serra</p>
                 <h3 class="text-3xl font-extrabold text-slate-800">Jean</h3>
               </div>
-              <div class="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center text-3xl">👤</div>
+              <div id="foto-tecnico-serra" class="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 overflow-hidden flex items-center justify-center text-3xl">👤</div>
             </div>
             <div class="bg-green-50/80 rounded-xl p-4 border border-green-100 text-center">
               <p class="text-[10px] text-green-500 uppercase tracking-widest mb-1 font-bold">Soma de Gols dos Artilheiros</p>
@@ -212,7 +212,7 @@
                 <p class="text-[10px] text-orange-500 font-black tracking-widest uppercase mb-1">Segmento PF & Agro</p>
                 <h3 class="text-2xl font-extrabold text-slate-800">Paulo Colli</h3>
               </div>
-              <div class="w-12 h-12 rounded-full bg-orange-200 border-2 border-orange-300 flex items-center justify-center text-xl">👨‍💼</div>
+              <div id="foto-auxiliar-pfagro" class="w-12 h-12 rounded-full bg-orange-200 border-2 border-orange-300 overflow-hidden flex items-center justify-center text-xl">👨‍💼</div>
             </div>
             <div class="bg-orange-50/80 rounded-xl p-3 border border-orange-100 text-center">
               <p class="text-[10px] text-orange-400 uppercase tracking-widest mb-1 font-bold">Assistências (Gols do Segmento)</p>
@@ -307,8 +307,110 @@
       "Santa Cruz Do Timbo": "Artilheiros da Meta"
     };
 
-    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], webAppUrl: "" };
-    
+    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], figurinhas: [], webAppUrl: "" };
+
+    // ---------------------------------------------------------------
+    // FIGURINHAS NO DASHBOARD
+    // A rede interna bloqueia https://drive.google.com/uc?id=..., então a
+    // imagem é pedida ao backend (obterImagemBase64) e injetada como data
+    // URI — mesmo mecanismo já usado no Álbum. Cache por fileId + fila com
+    // concorrência limitada para não sobrecarregar o google.script.run.
+    // ---------------------------------------------------------------
+    const IMG_CACHE = {};
+    const IMG_PENDENTES = {};
+    const IMG_FILA = [];
+    let IMG_ATIVOS = 0;
+    const IMG_MAX_CONCORRENTE = 3;
+    const IMG_MAX_TENTATIVAS = 3;
+
+    function resolverImagemPorFileId(fileId, callback) {
+      if (!fileId) { callback(null); return; }
+      if (IMG_CACHE[fileId]) { callback(IMG_CACHE[fileId]); return; }
+      if (IMG_PENDENTES[fileId]) { IMG_PENDENTES[fileId].push(callback); return; }
+      IMG_PENDENTES[fileId] = [callback];
+      IMG_FILA.push(fileId);
+      processarFilaImagens();
+    }
+
+    function processarFilaImagens() {
+      while (IMG_ATIVOS < IMG_MAX_CONCORRENTE && IMG_FILA.length > 0) {
+        IMG_ATIVOS++;
+        buscarImagemBackend(IMG_FILA.shift(), 1);
+      }
+    }
+
+    function buscarImagemBackend(fileId, tentativa) {
+      const concluir = (dataUri) => {
+        if (dataUri) IMG_CACHE[fileId] = dataUri;
+        (IMG_PENDENTES[fileId] || []).forEach(cb => cb(dataUri || null));
+        delete IMG_PENDENTES[fileId];
+        IMG_ATIVOS--;
+        processarFilaImagens();
+      };
+      const falhar = (erro) => {
+        if (tentativa < IMG_MAX_TENTATIVAS) {
+          setTimeout(() => buscarImagemBackend(fileId, tentativa + 1), 400 * tentativa);
+        } else {
+          console.error("Falha ao carregar figurinha", fileId, erro);
+          concluir(null);
+        }
+      };
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonRes) {
+            let dataUri = null;
+            try { const r = JSON.parse(jsonRes); if (r.status === 'success') dataUri = r.dataUri; } catch (e) {}
+            if (dataUri) concluir(dataUri); else falhar('resposta sem dataUri');
+          })
+          .withFailureHandler(falhar)
+          .obterImagemBase64(fileId);
+      } else {
+        concluir(null);
+      }
+    }
+
+    // Localiza a figurinha de uma pessoa pelo nome. A aba Figurinhas guarda o
+    // nome como veio do arquivo do Drive, que nem sempre é idêntico ao nome
+    // do gerente na base — por isso compara nos dois sentidos e, como último
+    // recurso, tenta casar pelo primeiro + último nome.
+    function acharFigurinhaPorNome(nomePessoa) {
+      const alvo = normalizarString(nomePessoa);
+      if (!alvo || !DB.figurinhas) return null;
+
+      let hit = DB.figurinhas.find(f => normalizarString(f.nome) === alvo);
+      if (hit) return hit.fileId;
+
+      hit = DB.figurinhas.find(f => {
+        const n = normalizarString(f.nome);
+        return n && (n.includes(alvo) || alvo.includes(n));
+      });
+      if (hit) return hit.fileId;
+
+      const partes = alvo.split(/\s+/).filter(Boolean);
+      if (partes.length >= 2) {
+        const primeiro = partes[0], ultimo = partes[partes.length - 1];
+        hit = DB.figurinhas.find(f => {
+          const n = normalizarString(f.nome);
+          return n.includes(primeiro) && n.includes(ultimo);
+        });
+        if (hit) return hit.fileId;
+      }
+      return null;
+    }
+
+    // Troca o conteúdo de um elemento pela figurinha assim que ela carregar.
+    // Enquanto não carrega (ou se não existir), o placeholder original fica.
+    function aplicarFigurinha(elementoId, nomePessoa, classesImg) {
+      const fileId = acharFigurinhaPorNome(nomePessoa);
+      if (!fileId) return;
+      resolverImagemPorFileId(fileId, function(dataUri) {
+        if (!dataUri) return;
+        const el = document.getElementById(elementoId);
+        if (!el) return;
+        el.innerHTML = `<img src="${dataUri}" alt="${nomePessoa}" class="${classesImg}">`;
+      });
+    }
+
     function getProp(obj, key) {
       if (!obj) return "";
       let kLower = key.toLowerCase();
@@ -323,34 +425,64 @@
       return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
 
-    function isAgenciaOficial(nomeAgencia) {
-      const agLimpa = normalizarString(nomeAgencia);
-      for (let g in GRUPOS_COPA) {
-        if (GRUPOS_COPA[g].some(a => agLimpa.includes(normalizarString(a)))) return true;
-      }
-      return false;
-    }
+    // Apelidos: como cada agência oficial aparece escrita em nm_agencia nas
+    // abas Store_*. Necessário porque a grafia da base nem sempre bate com o
+    // nome oficial — em especial "Pac Porto Uniao D. Sta Cruz Do Timbo", que
+    // é a agência de SANTA CRUZ DO TIMBÓ (abreviada como "Sta") e não Porto
+    // União. Sem este apelido ela casava por engano com "Porto União" e os
+    // gols dela iam para a agência errada, deixando Santa Cruz zerada.
+    const APELIDOS_AGENCIA = {
+      "Santa Cruz Do Timbo": ["sta cruz do timbo", "santa cruz do timbo"],
+      "Lages II": ["lages ii"],
+      "Lages": ["lages"],
+      "Porto União": ["porto uniao"],
+      "São Joaquim": ["sao joaquim"],
+      "Canoinhas": ["canoinhas"],
+      "Correia Pinto": ["correia pinto"],
+      "Otacílio Costa": ["otacilio costa"],
+      "Irineópolis": ["irineopolis"],
+      "Major Vieira": ["major vieira"],
+      "Bom Jardim Da Serra": ["bom jardim"],
+      "Timbó Grande": ["timbo grande"],
+      "Monte Castelo": ["monte castelo"],
+      "Ponte Alta": ["ponte alta"],
+      "Bela Vista Do Toldo": ["bela vista"]
+    };
+
+    // Lista (apelido -> agência oficial) ordenada do padrão MAIS ESPECÍFICO
+    // para o menos específico. A ordem importa: "pac lages ii" contém tanto
+    // "lages ii" quanto "lages", e "…d. sta cruz do timbo" contém tanto
+    // "sta cruz do timbo" quanto "porto uniao" — sempre vence o mais longo.
+    const MAPA_APELIDOS = Object.keys(APELIDOS_AGENCIA)
+      .reduce((acc, oficial) => {
+        APELIDOS_AGENCIA[oficial].forEach(ap => acc.push({ padrao: ap, oficial: oficial }));
+        return acc;
+      }, [])
+      .sort((a, b) => b.padrao.length - a.padrao.length);
 
     function encontrarAgenciaOficial(nomeAgencia) {
       const agLimpa = normalizarString(nomeAgencia);
-      for (let g in GRUPOS_COPA) {
-        for (let agOficial of GRUPOS_COPA[g]) {
-          if (agLimpa.includes(normalizarString(agOficial))) {
-            return agOficial;
-          }
-        }
+      if (!agLimpa) return null;
+      for (let item of MAPA_APELIDOS) {
+        if (agLimpa.includes(item.padrao)) return item.oficial;
       }
       return null;
     }
 
+    function isAgenciaOficial(nomeAgencia) {
+      return encontrarAgenciaOficial(nomeAgencia) !== null;
+    }
+
+    // Usam encontrarAgenciaOficial para resolver o nome antes de comparar,
+    // senão sofreriam do mesmo problema de substring já corrigido acima.
     function isChaveNorte(nomeAgencia) {
-      const agLimpa = normalizarString(nomeAgencia);
-      return CHAVEAMENTO_NORTE.some(a => agLimpa.includes(normalizarString(a)));
+      const oficial = encontrarAgenciaOficial(nomeAgencia);
+      return oficial !== null && CHAVEAMENTO_NORTE.indexOf(oficial) !== -1;
     }
 
     function isChaveSerra(nomeAgencia) {
-      const agLimpa = normalizarString(nomeAgencia);
-      return CHAVEAMENTO_SERRA.some(a => agLimpa.includes(normalizarString(a)));
+      const oficial = encontrarAgenciaOficial(nomeAgencia);
+      return oficial !== null && CHAVEAMENTO_SERRA.indexOf(oficial) !== -1;
     }
 
     function normalizarSegmento(carteiraStr) {
@@ -362,15 +494,32 @@
       return "MISTA";
     }
 
+    // Período da Copa: junho a agosto de 2026.
+    // ds_periodo vem das abas Store_* no formato "MM/AAAA" (ex.: "06/2026").
+    // Também aceita "DD/MM/AAAA" por segurança, caso alguma aba mude o formato.
     function isDataCopa(dateStr) {
       if (!dateStr) return false;
-      const parts = dateStr.toString().split('/');
-      if (parts.length === 3) {
-        const mes = parseInt(parts[1], 10);
-        const ano = parseInt(parts[2], 10);
-        if (ano === 2026 && mes >= 6 && mes <= 8) return true;
+      const parts = dateStr.toString().trim().split('/');
+      let mes, ano;
+      if (parts.length === 2) {          // "MM/AAAA"
+        mes = parseInt(parts[0], 10);
+        ano = parseInt(parts[1], 10);
+      } else if (parts.length === 3) {   // "DD/MM/AAAA"
+        mes = parseInt(parts[1], 10);
+        ano = parseInt(parts[2], 10);
+      } else {
+        return false;
       }
-      return false;
+      return ano === 2026 && mes >= 6 && mes <= 8;
+    }
+
+    // Extrai o número do mês de um ds_periodo ("MM/AAAA" ou "DD/MM/AAAA").
+    function mesDoPeriodo(dateStr) {
+      if (!dateStr) return NaN;
+      const parts = dateStr.toString().trim().split('/');
+      if (parts.length === 2) return parseInt(parts[0], 10);
+      if (parts.length === 3) return parseInt(parts[1], 10);
+      return NaN;
     }
 
     function alternarAba(aba) {
@@ -394,21 +543,38 @@
 
     // INICIALIZAÇÃO COM BACKEND
     window.onload = function() {
-      // RESPONSIVIDADE DINÂMICA: ajustar zoom conforme tamanho da tela
+      // RESPONSIVIDADE DINÂMICA
+      // Escala contínua (não mais faixas fixas, que davam saltos bruscos ao
+      // trocar de monitor). O layout foi desenhado para ~1600x900; a fonte
+      // raiz é escalada proporcionalmente à tela, e como o Tailwind usa rem,
+      // todo o dashboard acompanha. Considera também a ALTURA, para telas
+      // largas e baixas não estourarem verticalmente. Limites evitam
+      // ilegibilidade em telas muito pequenas e exagero em TVs/4K.
+      const LARGURA_REF = 1600;
+      const ALTURA_REF = 900;
+      const ESCALA_MIN = 0.75;
+      const ESCALA_MAX = 1.45;
+
       function ajustarZoom() {
-        let largura = window.innerWidth;
-        let zoom = 1;
-        
-        if (largura < 768) zoom = 0.85;        // Telas pequenas (móvel)
-        else if (largura < 1024) zoom = 0.9;   // Tablets
-        else if (largura > 2000) zoom = 1.15;  // Monitors grandes (27")
-        else if (largura > 1500) zoom = 1.1;   // Monitors médios
-        
-        document.documentElement.style.fontSize = (16 * zoom) + 'px';
+        const porLargura = window.innerWidth / LARGURA_REF;
+        const porAltura = window.innerHeight / ALTURA_REF;
+        // A altura pesa menos: é aceitável rolar um pouco na vertical, mas
+        // nunca na horizontal — por isso a largura é a restrição principal.
+        let escala = Math.min(porLargura, porAltura * 1.2);
+        escala = Math.max(ESCALA_MIN, Math.min(ESCALA_MAX, escala));
+        document.documentElement.style.fontSize = (16 * escala).toFixed(2) + 'px';
       }
-      
+
+      // Debounce: redimensionar dispara dezenas de eventos por segundo.
+      let timerZoom = null;
+      function agendarAjusteZoom() {
+        clearTimeout(timerZoom);
+        timerZoom = setTimeout(ajustarZoom, 100);
+      }
+
       ajustarZoom();
-      window.addEventListener('resize', ajustarZoom);
+      window.addEventListener('resize', agendarAjusteZoom);
+      window.addEventListener('orientationchange', agendarAjusteZoom);
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -497,7 +663,12 @@
           let indicador = (getProp(row, 'Indicador') || "").toString().trim();
           let realizado = parseFloat(getProp(row, 'Realizado')) || 0;
           let meta = parseFloat(getProp(row, 'Meta')) || 0;
-          
+
+          // JANELA DA COPA: as abas Store_* trazem os 12 meses de 2026, mas
+          // só junho, julho e agosto valem gols. Sem este filtro o placar
+          // somava o ano inteiro (aprox. o dobro do correto).
+          if (!isDataCopa(mes)) return;
+
           // CHAVE ÚNICA: evitar contar mesma carteira 2x no mesmo mês
           let chaveUnica = gerente + "|||" + carteira + "|||" + mes + "|||" + indicador;
           
@@ -529,9 +700,8 @@
               golsMeta   = calcularGolsGerente(indicador, meta);
             }
 
-            // Fase de julho ("O MATA-MATA"): gols valem 1.5x (ds_periodo = "MM/AAAA").
-            let mesNum = parseInt((mes.split('/')[0] || '').trim(), 10);
-            if (mesNum === 7) { golsFeitos *= 1.5; golsMeta *= 1.5; }
+            // Fase de julho ("O MATA-MATA"): gols valem 1.5x.
+            if (mesDoPeriodo(mes) === 7) { golsFeitos *= 1.5; golsMeta *= 1.5; }
 
             placarGerentes[gerente].gols += golsFeitos;
             placarGerentes[gerente].metaGols += golsMeta;
@@ -608,20 +778,30 @@
       valor = parseFloat(valor) || 0;
 
       switch (indicador) {
-        // Regra unitária: 1 gol por unidade.
+        // Indicadores que a base entrega como QUANTIDADE (ex.: 38 contas,
+        // 12 cartões): multiplica direto pela pontuação unitária.
         case "Ativo Comercial":
         case "Cartão":
           gols = valor * 1;
           break;
 
-        // 2 gols por unidade.
+        // ATENÇÃO — Seguro de Vida e Consórcio chegam da base como VALOR EM
+        // R$ (ex.: Consórcio "Realizado" = 1.890.000,00), e não como
+        // quantidade de apólices/cotas. A regra da campanha pontua por
+        // unidade ("proposta emitida e paga" = 2 gols; "cota comercializada"
+        // = 4 gols), mas a quantidade não existe na base.
+        //
+        // Critério adotado (mesmo das fórmulas COUNTIFS da aba
+        // Resumo_Gerentes, para dashboard e planilha baterem): cada mês com
+        // valor positivo conta como 1 unidade. Multiplicar o valor em R$
+        // pela pontuação — como era feito antes — gerava gols na casa dos
+        // milhões (R$ 1,89 mi × 4 = 7.560.000 "gols").
         case "Seguro de Vida":
-          gols = valor * 2;
+          gols = valor > 0 ? 2 : 0;
           break;
 
-        // 4 gols por unidade.
         case "Consórcio":
-          gols = valor * 4;
+          gols = valor > 0 ? 4 : 0;
           break;
 
         // Blocos fechados: X gols a cada 10.000 de realizado.
@@ -712,8 +892,9 @@
             <span class="text-[11px] font-black text-slate-600 bg-slate-100 px-1.5 rounded border border-slate-200">#${i+1}</span>
             <span class="text-[11px]">⚽</span>
           </div>
-          <div class="relative w-16 h-16 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-3xl mb-2 group-hover:scale-110 transition-transform shadow-inner">
-            ${crown}👤
+          <div class="relative w-16 h-16 mb-2 group-hover:scale-110 transition-transform">
+            ${crown}
+            <div id="craque-foto-${i}" class="w-16 h-16 rounded-full bg-slate-100 border border-slate-300 overflow-hidden flex items-center justify-center text-3xl shadow-inner">👤</div>
           </div>
           <div class="w-full">
             <h4 class="text-[11px] font-extrabold text-slate-800 uppercase leading-tight truncate px-1" title="${g.nome}">${g.nome}</h4>
@@ -724,6 +905,12 @@
              <span class="text-sm font-black text-green-700">${formatGols(g.gols)}</span>
           </div>
         </div>`}).join('');
+
+      // Substitui o placeholder 👤 pela figurinha de cada craque (assíncrono:
+      // cada imagem entra assim que o backend devolve o base64).
+      craques.forEach((g, i) => {
+        aplicarFigurinha(`craque-foto-${i}`, g.nome, "w-full h-full object-cover");
+      });
     }
 
     function renderizarAbaComissao(gerentesRank, rawCarteiras) {
@@ -735,15 +922,19 @@
         let tecData = tabelaTec[agOfficialName];
         let tecNome = tecData.tecnico;
         let chaveamento = tecData.chaveamento;
-        
-        // Encontrar gols desta agência
+
+        // Compara pela agência OFICIAL resolvida dos dois lados: a grafia em
+        // Configuracoes_Dashboard nem sempre é idêntica à de Store_Gerente
+        // (ex.: "Pac Otacilício Costa" x "Pac Otacilío Costa"), e uma
+        // igualdade literal deixaria a agência de fora da conta do técnico.
+        let alvo = encontrarAgenciaOficial(agOfficialName);
         let agGols = 0;
         gerentesRank.forEach(g => {
-          if (normalizarString(g.ag) === normalizarString(agOfficialName)) {
+          if (alvo && encontrarAgenciaOficial(g.ag) === alvo) {
             agGols += g.gols;
           }
         });
-        
+
         if (!golsPorTecnico[tecNome]) {
           golsPorTecnico[tecNome] = { nome: tecNome, chaveamento: chaveamento, gols: 0 };
         }
@@ -752,18 +943,27 @@
 
       let golsNorte = 0;
       let golsSerra = 0;
-      
+      let nomeTecNorte = "", nomeTecSerra = "";
+
       for (let tecNome in golsPorTecnico) {
         let tec = golsPorTecnico[tecNome];
         // O chaveamento vem da planilha como "Chaveamento Norte"/"Chaveamento
         // Serra" (não apenas "Norte"/"Serra"); comparar por conteúdo.
         let chave = normalizarString(tec.chaveamento);
-        if (chave.includes("norte")) golsNorte += tec.gols;
-        if (chave.includes("serra")) golsSerra += tec.gols;
+        if (chave.includes("norte")) { golsNorte += tec.gols; nomeTecNorte = tec.nome; }
+        if (chave.includes("serra")) { golsSerra += tec.gols; nomeTecSerra = tec.nome; }
       }
 
       document.getElementById('gols-tecnico-norte').innerText = formatGols(golsNorte);
       document.getElementById('gols-tecnico-serra').innerText = formatGols(golsSerra);
+
+      // Figurinhas da comissão técnica. Os nomes dos técnicos vêm da coluna N
+      // de Configuracoes_Dashboard (ex.: "Marcos Fedechen", "Jean Paes"); o
+      // auxiliar é fixo no card. Se não houver figurinha correspondente na
+      // aba Figurinhas, o ícone padrão permanece.
+      if (nomeTecNorte) aplicarFigurinha('foto-tecnico-norte', nomeTecNorte, "w-full h-full object-cover");
+      if (nomeTecSerra) aplicarFigurinha('foto-tecnico-serra', nomeTecSerra, "w-full h-full object-cover");
+      aplicarFigurinha('foto-auxiliar-pfagro', 'Paulo Colli', "w-full h-full object-cover");
 
       // AUXILIARES: somar gols por segmento (nm_carteira). Dedup por
       // gerente+segmento: um gerente pode ter várias linhas de carteira no
