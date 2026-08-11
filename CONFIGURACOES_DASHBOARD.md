@@ -1,8 +1,10 @@
 # 📋 Configurações Dashboard - Copa Excelência
 
+Dados de referência extraídos da aba `Configuracoes_Dashboard` e do dashboard publicado. Para fórmulas e passo a passo de implementação, ver `IMPLEMENTACAO_DASHBOARD.md`.
+
 ## 1. COLABORADORES EXCLUÍDOS DO RANKING
 
-Estes colaboradores **NÃO participam** do ranking final de pontuação:
+Estes colaboradores **NÃO participam** do ranking final de pontuação (fonte: `Configuracoes_Dashboard!A2:A16`):
 
 | # | Nome |
 |---|------|
@@ -25,6 +27,8 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 ---
 
 ## 2. INDICADORES STORE_GERENTE (PONTUAÇÃO/GOLS)
+
+Fonte: `Configuracoes_Dashboard!C2:D15`.
 
 | Indicador | Pontuação | Tipo | Regra |
 |-----------|-----------|------|-------|
@@ -51,11 +55,10 @@ Estes colaboradores **NÃO participam** do ranking final de pontuação:
 
 ---
 
-## 4. ESTRUTURA DE AGÊNCIAS E TIMES
+## 4. ESTRUTURA DE AGÊNCIAS, TIMES E GRUPOS
 
-Fonte: `Configuracoes_Dashboard` colunas G (Agência) e H (Nome do Time). O Grupo (1/2/3) não existe como coluna na planilha — foi extraído do dashboard publicado (chaveamento "Classificação das Seleções") e adicionado aqui como referência.
+Fonte: `Configuracoes_Dashboard` colunas G (Agência) e H (Nome do Time). O Grupo (1/2/3) não existe como coluna na planilha — foi extraído do chaveamento "Classificação das Seleções" do dashboard publicado.
 
-### Agências, Times e Grupos
 | Agência (Config. G) | Nome do Time (Config. H) | Nome Completo (Store_*/Resumo) | Grupo |
 |---|---|---|---|
 | Ponte Alta | Morangueiros | Pac Ponte Alta | 3 |
@@ -79,13 +82,12 @@ Fonte: `Configuracoes_Dashboard` colunas G (Agência) e H (Nome do Time). O Grup
 - **Grupo 2 (Intermediárias):** Major Vieira, Irineópolis, Otacilio Costa, Correia Pinto
 - **Grupo 3 (Desafiantes):** Monte Castelo, Ponte Alta, Timbó Grande, Santa Cruz do Timbó, Bom Jardim, Bela Vista
 
-Ver `IMPLEMENTACAO_DASHBOARD.md` para a fórmula `IFS` que atribui o Grupo automaticamente na aba `Resumo_Agencias`.
-
 ---
 
 ## 5. ESTRUTURA TÉCNICA E CHAVEAMENTOS
 
-### Técnicos por Agência
+Fonte: `Configuracoes_Dashboard!L2:N15`.
+
 | Agência | Técnico | Chaveamento |
 |---------|---------|-------------|
 | Pac Canoinhas | Marcos Fedechen | Chaveamento Norte |
@@ -95,13 +97,13 @@ Ver `IMPLEMENTACAO_DASHBOARD.md` para a fórmula `IFS` que atribui o Grupo autom
 | Pac Bela Vista Do Toldo | Marcos Fedechen | Chaveamento Norte |
 | Pac Timbó Grande | Marcos Fedechen | Chaveamento Norte |
 | Pac Monte Castelo | Marcos Fedechen | Chaveamento Norte |
+| Pac Porto Uniao D. Sta Cruz Do Timbo | Marcos Fedechen | Chaveamento Norte |
 | Pac São Joaquim | Jean Paes | Chaveamento Serra |
 | Pac Lages Ii | Jean Paes | Chaveamento Serra |
 | Pac Lages | Jean Paes | Chaveamento Serra |
 | Pac Correia Pinto | Jean Paes | Chaveamento Serra |
 | Pac Bom Jardim Da Serra | Jean Paes | Chaveamento Serra |
 | Pac Otacilício Costa | Jean Paes | Chaveamento Serra |
-| Pac Porto Uniao D. Sta Cruz Do Timbo | Marcos Fedechen | Chaveamento Norte |
 | Pac Ponte Alta | Jean Paes | Chaveamento Serra |
 
 ---
@@ -116,90 +118,12 @@ Ver `IMPLEMENTACAO_DASHBOARD.md` para a fórmula `IFS` que atribui o Grupo autom
 
 ## 7. PERÍODOS DE COMPETIÇÃO
 
-| Período | Dados | Multiplicador |
+| Período | Registros (Store_Agencia) | Multiplicador |
 |---------|-------|---|
-| Junho 2026 (06/2026) | 967 registros | 1.0x |
-| Julho 2026 (07/2026) | 1.007 registros | 1.5x (Mata-Mata) |
-| Agosto 2026 (08/2026) | 1.152 registros | 1.0x |
+| Junho 2026 (06/2026) | 967 | 1,0x |
+| Julho 2026 (07/2026) | 1.007 | 1,5x (Mata-Mata) |
+| Agosto 2026 (08/2026) | 1.152 | 1,0x |
 
 ---
 
-## 8. FÓRMULAS DE CÁLCULO
-
-### Gols por Período (Google Sheets)
-
-**J2 - Gols_Junho (06/2026):**
-```
-=COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Ativo Comercial"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0")
-+ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Seguro de Vida"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 2
-+ COUNTIFS(Store_Gerente!G:G; A2; Store_Gerente!H:H; "Consórcio"; Store_Gerente!B:B; "06/2026"; Store_Gerente!J:J; ">0") * 4
-+ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Depósitos Totais"; Store_Gerente!B:B; "06/2026") / 10000) * 4
-+ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Crédito Comercial"; Store_Gerente!B:B; "06/2026") / 10000) * 4
-+ INT(SUMIFS(Store_Gerente!J:J; Store_Gerente!G:G; A2; Store_Gerente!H:H; "Capital Social"; Store_Gerente!B:B; "06/2026") / 10000) * 5
-```
-
-**K2 - Gols_Julho (07/2026):** Trocar `"06/2026"` por `"07/2026"`
-
-**L2 - Gols_Agosto (08/2026):** Trocar `"06/2026"` por `"08/2026"`
-
-**M2 - Pontos Finais (Jun-Ago):** Não existe coluna separada de multiplicador — o 1.5x de Julho é aplicado direto na fórmula:
-```
-=J2 + (K2 * 1,5) + L2
-```
-⚠️ **Separador decimal:** a planilha está em PT-BR — use vírgula (`1,5`), nunca ponto (`1.5`), senão a fórmula retorna `#ERROR!`.
-
-⚠️ **Confirmado via export real (10/08/2026):** a estrutura da aba Resumo_Gerentes tem apenas 13 colunas (A até M), sem coluna N. J, K e L retornam 0 para todos os gerentes atualmente (fórmulas ainda não aplicadas na planilha), e M contém valores incorretos vindos de uma fórmula antiga que não usa J/K/L — precisa ser substituída pela fórmula acima.
-
----
-
-## 8.1 ESTRUTURA DAS ABAS STORE_* (DADOS BRUTOS)
-
-Confirmado via export HTML (10/08/2026). Todas em formato longo (uma linha por combinação de dimensão + indicador + período):
-
-**Store_Gerente:**
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
-F: nm_agencia | G: Gerente | H: Indicador | I: Meta | J: Realizado | K: Saldo
-```
-
-**Store_Agencia** (2.964 registros — mesma estrutura de Store_Gerente, sem a coluna Gerente):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
-E: cd_agencia | F: nm_agencia | G: Indicador | H: Meta | I: Realizado | J: Saldo
-```
-
-**Store_Cooperativa** (202 registros — agregado no nível de cooperativa):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
-E: Indicador | F: Meta | G: Realizado | H: Saldo
-```
-
-**Store_Carteira** (11.716 registros — o mais granular, quebra por carteira dentro de cada gerente):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
-F: nm_agencia | G: Gerente | H: cd_carteira | I: nm_carteira | J: Indicador
-K: Meta | L: Realizado | M: Saldo
-```
-
-⚠️ **Importante:** essas três abas são dados brutos (várias linhas por agência/cooperativa), **não** tabelas de resumo. Não é possível colocar fórmulas de ranking diretamente nelas — é necessário criar abas de resumo dedicadas (ex.: `Resumo_Gerentes` já existe; `Resumo_Agencias` precisa ser criada seguindo o mesmo padrão — ver `IMPLEMENTACAO_DASHBOARD.md`).
-
----
-
-## 9. REGRA DE EXCLUSÃO NO RANKING
-
-**Onde aplicar:** aba `Resumo_Gerentes`, coluna nova `N` (próxima livre após `M`, que é a última usada hoje). Cabeçalho sugerido em `N1`: `Pontos_Ranking`.
-
-**Fórmula (N2, arrastar para baixo):**
-```
-=IF(COUNTIF(Configuracoes_Dashboard!A:A; A2) > 0; ""; M2)
-```
-⚠️ Usar `IF` (inglês), não `SE` (português) — mesma regra das demais fórmulas deste projeto.
-
-Se o colaborador da linha (`A2`) estiver na lista de excluídos (seção 1 deste documento), `N2` fica vazio; caso contrário, repete `M2` (Pontos_Finais_Jun_Ago). Use a coluna `N` — não `M` — para montar rankings e a aba `Resumo_Agencias`, assim os excluídos não entram na soma.
-
-Esta fórmula verifica se o colaborador está na lista de exclusão e não inclui seus pontos no ranking.
-
----
-
-**Última atualização:** 2026-08-10
-**Status:** Completo - Pronto para implementação
+**Referência:** `IMPLEMENTACAO_DASHBOARD.md` (fórmulas do Google Sheets) | `src/webapp/` (código do dashboard público, Apps Script)

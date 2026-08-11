@@ -1,32 +1,50 @@
 # Copa Excelência - Implementação Dashboard
 **Período:** Junho-Agosto 2026 | **Status:** Pronto para Implementar
 
----
+Guia de fórmulas para as abas de resumo da planilha Google Sheets. Para dados de referência (colaboradores excluídos, pontuação, agências/times/grupos, técnicos), ver `CONFIGURACOES_DASHBOARD.md`.
 
-## 📊 Dados Validados
-
-| Período | Registros | Status |
-|---------|-----------|--------|
-| 06/2026 | 967 | ✅ Confirmado |
-| 07/2026 | 1.007 | ✅ Confirmado |
-| 08/2026 | 1.152 | ✅ Confirmado |
+⚠️ Regras gerais de sintaxe válidas em todas as fórmulas deste guia:
+- **Funções sempre em inglês** (`COUNTIFS`, `SUMIFS`, `INDEX`, `MATCH`, `IF`, `IFS`, `INT`), nunca em português (`CONTARSES`, `SOMASES`, `SE`), mesmo com a planilha em PT-BR.
+- **Separador de argumentos:** ponto e vírgula (`;`), padrão do Sheets em PT-BR.
+- **Separador decimal:** vírgula (`,`), nunca ponto — `1.5` gera `#ERROR!`, use `1,5`.
+- Filtrar período sempre pelo **texto** da coluna `ds_periodo` (ex.: `"06/2026"`), nunca por intervalo de datas em `dt_base`.
 
 ---
 
-## 🔧 Estrutura Store_Gerente
+## 🗂️ Estrutura das Abas Store_* (Dados Brutos)
+
+Todas em formato longo (uma linha por combinação de dimensão + indicador + período) — **não são tabelas de resumo/ranking**, então fórmulas de ranking não podem ser colocadas diretamente nelas.
+
+**Store_Gerente:**
 ```
-Coluna A: dt_base (data)
-Coluna B: ds_periodo (período - "06/2026", "07/2026", "08/2026")
-Coluna G: Gerente
-Coluna H: Indicador (Ativo Comercial, Seguro de Vida, etc)
-Coluna J: Realizado (valor numérico)
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: Indicador | I: Meta | J: Realizado | K: Saldo
+```
+
+**Store_Agencia** (2.964 registros — mesma estrutura, sem a coluna Gerente):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: cd_agencia | F: nm_agencia | G: Indicador | H: Meta | I: Realizado | J: Saldo
+```
+
+**Store_Cooperativa** (202 registros — agregado no nível de cooperativa):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
+E: Indicador | F: Meta | G: Realizado | H: Saldo
+```
+
+**Store_Carteira** (11.716 registros — o mais granular, quebra por carteira dentro de cada gerente):
+```
+A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
+F: nm_agencia | G: Gerente | H: cd_carteira | I: nm_carteira | J: Indicador
+K: Meta | L: Realizado | M: Saldo
 ```
 
 ---
 
 ## 📋 ABA: Resumo_Gerentes
 
-### Cabeçalhos (Linha 1) — Estrutura Real Confirmada (13 colunas)
+### Cabeçalhos (Linha 1) — 13 colunas (A-M) + N (exclusão, ver Passo 6)
 ```
 A: Gerente
 B: Agencia_Codigo
@@ -40,18 +58,13 @@ I: Capital_Social
 J: Gols_Junho
 K: Gols_Julho
 L: Gols_Agosto
-M: Pontos_Finais_Jun_Ago  ← resultado final (NÃO existe coluna N)
+M: Pontos_Finais_Jun_Ago
+N: Pontos_Ranking (criar — ver Passo 6)
 ```
 
-⚠️ **Não existe coluna separada para o multiplicador de 1.5x.** O multiplicador é aplicado diretamente dentro da fórmula de M (Pontos_Finais_Jun_Ago).
-
-### ⚠️ Estado Atual (confirmado via export HTML de 10/08/2026)
-- **J, K e L retornam 0 para TODOS os gerentes** — as fórmulas dos Passos 3 e 4 abaixo ainda não foram aplicadas na planilha real, ou foram sobrescritas.
-- **M (Pontos_Finais_Jun_Ago) contém valores enormes e sem relação com J/K/L** (ex.: -165.737,91 / 11.195.142,78 / 61.549.611,06) — isso prova que a fórmula atual de M **não deriva de J+K*1.5+L**, e sim de algum outro cálculo incorreto (provavelmente multiplicação/soma de colunas inteiras sem filtro por linha, tipo SUMPRODUCT mal configurado). Essa fórmula precisa ser **substituída por completo** pela fórmula correta abaixo.
-
 ### Passo 1: Listar Gerentes Únicos
-- Copiar gerentes únicos de Store_Gerente!G:G
-- Preencher A2 em diante
+- Copiar gerentes únicos de `Store_Gerente!G:G`
+- Preencher `A2` em diante
 - Remover duplicatas (Dados → Remover duplicatas)
 
 ### Passo 2: Lookup Agência (B2:C2)
@@ -104,81 +117,43 @@ M: Pontos_Finais_Jun_Ago  ← resultado final (NÃO existe coluna N)
 =COUNTIFS(Store_Gerente!G:G;A2;Store_Gerente!H:H;"Ativo Comercial";Store_Gerente!B:B;"06/2026";Store_Gerente!J:J;">0")+COUNTIFS(Store_Gerente!G:G;A2;Store_Gerente!H:H;"Seguro de Vida";Store_Gerente!B:B;"06/2026";Store_Gerente!J:J;">0")*2+COUNTIFS(Store_Gerente!G:G;A2;Store_Gerente!H:H;"Consórcio";Store_Gerente!B:B;"06/2026";Store_Gerente!J:J;">0")*4+INT(SUMIFS(Store_Gerente!J:J;Store_Gerente!G:G;A2;Store_Gerente!H:H;"Depósitos Totais";Store_Gerente!B:B;"06/2026")/10000)*4+INT(SUMIFS(Store_Gerente!J:J;Store_Gerente!G:G;A2;Store_Gerente!H:H;"Crédito Comercial";Store_Gerente!B:B;"06/2026")/10000)*4+INT(SUMIFS(Store_Gerente!J:J;Store_Gerente!G:G;A2;Store_Gerente!H:H;"Capital Social";Store_Gerente!B:B;"06/2026")/10000)*5
 ```
 
-**K2 - Gols_Julho:** (trocar "06/2026" por "07/2026")
+**K2 - Gols_Julho:** (trocar `"06/2026"` por `"07/2026"`)
 
-**L2 - Gols_Agosto:** (trocar "06/2026" por "08/2026")
+**L2 - Gols_Agosto:** (trocar `"06/2026"` por `"08/2026"`)
 
 ### Passo 5: Pontos Finais (M2)
 
-**M2 - Pontos_Finais_Jun_Ago** (Junho + Julho com multiplicador 1.5x + Agosto, tudo em uma única fórmula, sem coluna auxiliar):
+Junho + Julho com multiplicador 1,5x + Agosto, sem coluna auxiliar de multiplicador:
 ```
 =J2+(K2*1,5)+L2
 ```
 
-🔴 **IMPORTANTE — separador decimal:** a planilha está em PT-BR, então o separador decimal é **vírgula**, não ponto. `1.5` gera `#ERROR!` (erro de análise de fórmula). Use sempre `1,5`.
-
-🔴 **Ação necessária na planilha real:** apagar a fórmula atual de M2 (que estava retornando valores incoerentes como -165.737,91 ou 11.195.142,78, ou o erro de sintaxe `1.5`) e substituir pela fórmula acima.
-
 ### Passo 6: Excluir Colaboradores do Ranking (N2)
 
-Ver `CONFIGURACOES_DASHBOARD.md` para a lista completa dos 15 colaboradores excluídos (coluna `A` da aba `Configuracoes_Dashboard`).
+Ver `CONFIGURACOES_DASHBOARD.md` seção 1 para a lista completa dos 15 colaboradores excluídos.
 
-**Onde aplicar:** ainda na aba `Resumo_Gerentes`, na próxima coluna livre — como `M` é a última usada até aqui, é a coluna **`N`**. Ela não existe ainda; você cria do zero:
-
-1. Em `N1`, digite o cabeçalho `Pontos_Ranking`.
-2. Em `N2`, cole a fórmula abaixo e arraste até a última linha:
+Cria-se a coluna `N` (não existe por padrão):
+1. Em `N1`: cabeçalho `Pontos_Ranking`.
+2. Em `N2`, e arrastar até a última linha:
 ```
 =IF(COUNTIF(Configuracoes_Dashboard!A:A;A2)>0;"";M2)
 ```
 
-Se o colaborador (`A2`) estiver na lista de excluídos, `N2` fica vazio; caso contrário, repete `M2`. **Use `N` (não `M`) a partir daqui** para montar rankings e para a agregação por agência no próximo passo, assim os excluídos não entram na soma da agência.
-
----
-
-## 🗂️ Estrutura das Abas Store_* (Dados Brutos)
-
-Todas as abas `Store_*` são tabelas de dados brutos em formato longo (uma linha por combinação de dimensão + indicador + período) — **não são tabelas de resumo/ranking**. Confirmado via export HTML de 10/08/2026:
-
-**Store_Gerente** (966+ registros/período):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
-F: nm_agencia | G: Gerente | H: Indicador | I: Meta | J: Realizado | K: Saldo
-```
-
-**Store_Agencia** (2.964 registros — mesma estrutura, sem a coluna Gerente):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
-E: cd_agencia | F: nm_agencia | G: Indicador | H: Meta | I: Realizado | J: Saldo
-```
-
-**Store_Cooperativa** (202 registros — agregado no nível de cooperativa):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa
-E: Indicador | F: Meta | G: Realizado | H: Saldo
-```
-
-**Store_Carteira** (11.716 registros — o mais granular, quebra por carteira dentro de cada gerente):
-```
-A: dt_base | B: ds_periodo | C: cd_cooperativa | D: nm_cooperativa | E: cd_agencia
-F: nm_agencia | G: Gerente | H: cd_carteira | I: nm_carteira | J: Indicador
-K: Meta | L: Realizado | M: Saldo
-```
-
-⚠️ **Por isso a fórmula em `Store_Agencia!L2` retornou 0**: essa aba é dado bruto (2.964 linhas, várias por agência — uma por indicador/período), não uma tabela com uma linha por agência. Uma fórmula de ranking colocada ali não teria como agregar corretamente. É necessário criar uma aba de **resumo** dedicada, análoga à `Resumo_Gerentes`, com um nome como `Resumo_Agencias`.
+Se o colaborador (`A2`) estiver na lista de excluídos, `N2` fica vazio; caso contrário, repete `M2`. **Use `N` (não `M`) a partir daqui** para montar rankings e para a agregação por agência no próximo passo — assim os excluídos não entram na soma da agência.
 
 ---
 
 ## 📈 ABA: Resumo_Agencias
 
-### Cabeçalhos (Linha 1) — Estrutura Real (uma linha por colaborador, igual a Resumo_Gerentes)
+### Cabeçalhos (Linha 1) — uma linha por colaborador, igual a Resumo_Gerentes
 ```
 A: Colaborador | B: Agencia | C: Grupo | D: Pontos_Finais_Jun_Ago | E: Posicao_no_Grupo | F: Premiacao
 ```
 
-⚠️ Diferente do que uma versão anterior deste guia sugeria, esta aba **não** precisa ter uma linha por agência — funciona igual à `Resumo_Gerentes`, com uma linha por colaborador, e a coluna `B` (Agência) repete o mesmo valor para todos os colaboradores da mesma agência. Isso é o formato que já está em uso na planilha; as fórmulas de ranking abaixo funcionam corretamente mesmo com linhas repetidas por agência.
+A coluna `B` (Agência) repete o mesmo valor para todos os colaboradores da mesma agência — as fórmulas de ranking abaixo funcionam corretamente mesmo assim.
 
 ### Passo 1: Colaborador (A2)
-Mesma lista de `Resumo_Gerentes!A:A` (copiar ou usar `=Resumo_Gerentes!A2`).
+Mesma lista de `Resumo_Gerentes!A:A`.
 
 ### Passo 2: Agência (B2)
 ```
@@ -186,23 +161,15 @@ Mesma lista de `Resumo_Gerentes!A:A` (copiar ou usar `=Resumo_Gerentes!A2`).
 ```
 
 ### Passo 3: Grupo (C2)
-A divisão de grupos (1, 2 e 3) vem do chaveamento do dashboard e não existe como coluna pronta em `Configuracoes_Dashboard` — por isso é fixada diretamente na fórmula com `IFS`, usando o nome completo da agência (mesmo valor de `Store_Gerente!F:F` / `Resumo_Gerentes!C:C`, com prefixo "Pac"):
+A divisão de grupos (1, 2 e 3) não existe como coluna em `Configuracoes_Dashboard` — vem do chaveamento do dashboard publicado (ver `CONFIGURACOES_DASHBOARD.md` seção 4) e é fixada direto na fórmula com `IFS`, comparando o nome completo da agência (mesmo valor de `Store_Gerente!F:F` / `Resumo_Gerentes!C:C`, com prefixo "Pac"):
 ```
 =IFS(B2="Pac São Joaquim";1;B2="Pac Lages Ii";1;B2="Pac Porto União";1;B2="Pac Lages";1;B2="Pac Canoinhas";1;B2="Pac Major Vieira";2;B2="Pac Irineópolis";2;B2="Pac Otacilío Costa";2;B2="Pac Correia Pinto";2;B2="Pac Monte Castelo";3;B2="Pac Ponte Alta";3;B2="Pac Timbó Grande";3;B2="Pac Porto Uniao D. Sta Cruz Do Timbo";3;B2="Pac Bom Jardim Da Serra";3;B2="Pac Bela Vista Do Toldo";3;TRUE;"")
 ```
 
-**Mapa Grupo × Agência (referência):**
-
-| Grupo | Times / Agências |
-|-------|-------------------|
-| 1 — Cabeças de Chave | Gigantes da Serra (São Joaquim), Craques da Coop (Lages Ii), Tropa do Xixo (Porto União), Canarinhos da Serra (Lages), Little Boat (Canoinhas) |
-| 2 — Intermediárias | Sinergia (Major Vieira), Pix na Rede FC (Irineópolis), Furacão Laranja (Otacílio Costa), Construindo Gigantes (Correia Pinto) |
-| 3 — Desafiantes | Craques da Cooperação (Monte Castelo), Morangueiros (Ponte Alta), Golaço Tg (Timbó Grande), Artilheiros da Meta (Santa Cruz do Timbó / Pac Porto Uniao D. Sta Cruz Do Timbo), Real Cooperativo (Bom Jardim), Esquadrão Excelência (Bela Vista) |
-
-⚠️ Se algum nome de agência em `B:B` não bater exatamente com os valores acima (acentos, "Pac" faltando, etc.), o `IFS` retorna `""` para essa linha — nesse caso confira a grafia exata usando `=Store_Gerente!F2` como referência.
+⚠️ Se algum nome de agência em `B:B` não bater exatamente com os valores da fórmula (acentos, "Pac" faltando, etc.), o `IFS` retorna `""` para essa linha — confira a grafia exata usando `=Store_Gerente!F2` como referência.
 
 ### Passo 4: Pontos Finais por Agência (D2)
-Soma os pontos de todos os colaboradores daquela agência, **já excluindo os 15 colaboradores da lista de exclusão** (por isso usa a coluna `N`, criada no Passo 6 da aba `Resumo_Gerentes`, e não `M`):
+Soma os pontos de todos os colaboradores daquela agência, já excluindo os 15 colaboradores da lista de exclusão (usa a coluna `N` de `Resumo_Gerentes`, criada no Passo 6, não `M`):
 ```
 =SUMIF(Resumo_Gerentes!C:C;B2;Resumo_Gerentes!N:N)
 ```
@@ -222,20 +189,27 @@ Ranking dentro do mesmo grupo (compara apenas linhas com o mesmo `C`):
 
 ## ✅ Checklist Final
 
-- [ ] Todos os gerentes listados em Resumo_Gerentes!A:A
+- [ ] Todos os gerentes listados em `Resumo_Gerentes!A:A`
 - [ ] Lookup de agência funcionando (B2:C2)
 - [ ] Indicadores agregados preenchidos (D2:I2)
-- [ ] Gols por período calculados (J2:L2) - **USAR COUNTIFS/SUMIFS EM INGLÊS** — atualmente retornando 0 para todos, aplicar fórmulas do Passo 4
-- [ ] Fórmula de M2 (Pontos_Finais_Jun_Ago) corrigida para `=J2+(K2*1,5)+L2` **(vírgula, não ponto)**
+- [ ] Gols por período calculados (J2:L2)
 - [ ] Pontos finais somando corretamente (M2)
-- [ ] Coluna N (Pontos_Ranking) criada em Resumo_Gerentes, excluindo os 15 colaboradores (Passo 6)
+- [ ] Coluna `N` (Pontos_Ranking) criada em `Resumo_Gerentes`, excluindo os 15 colaboradores (Passo 6)
 - [ ] Aba `Resumo_Agencias` criada (NÃO usar `Store_Agencia`, que é dado bruto)
-- [ ] Coluna Grupo preenchida automaticamente via fórmula IFS (Resumo_Agencias!C2) — não mais manual
-- [ ] Agregação por agência funcionando (Resumo_Agencias!D2, referenciando Resumo_Gerentes!N:N)
+- [ ] Coluna Grupo preenchida automaticamente via fórmula `IFS` (Resumo_Agencias!C2)
+- [ ] Agregação por agência funcionando (Resumo_Agencias!D2, referenciando `Resumo_Gerentes!N:N`)
 - [ ] Ranking calculado por grupo (Resumo_Agencias!E2)
 - [ ] Premiação exibida corretamente (Resumo_Agencias!F2)
 - [ ] Colaboradores excluídos não aparecem no ranking
 
 ---
 
-**Referência:** CONFIGURACOES_DASHBOARD.md
+## ℹ️ Sobre o Dashboard Público (src/webapp/)
+
+O dashboard público (`src/webapp/Index.html` + `codigo.gs`) **não lê `Resumo_Gerentes`/`Resumo_Agencias`**: ele é um Web App do Apps Script que lê `Store_Gerente`, `Store_Agencia`, `Store_Carteira` e `Configuracoes_Dashboard` diretamente e recalcula gols/rankings/grupos em JavaScript a cada carregamento. As fórmulas deste guia são um cálculo manual paralelo, útil para conferência.
+
+Alterações em `src/webapp/Index.html` neste repositório só valem para o dashboard real depois de coladas manualmente no editor do Apps Script vinculado à planilha (Extensões → Apps Script) — este repositório não está conectado a ele.
+
+---
+
+**Referência:** `CONFIGURACOES_DASHBOARD.md`
