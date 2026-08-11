@@ -86,7 +86,7 @@ Fonte: `Configuracoes_Dashboard` colunas G (Agência) e H (Nome do Time). O Grup
 
 ## 5. ESTRUTURA TÉCNICA E CHAVEAMENTOS
 
-Fonte: `Configuracoes_Dashboard!L2:N15`.
+Fonte: `Configuracoes_Dashboard!M2:O15` (colunas M=Agência, N=Técnico, O=Chaveamento; a coluna `L` é um espaçador vazio — cuidado ao ler esse intervalo por código, já foi motivo de bug em `codigo.gs`).
 
 | Agência | Técnico | Chaveamento |
 |---------|---------|-------------|
@@ -105,6 +105,13 @@ Fonte: `Configuracoes_Dashboard!L2:N15`.
 | Pac Bom Jardim Da Serra | Jean Paes | Chaveamento Serra |
 | Pac Otacilício Costa | Jean Paes | Chaveamento Serra |
 | Pac Ponte Alta | Jean Paes | Chaveamento Serra |
+
+### Auxiliares Técnicos (Fonte: `Configuracoes_Dashboard!Q2:R3`)
+
+| Auxiliar Técnico | Segmento |
+|---|---|
+| ~~Karla Melo~~ | ~~PJ~~ — removida do dashboard (não faz mais parte da função) |
+| Paulo Colli | PF e AGRO |
 
 ---
 
