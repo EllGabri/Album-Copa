@@ -16,9 +16,6 @@ Album-Copa/
 │       └── slotMap.json     # Coordenadas dos slots de cada template
 ├── backup/
 │   └── webapp/               # Versão ANTERIOR de src/webapp/, para consulta/rollback rápido
-├── CONFIGURACOES_DASHBOARD.md  # Dados de referência (exclusões, pontuação, agências/grupos, técnicos)
-├── IMPLEMENTACAO_DASHBOARD.md  # Fórmulas do Google Sheets (Resumo_Gerentes, Resumo_Agencias)
-├── REGRAS_CAMPANHA.md          # Regras oficiais da campanha (fonte de verdade)
 └── .gitignore
 ```
 
@@ -34,7 +31,7 @@ Este repositório **não está conectado** ao Apps Script/planilha em produção
 ## Componentes Principais
 
 ### `src/webapp/`
-- **Index.html** — Dashboard público da Copa Excelência: rankings de gerentes/agências por grupo, Comissão Técnica (Duelo de Técnicos + Auxiliares), pódio e premiações. Lê os dados direto das abas `Store_*` e `Configuracoes_Dashboard` via `codigo.gs` e recalcula tudo em JavaScript a cada carregamento — não depende de `Resumo_Gerentes`/`Resumo_Agencias`.
+- **Index.html** — Dashboard público da Copa Excelência: rankings de gerentes/agências por grupo, Comissão Técnica (Duelo de Técnicos + Auxiliares), pódio e premiações. Lê os dados direto das abas `Store_*` e `Configuracoes_Dashboard` via `codigo.gs` e recalcula tudo em JavaScript a cada carregamento.
 - **Album.html** — Interface do álbum de figurinhas: drag-and-drop, inventário, pacotes, detecção de duplicatas.
 - **SlotMap.html** — Mapeamento gerado de slots (gerado a partir de `src/config/slotMap.json`).
 - **codigo.gs** — Backend: leitura das abas `Store_*`/`Configuracoes_Dashboard`, integração com Google Drive, reconciliação de figurinhas/templates, distribuição de pacotes.
@@ -48,12 +45,6 @@ Este repositório **não está conectado** ao Apps Script/planilha em produção
 2. Para cada arquivo que mudou em `src/webapp/`, selecionar todo o conteúdo do arquivo correspondente no editor e colar por cima (substituição total).
 3. Salvar e implantar nova versão (Implantar → Gerenciar implantações → editar → Nova versão).
 4. Se `codigo.gs` mudou e envolve figurinhas/templates: rodar `reconciliarFigurinhas()` / `reconciliarTemplates()` pelo menu da planilha.
-
-## Documentação
-
-- **`REGRAS_CAMPANHA.md`** — regras oficiais da campanha (fases, comissão técnica, grupos, tabela de gols, premiação). Fonte de verdade para qualquer regra de negócio.
-- **`CONFIGURACOES_DASHBOARD.md`** — dados de referência extraídos da aba `Configuracoes_Dashboard` (colaboradores excluídos, pontuação por indicador, agências/times/grupos, técnicos, links do Drive).
-- **`IMPLEMENTACAO_DASHBOARD.md`** — fórmulas prontas para copiar nas abas `Resumo_Gerentes`/`Resumo_Agencias` da planilha (cálculo manual paralelo ao dashboard, útil para conferência).
 
 ## Branches
 
