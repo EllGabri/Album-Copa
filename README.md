@@ -1,114 +1,64 @@
-# Album Copa - Sistema de Álbum Digital
+# Album Copa - Sistema de Álbum Digital + Copa Excelência
 
-Aplicação web para gerenciamento de álbum digital de figurinhas da Copa do Mundo, com 15 agências e Comissão Técnica.
+Aplicação web para gerenciamento de álbum digital de figurinhas (15 agências + Comissão Técnica) e dashboard da campanha "Copa Excelência de Negócios" (Jun-Ago 2026), rodando como Web App do Google Apps Script vinculado à planilha de produção.
 
 ## Estrutura do Projeto
 
 ```
 Album-Copa/
 ├── src/
-│   ├── webapp/              # Código-fonte da aplicação web
-│   │   ├── Album.html       # Interface principal do álbum
-│   │   ├── Index.html       # Página de entrada (login)
-│   │   ├── SlotMap.html     # Mapeamento gerado de slots
-│   │   └── codigo.gs        # Backend em Google Apps Script
+│   ├── webapp/              # Código-fonte ATUAL (o que roda em produção)
+│   │   ├── Album.html       # Interface do álbum de figurinhas
+│   │   ├── Index.html       # Dashboard da Copa Excelência
+│   │   ├── SlotMap.html     # Mapeamento de slots do álbum
+│   │   └── codigo.gs        # Backend (Google Apps Script)
 │   └── config/
-│       └── slotMap.json     # Configuração de coordenadas dos slots
-├── scripts/                 # Scripts Python para validação/geração
-│   ├── generate_slot_map.py # Gera slotMap.json a partir dos templates
-│   └── validate_slot_map.py # Valida integridade do slotMap.json
-├── assets/                  # Recursos da aplicação
-│   └── templates/           # (Referência) Templates dos álbuns das agências
-├── reference/               # Documentação de referência
-└── .gitignore              # Configuração Git
+│       └── slotMap.json     # Coordenadas dos slots de cada template
+├── backup/
+│   └── webapp/               # Versão ANTERIOR de src/webapp/, para consulta/rollback rápido
+├── CONFIGURACOES_DASHBOARD.md  # Dados de referência (exclusões, pontuação, agências/grupos, técnicos)
+├── IMPLEMENTACAO_DASHBOARD.md  # Fórmulas do Google Sheets (Resumo_Gerentes, Resumo_Agencias)
+├── REGRAS_CAMPANHA.md          # Regras oficiais da campanha (fonte de verdade)
+└── .gitignore
 ```
+
+## Convenção de Backup
+
+Este repositório **não está conectado** ao Apps Script/planilha em produção — todo código aqui precisa ser copiado manualmente para lá (ver seção abaixo). Por isso, sempre que `src/webapp/` é alterado:
+
+1. A versão anterior de cada arquivo alterado é copiada para `backup/webapp/` (sobrescrevendo o que já estava lá).
+2. A versão nova fica em `src/webapp/`, como sempre.
+
+`backup/webapp/` guarda sempre **um único snapshot**: o estado imediatamente anterior à última mudança — não é um histórico completo (isso o `git log`/`git show` já cobre). Serve para comparar rapidamente "o que era antes vs. o que é agora" sem precisar rodar comandos git, direto pela interface do GitHub.
 
 ## Componentes Principais
 
 ### `src/webapp/`
-Código-fonte da aplicação web rodando em Google Apps Script:
-
-- **Album.html** (2000+ linhas)
-  - Interface principal do álbum
-  - Renderização de slots com drag-and-drop
-  - Inventário com scroll horizontal
-  - Sistema de pacotes e troca de figurinhas
-  - Detecção de duplicatas
-
-- **Index.html**
-  - Página de entrada com login
-  - Autenticação via Google
-
-- **SlotMap.html**
-  - Gerado automaticamente
-  - Contém mapeamento de slots em JSON
-
-- **codigo.gs**
-  - Backend em Google Apps Script
-  - Integração com Google Drive
-  - Reconciliação de figurinhas
-  - Lógica de pool de sorteio global
+- **Index.html** — Dashboard público da Copa Excelência: rankings de gerentes/agências por grupo, Comissão Técnica (Duelo de Técnicos + Auxiliares), pódio e premiações. Lê os dados direto das abas `Store_*` e `Configuracoes_Dashboard` via `codigo.gs` e recalcula tudo em JavaScript a cada carregamento — não depende de `Resumo_Gerentes`/`Resumo_Agencias`.
+- **Album.html** — Interface do álbum de figurinhas: drag-and-drop, inventário, pacotes, detecção de duplicatas.
+- **SlotMap.html** — Mapeamento gerado de slots (gerado a partir de `src/config/slotMap.json`).
+- **codigo.gs** — Backend: leitura das abas `Store_*`/`Configuracoes_Dashboard`, integração com Google Drive, reconciliação de figurinhas/templates, distribuição de pacotes.
 
 ### `src/config/`
-- **slotMap.json**: Mapeamento de coordenadas (x, y, largura, altura) para cada slot de cada template (19 agências/comissão)
+- **slotMap.json** — coordenadas (x, y, largura, altura) de cada slot, por template (19 agências/comissão).
 
-### `scripts/`
-- **generate_slot_map.py**: Gera `slotMap.json` a partir de coordenadas dos templates
-- **validate_slot_map.py**: Valida integridade do mapeamento (numeração, duplicatas)
+## Aplicação das Correções (Apps Script)
 
-## Aplicação das Correções
+1. Abrir `https://script.google.com` no projeto vinculado à planilha.
+2. Para cada arquivo que mudou em `src/webapp/`, selecionar todo o conteúdo do arquivo correspondente no editor e colar por cima (substituição total).
+3. Salvar e implantar nova versão (Implantar → Gerenciar implantações → editar → Nova versão).
+4. Se `codigo.gs` mudou e envolve figurinhas/templates: rodar `reconciliarFigurinhas()` / `reconciliarTemplates()` pelo menu da planilha.
 
-### Para atualizar o WebApp no Google Apps Script:
+## Documentação
 
-1. **Copiar código da aplicação**:
-   ```bash
-   # Arquivo principal do backend
-   cat src/webapp/codigo.gs
-   
-   # Arquivos HTML da interface
-   cat src/webapp/Album.html
-   cat src/webapp/Index.html
-   ```
-
-2. **Colar no editor do Apps Script**:
-   - Abrir `https://script.google.com`
-   - Colar `codigo.gs` no arquivo `codigo.gs` do projeto
-   - Colar `Album.html` em um arquivo HTML com o mesmo nome
-   - Colar `Index.html` em um arquivo HTML com o mesmo nome
-   - Salvar e fazer deploy
-
-3. **Executar funções de reconciliação**:
-   - Rodar `reconciliarFigurinhas()` com `FIGURINHAS_FOLDER_ID` correto
-   - Rodar `reconciliarTemplates()` para aplicar compartilhamento público
-   - Testar no navegador: login, navegação entre agências, drag-and-drop
-
-### Validação local
-
-```bash
-# Validar integridade do slotMap.json
-python3 scripts/validate_slot_map.py
-
-# Gerar novo slotMap.json (se necessário)
-python3 scripts/generate_slot_map.py
-```
-
-## Recursos Implementados
-
-- ✅ Mapeamento de coordenadas para 19 templates (15 agências + Comissão Técnica)
-- ✅ Drag-and-drop de figurinhas com clique e posicionamento em slots
-- ✅ Sistema de inventário com scroll horizontal
-- ✅ Pacotes com sorteio aleatório do pool global (161 números)
-- ✅ Detecção de figurinhas duplicadas (2+ cópias da mesma)
-- ✅ Troca de repetidas: 5+ duplicatas por sorteio aleatório
-- ✅ Renderização responsiva com Tailwind CSS
-- ✅ Integração com Google Drive para armazenamento
+- **`REGRAS_CAMPANHA.md`** — regras oficiais da campanha (fases, comissão técnica, grupos, tabela de gols, premiação). Fonte de verdade para qualquer regra de negócio.
+- **`CONFIGURACOES_DASHBOARD.md`** — dados de referência extraídos da aba `Configuracoes_Dashboard` (colaboradores excluídos, pontuação por indicador, agências/times/grupos, técnicos, links do Drive).
+- **`IMPLEMENTACAO_DASHBOARD.md`** — fórmulas prontas para copiar nas abas `Resumo_Gerentes`/`Resumo_Agencias` da planilha (cálculo manual paralelo ao dashboard, útil para conferência).
 
 ## Branches
 
-- `main`: Branch principal (production)
-- `claude/album-copa-review-6jtvph`: Branch de desenvolvimento com últimas correções
-- `backup/before-cleanup`: Backup de código antigo e documentação removida
+- `main` — branch principal (production).
 
 ## Contato / Manutenção
 
-Aplicação mantida para Album Copa do Mundo.
+Aplicação mantida para a Copa Excelência / Album Copa.
