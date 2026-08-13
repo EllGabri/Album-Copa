@@ -133,6 +133,50 @@ function obterDadosCompletos() {
       diagnostico.errosAbas["Figurinhas"] = "Falha ao ler figurinhas.";
     }
 
+    // LER OUTROS INDICADORES (aba "Outros_indicadores"): indicadores que não
+    // vêm em nenhuma Store_* e por isso são lançados manualmente, já
+    // agregados por colaborador (sem quebra por período/mês).
+    //   G:H = Cartões Emitidos (Colaborador | Qtde)
+    //   J:O = Seguros (Colaborador | Automóveis | Diversos | Empresarial | Frota | Rural)
+    // "Boletos Emitidos" (D:E) é lido mas NÃO somado ao placar — dado em
+    // revisão (ver conversa com o usuário), fica registrado à parte.
+    var outrosIndicadores = { cartoes: {}, seguros: {}, boletos: {} };
+    try {
+      var outrosSheet = spread.getSheetByName("Outros_indicadores");
+      if (outrosSheet) {
+        var ultimaLinha = outrosSheet.getLastRow();
+
+        var boletosValues = outrosSheet.getRange(2, 4, Math.max(ultimaLinha - 1, 1), 2).getValues(); // D:E
+        boletosValues.forEach(function (row) {
+          var nome = (row[0] || "").toString().trim();
+          if (!nome || nome.toLowerCase() === "total geral") return;
+          outrosIndicadores.boletos[nome] = parseFloat(row[1]) || 0;
+        });
+
+        var cartoesValues = outrosSheet.getRange(2, 7, Math.max(ultimaLinha - 1, 1), 2).getValues(); // G:H
+        cartoesValues.forEach(function (row) {
+          var nome = (row[0] || "").toString().trim();
+          if (!nome || nome.toLowerCase() === "total geral") return;
+          outrosIndicadores.cartoes[nome] = parseFloat(row[1]) || 0;
+        });
+
+        var segurosValues = outrosSheet.getRange(2, 10, Math.max(ultimaLinha - 1, 1), 6).getValues(); // J:O
+        segurosValues.forEach(function (row) {
+          var nome = (row[0] || "").toString().trim();
+          if (!nome || nome.toLowerCase() === "total geral") return;
+          outrosIndicadores.seguros[nome] = {
+            automoveis: parseFloat(row[1]) || 0,
+            diversos: parseFloat(row[2]) || 0,
+            empresarial: parseFloat(row[3]) || 0,
+            frota: parseFloat(row[4]) || 0,
+            rural: parseFloat(row[5]) || 0
+          };
+        });
+      }
+    } catch (e) {
+      diagnostico.errosAbas["Outros_indicadores"] = "Falha ao ler outros indicadores: " + e.toString();
+    }
+
     if (agencias.length === 0 && gerentes.length === 0) {
       return JSON.stringify({ status: "diagnostic", message: "As abas 'Store_' estão vazias.", diagnostico: diagnostico });
     }
@@ -147,6 +191,7 @@ function obterDadosCompletos() {
         tabelaPontuacao: tabelaPontuacao,
         tabelaTecnicos: tabelaTecnicos,
         figurinhas: figurinhas,
+        outrosIndicadores: outrosIndicadores,
         webAppUrl: ScriptApp.getService().getUrl()
       } 
     });
