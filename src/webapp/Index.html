@@ -412,33 +412,100 @@
       }
     }
 
-    // Localiza a figurinha de uma pessoa pelo nome. A aba Figurinhas guarda o
-    // nome como veio do arquivo do Drive, que nem sempre é idêntico ao nome
-    // do gerente na base — por isso compara nos dois sentidos e, como último
-    // recurso, tenta casar pelo primeiro + último nome.
-    function acharFigurinhaPorNome(nomePessoa) {
-      const alvo = normalizarString(nomePessoa);
-      if (!alvo || !DB.figurinhas) return null;
+    // Partículas que não identificam ninguém e por isso não contam como
+    // evidência ao comparar dois nomes.
+    const CONECTIVOS_NOME = ['de', 'da', 'do', 'das', 'dos', 'e', 'di', 'du', 'del'];
 
-      let hit = DB.figurinhas.find(f => normalizarString(f.nome) === alvo);
-      if (hit) return hit.fileId;
+    function tokensNome(str) {
+      return normalizarString(str)
+        .split(/\s+/)
+        .filter(t => t && CONECTIVOS_NOME.indexOf(t) === -1);
+    }
 
-      hit = DB.figurinhas.find(f => {
-        const n = normalizarString(f.nome);
-        return n && (n.includes(alvo) || alvo.includes(n));
+    // Escolhe, numa lista de candidatos, aquele cujo nome corresponde ao
+    // nome procurado. Critérios em cascata, do mais forte para o mais fraco.
+    //
+    // Duas regras deixam isto seguro contra troca de pessoa:
+    //   1. NUNCA casa por primeiro nome sozinho. Era exatamente esse o furo
+    //      da versão anterior, que comparava os nomes como substring: como
+    //      "guilherme zanatta".includes("guilherme"), o Guilherme Zanatta
+    //      acabava recebendo a figurinha (e os gols) do Guilherme Goss.
+    //   2. Se mais de um candidato empata no mesmo critério, devolve null em
+    //      vez de chutar — melhor ficar sem figurinha do que exibir a pessoa
+    //      errada, e melhor não pontuar do que creditar o colaborador errado.
+    function escolherPorNome(nomeAlvo, candidatos, obterNome) {
+      const alvo = tokensNome(nomeAlvo);
+      if (!alvo.length || !candidatos || !candidatos.length) return null;
+
+      const lista = candidatos
+        .map(c => ({ item: c, t: tokensNome(obterNome(c)) }))
+        .filter(c => c.t.length);
+      if (!lista.length) return null;
+
+      const unico = hits => (hits.length === 1 ? hits[0].item : null);
+
+      // 1) Nome completo idêntico.
+      let hits = lista.filter(c => c.t.join(' ') === alvo.join(' '));
+      if (hits.length) return unico(hits);
+
+      // 2) Primeiro nome E último sobrenome iguais.
+      hits = lista.filter(c => c.t[0] === alvo[0] && c.t[c.t.length - 1] === alvo[alvo.length - 1]);
+      if (hits.length) return unico(hits);
+
+      // 3) Um nome contido no outro, com no mínimo 2 partes em comum
+      //    (ex.: "Ana Paula Souza" x "Ana Paula"). Uma parte só não basta.
+      hits = lista.filter(c => {
+        const menor = c.t.length <= alvo.length ? c.t : alvo;
+        const maior = c.t.length <= alvo.length ? alvo : c.t;
+        return menor.length >= 2 && menor.every(t => maior.indexOf(t) !== -1);
       });
-      if (hit) return hit.fileId;
+      if (hits.length) return unico(hits);
 
-      const partes = alvo.split(/\s+/).filter(Boolean);
-      if (partes.length >= 2) {
-        const primeiro = partes[0], ultimo = partes[partes.length - 1];
-        hit = DB.figurinhas.find(f => {
-          const n = normalizarString(f.nome);
-          return n.includes(primeiro) && n.includes(ultimo);
-        });
-        if (hit) return hit.fileId;
-      }
       return null;
+    }
+
+    // Primeiros nomes repetidos entre os colaboradores da base. Serve para
+    // decidir quando um primeiro nome sozinho identifica alguém: "Guilherme"
+    // não identifica (há Goss e Zanatta), mas um primeiro nome único sim.
+    let PRIMEIROS_NOMES_REPETIDOS = null;
+    function primeirosNomesRepetidos() {
+      if (PRIMEIROS_NOMES_REPETIDOS) return PRIMEIROS_NOMES_REPETIDOS;
+      const contagem = {}, jaVistos = {};
+      (DB.gerentes || []).forEach(row => {
+        const nome = (getProp(row, 'Gerente') || "").toString().trim();
+        if (!nome || jaVistos[nome]) return;   // a base repete a pessoa por mês/indicador
+        jaVistos[nome] = true;
+        const t = tokensNome(nome);
+        if (t.length) contagem[t[0]] = (contagem[t[0]] || 0) + 1;
+      });
+      PRIMEIROS_NOMES_REPETIDOS = {};
+      for (let p in contagem) { if (contagem[p] > 1) PRIMEIROS_NOMES_REPETIDOS[p] = true; }
+      return PRIMEIROS_NOMES_REPETIDOS;
+    }
+
+    // Localiza a figurinha de uma pessoa pelo nome. A aba Figurinhas guarda o
+    // nome como veio do arquivo do Drive ("<numero>-<nome>.png"), que nem
+    // sempre é idêntico ao nome do gerente na base — daí a comparação por
+    // partes do nome acima.
+    function acharFigurinhaPorNome(nomePessoa) {
+      if (!DB.figurinhas || !DB.figurinhas.length) return null;
+
+      const fig = escolherPorNome(nomePessoa, DB.figurinhas, f => f.nome);
+      if (fig) return fig.fileId;
+
+      // Último recurso: figurinha cadastrada só com o primeiro nome, porque o
+      // arquivo no Drive se chama "12-Guilherme.png". Só é aceito quando esse
+      // primeiro nome não se repete entre os colaboradores E existe uma única
+      // figurinha com ele — do contrário não há como saber de quem é a foto,
+      // e ficar sem figurinha é melhor do que mostrar a pessoa errada.
+      const alvo = tokensNome(nomePessoa);
+      if (!alvo.length || primeirosNomesRepetidos()[alvo[0]]) return null;
+
+      const soPrimeiroNome = DB.figurinhas.filter(f => {
+        const t = tokensNome(f.nome);
+        return t.length === 1 && t[0] === alvo[0];
+      });
+      return soPrimeiroNome.length === 1 ? soPrimeiroNome[0].fileId : null;
     }
 
     // Troca o conteúdo de um elemento pela figurinha assim que ela carregar.
@@ -470,21 +537,12 @@
 
     // Localiza a chave (nome exato) em placarGerentes correspondente a um
     // nome vindo de outra fonte (ex.: aba Outros_indicadores), que pode ter
-    // grafia levemente diferente. Tenta match exato normalizado primeiro,
-    // depois substring nos dois sentidos, igual ao crit\u00e9rio j\u00e1 usado para
-    // achar a figurinha da pessoa por nome.
+    // grafia levemente diferente. Usa o mesmo crit\u00e9rio seguro da figurinha:
+    // hom\u00f4nimos de primeiro nome n\u00e3o casam e empates n\u00e3o s\u00e3o chutados \u2014 aqui
+    // o risco \u00e9 pior que uma foto trocada, seriam gols no colaborador errado.
     function encontrarChaveGerente(nomeAlvo, placarGerentes) {
       if (placarGerentes[nomeAlvo]) return nomeAlvo;
-      const alvo = normalizarString(nomeAlvo);
-      if (!alvo) return null;
-      for (let k in placarGerentes) {
-        if (normalizarString(k) === alvo) return k;
-      }
-      for (let k in placarGerentes) {
-        const kn = normalizarString(k);
-        if (kn && (kn.includes(alvo) || alvo.includes(kn))) return k;
-      }
-      return null;
+      return escolherPorNome(nomeAlvo, Object.keys(placarGerentes), k => k);
     }
 
     // Apelidos: como cada agência oficial aparece escrita em nm_agencia nas
@@ -792,25 +850,35 @@
         // ficam inflados.
         const outros = DB.outrosIndicadores || { adquirencia: {}, cartoes: {}, seguros: {} };
 
+        // Nomes da aba que não casaram com ninguém do placar. Podem ser
+        // colaboradores excluídos/fora de agência oficial (normal), mas
+        // também grafia divergente — por isso ficam registrados no console
+        // em vez de sumirem em silêncio.
+        const semCorrespondencia = [];
+
         for (let nome in (outros.adquirencia || {})) {
           const chave = encontrarChaveGerente(nome, placarGerentes);
-          if (!chave) continue; // pessoa não está no placar (excluída ou fora de agência oficial)
+          if (!chave) { semCorrespondencia.push("Adquirência: " + nome); continue; }
           placarGerentes[chave].gols += (outros.adquirencia[nome] || 0) * 3;
         }
 
         for (let nome in (outros.cartoes || {})) {
           const chave = encontrarChaveGerente(nome, placarGerentes);
-          if (!chave) continue;
+          if (!chave) { semCorrespondencia.push("Cartões: " + nome); continue; }
           placarGerentes[chave].gols += (outros.cartoes[nome] || 0) * 1;
         }
 
         for (let nome in (outros.seguros || {})) {
           const chave = encontrarChaveGerente(nome, placarGerentes);
-          if (!chave) continue;
+          if (!chave) { semCorrespondencia.push("Seguros: " + nome); continue; }
           const s = outros.seguros[nome];
           const unidadesFaixa4 = (s.automoveis || 0) + (s.frota || 0) + (s.empresarial || 0) + (s.rural || 0);
           const unidadesFaixa2 = (s.diversos || 0);
           placarGerentes[chave].gols += (unidadesFaixa4 * 4) + (unidadesFaixa2 * 2);
+        }
+
+        if (semCorrespondencia.length) {
+          console.warn("Outros_indicadores: nomes sem correspondência no placar (gols não contabilizados):\n" + semCorrespondencia.join("\n"));
         }
 
         // SOMAR GOLS DOS GERENTES PARA AS AGÊNCIAS
