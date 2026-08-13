@@ -135,32 +135,34 @@ function obterDadosCompletos() {
 
     // LER OUTROS INDICADORES (aba "Outros_indicadores"): indicadores que não
     // vêm em nenhuma Store_* e por isso são lançados manualmente, já
-    // agregados por colaborador (sem quebra por período/mês).
-    //   G:H = Cartões Emitidos (Colaborador | Qtde)
-    //   J:O = Seguros (Colaborador | Automóveis | Diversos | Empresarial | Frota | Rural)
-    // "Boletos Emitidos" (D:E) é lido mas NÃO somado ao placar — dado em
-    // revisão (ver conversa com o usuário), fica registrado à parte.
-    var outrosIndicadores = { cartoes: {}, seguros: {}, boletos: {} };
+    // agregados por colaborador (sem quebra por período/mês). Cabeçalho
+    // ocupa 2 linhas (título da categoria + rótulo de coluna), dados
+    // começam na linha 3.
+    //   A:B = Adquirência/Maquininha (Colaborador | Qtde)
+    //   D:E = Cartões Emitidos (Colaborador | Qtde)
+    //   G:L = Seguros (Colaborador | Automóveis | Diversos | Empresarial | Frota | Rural)
+    var outrosIndicadores = { adquirencia: {}, cartoes: {}, seguros: {} };
     try {
       var outrosSheet = spread.getSheetByName("Outros_indicadores");
       if (outrosSheet) {
         var ultimaLinha = outrosSheet.getLastRow();
+        var linhasDados = Math.max(ultimaLinha - 2, 1);
 
-        var boletosValues = outrosSheet.getRange(2, 4, Math.max(ultimaLinha - 1, 1), 2).getValues(); // D:E
-        boletosValues.forEach(function (row) {
+        var adquirenciaValues = outrosSheet.getRange(3, 1, linhasDados, 2).getValues(); // A:B
+        adquirenciaValues.forEach(function (row) {
           var nome = (row[0] || "").toString().trim();
           if (!nome || nome.toLowerCase() === "total geral") return;
-          outrosIndicadores.boletos[nome] = parseFloat(row[1]) || 0;
+          outrosIndicadores.adquirencia[nome] = parseFloat(row[1]) || 0;
         });
 
-        var cartoesValues = outrosSheet.getRange(2, 7, Math.max(ultimaLinha - 1, 1), 2).getValues(); // G:H
+        var cartoesValues = outrosSheet.getRange(3, 4, linhasDados, 2).getValues(); // D:E
         cartoesValues.forEach(function (row) {
           var nome = (row[0] || "").toString().trim();
           if (!nome || nome.toLowerCase() === "total geral") return;
           outrosIndicadores.cartoes[nome] = parseFloat(row[1]) || 0;
         });
 
-        var segurosValues = outrosSheet.getRange(2, 10, Math.max(ultimaLinha - 1, 1), 6).getValues(); // J:O
+        var segurosValues = outrosSheet.getRange(3, 7, linhasDados, 6).getValues(); // G:L
         segurosValues.forEach(function (row) {
           var nome = (row[0] || "").toString().trim();
           if (!nome || nome.toLowerCase() === "total geral") return;

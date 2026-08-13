@@ -308,7 +308,7 @@
       "Santa Cruz Do Timbo": "Artilheiros da Meta"
     };
 
-    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], figurinhas: [], outrosIndicadores: { cartoes: {}, seguros: {}, boletos: {} }, webAppUrl: "" };
+    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], figurinhas: [], outrosIndicadores: { adquirencia: {}, cartoes: {}, seguros: {} }, webAppUrl: "" };
 
     // ---------------------------------------------------------------
     // FIGURINHAS NO DASHBOARD
@@ -731,10 +731,11 @@
           }
         });
 
-        // OUTROS INDICADORES (aba Outros_indicadores): Cartões Emitidos e
-        // Seguros, indicadores que não vêm em nenhuma Store_* e por isso são
-        // lançados à parte, já agregados por colaborador. Regra oficial (ver
-        // tabela de gols da campanha):
+        // OUTROS INDICADORES (aba Outros_indicadores): Adquirência/Maquininha,
+        // Cartões Emitidos e Seguros — indicadores que não vêm em nenhuma
+        // Store_* e por isso são lançados à parte, já agregados por
+        // colaborador. Regra oficial (ver tabela de gols da campanha):
+        //   Adquirência/Domicílio (Maquininha): 3 gols por unidade.
         //   Cartão de Crédito: 1 gol por unidade.
         //   Seguros Auto/Frota/Agrícola/Empresarial/Maquinário: 4 gols/unidade.
         //   Seguros Vida/Residência: 2 gols/unidade.
@@ -747,11 +748,17 @@
         // julho (não dá pra saber quanto do total foi em julho). Se os
         // totais da aba não forem só do período Jun-Ago da Copa, os gols
         // ficam inflados.
-        const outros = DB.outrosIndicadores || { cartoes: {}, seguros: {} };
+        const outros = DB.outrosIndicadores || { adquirencia: {}, cartoes: {}, seguros: {} };
+
+        for (let nome in (outros.adquirencia || {})) {
+          const chave = encontrarChaveGerente(nome, placarGerentes);
+          if (!chave) continue; // pessoa não está no placar (excluída ou fora de agência oficial)
+          placarGerentes[chave].gols += (outros.adquirencia[nome] || 0) * 3;
+        }
 
         for (let nome in (outros.cartoes || {})) {
           const chave = encontrarChaveGerente(nome, placarGerentes);
-          if (!chave) continue; // pessoa não está no placar (excluída ou fora de agência oficial)
+          if (!chave) continue;
           placarGerentes[chave].gols += (outros.cartoes[nome] || 0) * 1;
         }
 
