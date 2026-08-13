@@ -226,52 +226,94 @@
     </div>
 
     <!-- ABA 3: PÓDIO E PREMIAÇÕES -->
-    <div id="aba-premiacoes" class="space-y-16 hidden">
-      
-      <section class="flex flex-col items-center justify-center text-center w-full">
-        <h2 class="text-5xl md:text-7xl font-sport tracking-widest text-yellow-400 uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] mb-2">A Grande Campeã</h2>
-        <p class="text-sm md:text-base text-white mb-10 font-bold uppercase tracking-widest drop-shadow-sm">Taça da Copa & Almoço dos Campeões</p>
-        
-        <div class="relative group cursor-default">
-          <div class="absolute inset-0 bg-yellow-400 rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-          <div class="relative bg-white border-4 border-yellow-400 rounded-full w-64 h-64 md:w-80 md:h-80 flex flex-col items-center justify-center shadow-2xl z-10 p-4">
-            <span class="text-6xl md:text-8xl drop-shadow-lg mb-1 animate-bounce" style="animation-duration: 3s;">🏆</span>
-            <h3 id="taca-agencia-nome" class="text-base md:text-2xl font-extrabold text-slate-800 leading-tight uppercase px-2 w-full drop-shadow-md break-words max-h-16 overflow-hidden">Aguardando</h3>
-            <div id="taca-agencia-gols" class="text-xs md:text-sm font-black text-slate-700 mt-0.5 uppercase tracking-wider">⚽ 0 GOLS FEITOS</div>
-            <div class="mt-2 bg-slate-900/85 px-4 py-1.5 rounded-full border border-yellow-400/30 shadow-inner">
-               <span class="text-[10px] text-slate-300 uppercase tracking-widest font-bold">Atingimento:</span>
-               <span id="taca-agencia-perc" class="text-lg md:text-xl font-black text-yellow-400">0%</span>
+    <div id="aba-premiacoes" class="space-y-14 hidden">
+
+      <!-- ===== CERIMÔNIA: A GRANDE CAMPEÃ ===== -->
+      <section class="relative overflow-hidden rounded-3xl border border-yellow-400/25 shadow-2xl bg-gradient-to-b from-slate-900 via-green-950 to-slate-900">
+        <!-- holofote do estádio -->
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-yellow-400/15 blur-[130px] rounded-full pointer-events-none"></div>
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent"></div>
+
+        <div class="relative px-5 md:px-10 py-10 md:py-14">
+
+          <div class="text-center mb-10">
+            <span class="inline-block bg-yellow-400 text-green-950 text-[10px] font-black uppercase tracking-[0.25em] px-4 py-1.5 rounded-full shadow-lg mb-4">Cerimônia de Premiação</span>
+            <h2 class="text-5xl md:text-7xl font-sport tracking-widest text-yellow-400 uppercase drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] leading-none">A Grande Campeã</h2>
+            <p class="text-[11px] md:text-sm text-green-100/80 mt-3 font-bold uppercase tracking-[0.2em]">Taça da Copa &amp; Almoço dos Campeões</p>
+          </div>
+
+          <!-- TROFÉU DA LÍDER -->
+          <div class="flex justify-center mb-14">
+            <div class="relative w-full max-w-2xl">
+              <div class="absolute inset-0 bg-yellow-400/20 blur-[60px] rounded-3xl pointer-events-none"></div>
+              <div class="relative bg-gradient-to-b from-white via-white to-yellow-50 border-2 border-yellow-400 rounded-3xl shadow-[0_20px_60px_-15px_rgba(250,204,21,0.55)] px-6 md:px-9 py-7 md:py-8 flex flex-col sm:flex-row items-center gap-5 md:gap-8">
+
+                <!-- anel de atingimento com o troféu no centro -->
+                <div class="relative shrink-0 w-32 h-32 md:w-36 md:h-36">
+                  <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="#fef3c7" stroke-width="10"></circle>
+                    <circle id="taca-anel-progresso" cx="60" cy="60" r="52" fill="none" stroke="#eab308" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327" class="transition-all duration-1000"></circle>
+                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-5xl md:text-6xl drop-shadow-lg animate-bounce" style="animation-duration: 3s;">🏆</span>
+                  </div>
+                </div>
+
+                <div class="min-w-0 flex-1 text-center sm:text-left">
+                  <p class="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-600 mb-1.5">Líder da Copa</p>
+                  <h3 id="taca-agencia-nome" class="text-xl md:text-3xl font-extrabold text-slate-900 uppercase leading-tight break-words">Aguardando</h3>
+                  <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+                    <span id="taca-agencia-gols" class="inline-flex items-center bg-green-50 border border-green-200 text-green-700 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-sm">⚽ 0 GOLS FEITOS</span>
+                    <span class="inline-flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg shadow-sm">
+                      <span class="text-[9px] uppercase tracking-widest text-slate-300 font-bold">Atingimento</span>
+                      <span id="taca-agencia-perc" class="text-lg font-black text-yellow-400 leading-none">0%</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="w-full max-w-4xl mt-16 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm">
-           <div class="bg-green-700 px-6 py-4 border-b border-green-800">
-              <h3 class="font-extrabold text-white text-lg uppercase tracking-wider text-left">Ranking Geral - Atingimento da Meta</h3>
-           </div>
-           <table class="w-full text-left text-sm text-slate-700 table-fixed">
-              <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
-                <tr>
-                  <th class="px-3 py-4 text-center w-12">Pos</th>
-                  <th class="px-3 py-4">Agência (Seleção)</th>
-                  <th class="px-2 py-4 text-center w-28">Gols Feitos</th>
-                  <th class="px-2 py-4 text-center w-28">Meta Gols</th>
-                  <th class="px-3 py-4 text-right w-24">Atingimento</th>
-                </tr>
-              </thead>
-              <tbody id="tabela-ranking-agencias" class="divide-y divide-slate-100">
-              </tbody>
-           </table>
+          <!-- PÓDIO OLÍMPICO (2º • 1º • 3º) -->
+          <div id="podio-olimpico" class="flex items-end justify-center gap-2 md:gap-4 max-w-4xl mx-auto"></div>
         </div>
       </section>
 
+      <!-- ===== RANKING GERAL ===== -->
+      <section class="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-green-800 via-green-700 to-green-600 px-6 py-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-extrabold text-white text-base md:text-lg uppercase tracking-wider leading-none">Ranking Geral — Atingimento da Meta</h3>
+            <p class="text-[10px] text-green-100/80 uppercase tracking-widest font-bold mt-1.5">Classificação oficial por % da meta de gols</p>
+          </div>
+          <span id="ranking-total-selecoes" class="bg-yellow-400 text-green-950 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow">—</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-700 min-w-[720px]">
+            <thead class="bg-slate-50 border-b-2 border-slate-200 text-[10px] uppercase tracking-widest text-slate-500">
+              <tr>
+                <th class="px-4 py-4 text-center w-16">Pos</th>
+                <th class="px-4 py-4">Agência (Seleção)</th>
+                <th class="px-3 py-4 text-center w-28">Gols Feitos</th>
+                <th class="px-3 py-4 text-center w-28">Meta Gols</th>
+                <th class="px-4 py-4 w-64">Atingimento</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-ranking-agencias" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== PÓDIOS POR GRUPO (CHUTEIRA DE OURO) ===== -->
       <section>
         <div class="text-center mb-10">
-          <h2 class="text-4xl font-sport tracking-widest text-white uppercase drop-shadow-md mb-2">Os Pódios (Chuteira de Ouro)</h2>
-          <p class="text-sm text-green-100 opacity-90 font-medium">Os 3 melhores artilheiros de cada grupo e as suas respetivas Bolas de Ouro, Prata e Bronze.</p>
+          <span class="inline-block bg-white/10 border border-white/20 text-yellow-400 text-[10px] font-black uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-4 backdrop-blur-sm">Artilharia por Grupo</span>
+          <h2 class="text-4xl md:text-5xl font-sport tracking-widest text-white uppercase drop-shadow-md leading-none">Os Pódios <span class="text-yellow-400">(Chuteira de Ouro)</span></h2>
+          <p class="text-xs md:text-sm text-green-100/80 mt-3 font-medium max-w-2xl mx-auto">Os 3 melhores artilheiros de cada grupo e as suas respetivas Bolas de Ouro, Prata e Bronze.</p>
         </div>
 
-        <div class="space-y-12" id="podios-grupos-container">
+        <div class="space-y-10" id="podios-grupos-container">
         </div>
       </section>
 
@@ -888,6 +930,17 @@
       return Math.round(g).toLocaleString('pt-BR');
     }
 
+    // Moldura temática por posição: 1º ouro, 2º prata, 3º bronze, demais
+    // verde padrão. Cada moldura junta foto + posição + nome/Pac + gols
+    // num único cartão de "figurinha oficial" (estilo card de jogador).
+    // Compartilhada pelo Álbum dos Craques e pelos pódios das premiações.
+    const MOLDURAS = [
+      { medalha: '🥇', anel: 'ring-yellow-400', borda: 'border-yellow-400', bg: 'bg-gradient-to-b from-yellow-50 via-white to-white', faixa: 'bg-yellow-400 text-yellow-950', golsBg: 'bg-yellow-50 border-yellow-200', golsTxt: 'text-yellow-700', brilho: 'shadow-[0_0_20px_rgba(250,204,21,0.45)]' },
+      { medalha: '🥈', anel: 'ring-slate-300', borda: 'border-slate-300', bg: 'bg-gradient-to-b from-slate-50 via-white to-white', faixa: 'bg-slate-300 text-slate-900', golsBg: 'bg-slate-50 border-slate-200', golsTxt: 'text-slate-700', brilho: 'shadow-[0_0_16px_rgba(148,163,184,0.4)]' },
+      { medalha: '🥉', anel: 'ring-orange-400', borda: 'border-orange-400', bg: 'bg-gradient-to-b from-orange-50 via-white to-white', faixa: 'bg-orange-400 text-orange-950', golsBg: 'bg-orange-50 border-orange-200', golsTxt: 'text-orange-700', brilho: 'shadow-[0_0_16px_rgba(251,146,60,0.35)]' },
+    ];
+    const MOLDURA_PADRAO = { medalha: '⚽', anel: 'ring-green-200', borda: 'border-green-200', bg: 'bg-white', faixa: 'bg-green-700 text-white', golsBg: 'bg-green-50 border-green-100', golsTxt: 'text-green-700', brilho: 'shadow-lg' };
+
     function renderizarAbaSelecoes(gerentesRank, agenciasRank, isForaDaJanela) {
       const containerArtilheiros = document.getElementById('podio-artilheiros');
       if(gerentesRank.length === 0) {
@@ -938,16 +991,6 @@
 
       const containerAlbum = document.getElementById('album-figurinhas');
       const craques = gerentesRank.slice(0, 8);
-
-      // Moldura temática por posição: 1º ouro, 2º prata, 3º bronze, demais
-      // verde padrão. Cada moldura junta foto + posição + nome/Pac + gols
-      // num único cartão de "figurinha oficial" (estilo card de jogador).
-      const MOLDURAS = [
-        { medalha: '🥇', anel: 'ring-yellow-400', borda: 'border-yellow-400', bg: 'bg-gradient-to-b from-yellow-50 via-white to-white', faixa: 'bg-yellow-400 text-yellow-950', golsBg: 'bg-yellow-50 border-yellow-200', golsTxt: 'text-yellow-700', brilho: 'shadow-[0_0_20px_rgba(250,204,21,0.45)]' },
-        { medalha: '🥈', anel: 'ring-slate-300', borda: 'border-slate-300', bg: 'bg-gradient-to-b from-slate-50 via-white to-white', faixa: 'bg-slate-300 text-slate-900', golsBg: 'bg-slate-50 border-slate-200', golsTxt: 'text-slate-700', brilho: 'shadow-[0_0_16px_rgba(148,163,184,0.4)]' },
-        { medalha: '🥉', anel: 'ring-orange-400', borda: 'border-orange-400', bg: 'bg-gradient-to-b from-orange-50 via-white to-white', faixa: 'bg-orange-400 text-orange-950', golsBg: 'bg-orange-50 border-orange-200', golsTxt: 'text-orange-700', brilho: 'shadow-[0_0_16px_rgba(251,146,60,0.35)]' },
-      ];
-      const MOLDURA_PADRAO = { medalha: '⚽', anel: 'ring-green-200', borda: 'border-green-200', bg: 'bg-white', faixa: 'bg-green-700 text-white', golsBg: 'bg-green-50 border-green-100', golsTxt: 'text-green-700', brilho: 'shadow-lg' };
 
       containerAlbum.innerHTML = craques.length === 0 ? '' : craques.map((g, i) => {
         const m = MOLDURAS[i] || MOLDURA_PADRAO;
@@ -1080,36 +1123,118 @@
         document.getElementById('taca-agencia-nome').innerText = nomeTimeCampea + " (" + campea.nome + ")";
         document.getElementById('taca-agencia-perc').innerText = campea.perc.toFixed(1) + "%";
         document.getElementById('taca-agencia-gols').innerText = "⚽ " + formatGols(campea.gols) + " GOLS FEITOS";
+
+        // Anel de progresso do troféu: só ilustra o mesmo % já calculado
+        // acima (circunferência de r=52 -> 2·pi·52 ≈ 326,7), limitado a 100%
+        // para não dar a volta no círculo quando a meta é superada.
+        const anel = document.getElementById('taca-anel-progresso');
+        if (anel) {
+          const CIRC = 2 * Math.PI * 52;
+          const fatia = (Math.max(0, Math.min(100, campea.perc)) / 100) * CIRC;
+          anel.setAttribute('stroke-dasharray', fatia.toFixed(1) + ' ' + CIRC.toFixed(1));
+        }
+      }
+
+      // PÓDIO OLÍMPICO: mesmos 3 primeiros da lista já ordenada, só que
+      // dispostos como degraus (2º à esquerda, 1º ao centro, 3º à direita).
+      const podioOlimpico = document.getElementById('podio-olimpico');
+      if (podioOlimpico) {
+        const DEGRAUS = [
+          { altura: 'h-36 md:h-48', faixa: 'from-yellow-300 to-yellow-500', texto: 'text-yellow-950', medalha: '🥇', ordinal: '1º' },
+          { altura: 'h-28 md:h-36', faixa: 'from-slate-200 to-slate-400',   texto: 'text-slate-900',  medalha: '🥈', ordinal: '2º' },
+          { altura: 'h-24 md:h-28', faixa: 'from-orange-300 to-orange-500', texto: 'text-orange-950', medalha: '🥉', ordinal: '3º' },
+        ];
+
+        podioOlimpico.innerHTML = [1, 0, 2]
+          .filter(idx => agenciasPorPerc[idx])
+          .map(idx => {
+            const ag = agenciasPorPerc[idx];
+            const d = DEGRAUS[idx];
+            const nomeTime = TIMES_AGENCIA[ag.nome] || ag.nome;
+
+            return `
+              <div class="flex-1 max-w-[15rem] flex flex-col items-center">
+                <div class="text-4xl md:text-5xl mb-2 drop-shadow-lg">${d.medalha}</div>
+                <div class="w-full bg-white/95 border border-white/40 rounded-t-xl px-2.5 py-3.5 text-center shadow-xl">
+                  <p class="text-[11px] md:text-sm font-extrabold text-slate-900 uppercase leading-tight truncate" title="${nomeTime}">${nomeTime}</p>
+                  <p class="text-[9px] md:text-[10px] text-slate-500 truncate font-medium mt-0.5">${ag.nome}</p>
+                  <p class="text-xl md:text-2xl font-black text-green-700 mt-2 tabular-nums leading-none">${ag.perc.toFixed(1)}%</p>
+                  <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1.5">⚽ ${formatGols(ag.gols)} gols</p>
+                </div>
+                <div class="w-full ${d.altura} bg-gradient-to-b ${d.faixa} rounded-b-lg flex items-start justify-center pt-3 shadow-2xl border-x border-b border-white/30">
+                  <span class="font-sport text-4xl md:text-5xl ${d.texto} tracking-widest drop-shadow">${d.ordinal}</span>
+                </div>
+              </div>`;
+          }).join('');
+      }
+
+      const badgeTotal = document.getElementById('ranking-total-selecoes');
+      if (badgeTotal) {
+        badgeTotal.innerText = agenciasPorPerc.length + (agenciasPorPerc.length === 1 ? ' Seleção' : ' Seleções');
       }
 
       const tbodyRanking = document.getElementById('tabela-ranking-agencias');
       if (tbodyRanking) {
-        tbodyRanking.innerHTML = agenciasPorPerc.length === 0 
-          ? `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold">Nenhuma seleção classificada</td></tr>` 
+        tbodyRanking.innerHTML = agenciasPorPerc.length === 0
+          ? `<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400 font-bold">Nenhuma seleção classificada</td></tr>`
           : agenciasPorPerc.map((ag, i) => {
-              let posColor = i === 0 ? 'text-green-700 font-extrabold text-lg' : 'text-slate-500 font-bold';
-              let bgRow = i === 0 ? 'bg-yellow-50' : 'hover:bg-green-50';
               let medalha = i === 0 ? '🏆' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : ''));
               let nomeTime = TIMES_AGENCIA[ag.nome] || ag.nome;
+              let destaque = i === 0;
+              let bgRow = destaque ? 'bg-gradient-to-r from-yellow-50 to-transparent' : 'hover:bg-green-50/60';
+              let badgePos = destaque
+                ? 'bg-yellow-400 text-yellow-950 border-yellow-500'
+                : (i <= 2 ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-white text-slate-500 border-slate-200');
+
+              // A barra é só leitura visual do mesmo ag.perc — travada em
+              // 100% de largura para não estourar a coluna quem passar da meta.
+              let larguraBarra = Math.max(0, Math.min(100, ag.perc));
+              let corBarra = destaque ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+                           : (ag.perc >= 100 ? 'bg-gradient-to-r from-green-500 to-green-600'
+                           : (ag.perc >= 70  ? 'bg-gradient-to-r from-lime-500 to-green-500'
+                                             : 'bg-gradient-to-r from-orange-400 to-amber-500'));
 
               return `
-              <tr class="${bgRow} transition-colors border-b border-slate-100 last:border-0">
-                <td class="px-3 py-4 text-center ${posColor}">${i + 1}º</td>
-                <td class="px-3 py-4 font-semibold text-slate-700">
+              <tr class="${bgRow} transition-colors">
+                <td class="px-4 py-4 text-center">
+                  <span class="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 ${badgePos} font-black text-xs shadow-sm">${i + 1}º</span>
+                </td>
+                <td class="px-4 py-4">
                   <div class="flex items-center gap-2 min-w-0">
-                    <span class="truncate">${nomeTime} <span class="text-xs text-slate-500 font-normal">(${ag.nome})</span></span>
-                    <span class="text-sm drop-shadow-sm shrink-0">${medalha}</span>
+                    <span class="text-base shrink-0 drop-shadow-sm ${medalha ? '' : 'hidden'}">${medalha}</span>
+                    <div class="min-w-0">
+                      <p class="font-extrabold text-slate-800 truncate leading-tight ${destaque ? 'text-[15px]' : ''}" title="${nomeTime}">${nomeTime}</p>
+                      <p class="text-[11px] text-slate-500 font-medium truncate">${ag.nome}</p>
+                    </div>
                   </div>
                 </td>
-                <td class="px-2 py-4 text-center text-slate-600 text-sm tabular-nums">${formatGols(ag.gols)}</td>
-                <td class="px-2 py-4 text-center text-slate-500 text-sm tabular-nums">${formatGols(ag.metaGols)}</td>
-                <td class="px-3 py-4 text-right font-black ${i===0 ? 'text-yellow-600' : 'text-green-600'} text-[15px] tabular-nums">${ag.perc.toFixed(1)}%</td>
+                <td class="px-3 py-4 text-center font-bold text-slate-700 text-sm tabular-nums">${formatGols(ag.gols)}</td>
+                <td class="px-3 py-4 text-center text-slate-500 text-sm tabular-nums">${formatGols(ag.metaGols)}</td>
+                <td class="px-4 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-[70px] h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                      <div class="h-full ${corBarra} rounded-full transition-all duration-700" style="width: ${larguraBarra.toFixed(1)}%"></div>
+                    </div>
+                    <span class="font-black text-[15px] tabular-nums text-right w-16 shrink-0 ${destaque ? 'text-yellow-600' : 'text-green-600'}">${ag.perc.toFixed(1)}%</span>
+                  </div>
+                </td>
               </tr>`;
           }).join('');
       }
 
       const container = document.getElementById('podios-grupos-container');
       container.innerHTML = "";
+
+      // As figurinhas só podem ser aplicadas depois que TODOS os grupos
+      // estiverem montados: cada `innerHTML +=` recria os nós já existentes
+      // e descartaria as imagens injetadas nos grupos anteriores.
+      const figurinhasPodio = [];
+
+      const PREMIOS = [
+        { titulo: "Bola de Ouro",   desc: "Voucher Viagem/Tech (R$ 3.000)" },
+        { titulo: "Bola de Prata",  desc: "Bônus R$ 750,00" },
+        { titulo: "Bola de Bronze", desc: "Bônus R$ 500,00" },
+      ];
 
       [1, 2, 3].forEach(grupo => {
         let agsDesteGrupo = agenciasRank.filter(a => a.group == grupo).map(a => normalizarString(a.nome));
@@ -1122,24 +1247,47 @@
         if(top3.length === 0) return;
 
         let htmlCards = top3.map((g, i) => {
-          let posName = i === 0 ? "Bola de Ouro" : (i === 1 ? "Bola de Prata" : "Bola de Bronze");
-          let cor = i === 0 ? "text-yellow-500" : (i === 1 ? "text-slate-400" : "text-orange-500");
-          let premioDesc = i === 0 ? "Voucher Viagem/Tech (R$ 3.000)" : (i === 1 ? "Bônus R$ 750,00" : "Bônus R$ 500,00");
-          let emoji = i === 0 ? "🟡" : (i === 1 ? "⚪" : "🟤");
+          const m = MOLDURAS[i] || MOLDURA_PADRAO;
+          const p = PREMIOS[i] || { titulo: "Destaque", desc: "—" };
+          const fotoId = `podio-foto-g${grupo}-${i}`;
+          figurinhasPodio.push({ id: fotoId, nome: g.nome });
+
+          // O 1º do grupo sobe um degrau em telas médias pra cima.
+          const elevacao = i === 0 ? 'md:-translate-y-3' : '';
 
           return `
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col items-center text-center relative overflow-hidden shadow-xl">
-              <span class="text-4xl mb-2 drop-shadow-sm">${emoji}</span>
-              <h4 class="${cor} font-black text-lg uppercase tracking-wider mb-1">${posName}</h4>
-              <p class="text-slate-800 font-bold text-sm truncate w-full" title="${g.nome}">${g.nome}</p>
-              <p class="text-slate-500 text-[10px] mb-3 truncate w-full font-medium">${g.ag}</p>
-              <div class="w-full bg-green-50 rounded py-1.5 mb-3 border border-green-100 shadow-sm"><span class="text-green-700 font-black text-sm">⚽ ${formatGols(g.gols)} GOLS</span></div>
-              <p class="text-green-600 text-[10px] font-bold uppercase border-t border-slate-100 pt-2 w-full">🎁 ${premioDesc}</p>
+            <div class="relative ${m.bg} border-2 ${m.borda} ${m.brilho} rounded-2xl pt-7 pb-4 px-4 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2 ${elevacao}">
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 ${m.faixa} text-[10px] font-black px-3 py-1 rounded-full shadow-md z-20 whitespace-nowrap border-2 border-white uppercase tracking-widest">
+                ${m.medalha} ${p.titulo}
+              </div>
+              <div id="${fotoId}" class="w-24 h-24 rounded-full bg-slate-100 ring-4 ${m.anel} overflow-hidden flex items-center justify-center text-5xl shadow-inner mb-3">👤</div>
+              <h4 class="text-sm font-extrabold text-slate-800 uppercase leading-tight truncate w-full px-1" title="${g.nome}">${g.nome}</h4>
+              <p class="text-[10px] text-slate-500 truncate w-full font-medium mt-0.5">${g.ag}</p>
+              <div class="w-full ${m.golsBg} border rounded-lg py-2 mt-3 flex items-center justify-between px-3 shadow-sm">
+                <span class="text-[9px] ${m.golsTxt} font-bold uppercase tracking-widest">Gols</span>
+                <span class="text-base font-black ${m.golsTxt} tabular-nums">${formatGols(g.gols)}</span>
+              </div>
+              <div class="w-full mt-3 pt-3 border-t border-slate-200/80">
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Premiação</p>
+                <p class="text-[11px] font-bold text-green-700 leading-snug">🎁 ${p.desc}</p>
+              </div>
             </div>`;
         }).join('');
 
-        container.innerHTML += `<div class="mb-10"><h3 class="text-2xl font-sport text-white uppercase border-b border-white/30 pb-2 mb-6 drop-shadow-md">Grupo ${grupo}</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6">${htmlCards}</div></div>`;
+        container.innerHTML += `
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 md:p-7 backdrop-blur-sm">
+            <div class="flex items-center gap-3 border-b border-white/15 pb-3 mb-8">
+              <span class="bg-yellow-400 text-green-950 font-sport text-2xl leading-none px-3 py-1.5 rounded-lg shadow shrink-0">${grupo}</span>
+              <div class="min-w-0">
+                <h3 class="text-2xl font-sport text-white uppercase tracking-widest leading-none drop-shadow">Grupo ${grupo}</h3>
+                <p class="text-[10px] text-green-100/70 uppercase tracking-widest font-bold mt-1">Artilheiros do grupo</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 items-start">${htmlCards}</div>
+          </div>`;
       });
+
+      figurinhasPodio.forEach(f => aplicarFigurinha(f.id, f.nome, "w-full h-full object-cover"));
     }
   </script>
 </body>
