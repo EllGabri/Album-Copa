@@ -308,7 +308,7 @@
       "Santa Cruz Do Timbo": "Artilheiros da Meta"
     };
 
-    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], figurinhas: [], webAppUrl: "" };
+    let DB = { agencias: [], gerentes: [], carteiras: [], usuariosExcluidos: [], figurinhas: [], outrosIndicadores: { cartoes: {}, seguros: {}, boletos: {} }, webAppUrl: "" };
 
     // ---------------------------------------------------------------
     // FIGURINHAS NO DASHBOARD
@@ -424,6 +424,25 @@
     function normalizarString(str) {
       if (str === null || str === undefined) return "";
       return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
+    // Localiza a chave (nome exato) em placarGerentes correspondente a um
+    // nome vindo de outra fonte (ex.: aba Outros_indicadores), que pode ter
+    // grafia levemente diferente. Tenta match exato normalizado primeiro,
+    // depois substring nos dois sentidos, igual ao crit\u00e9rio j\u00e1 usado para
+    // achar a figurinha da pessoa por nome.
+    function encontrarChaveGerente(nomeAlvo, placarGerentes) {
+      if (placarGerentes[nomeAlvo]) return nomeAlvo;
+      const alvo = normalizarString(nomeAlvo);
+      if (!alvo) return null;
+      for (let k in placarGerentes) {
+        if (normalizarString(k) === alvo) return k;
+      }
+      for (let k in placarGerentes) {
+        const kn = normalizarString(k);
+        if (kn && (kn.includes(alvo) || alvo.includes(kn))) return k;
+      }
+      return null;
     }
 
     // Apelidos: como cada agência oficial aparece escrita em nm_agencia nas
@@ -711,6 +730,39 @@
             chaveRealizado[chaveUnica] = true;
           }
         });
+
+        // OUTROS INDICADORES (aba Outros_indicadores): Cartões Emitidos e
+        // Seguros, indicadores que não vêm em nenhuma Store_* e por isso são
+        // lançados à parte, já agregados por colaborador. Regra oficial (ver
+        // tabela de gols da campanha):
+        //   Cartão de Crédito: 1 gol por unidade.
+        //   Seguros Auto/Frota/Agrícola/Empresarial/Maquinário: 4 gols/unidade.
+        //   Seguros Vida/Residência: 2 gols/unidade.
+        // "Diversos" (coluna de Seguros) não tem categoria correspondente
+        // explícita na regra oficial — tratado como Vida/Residência (2 gols).
+        // Ajustar aqui se a categoria real for outra.
+        //
+        // ATENÇÃO: esta aba não tem coluna de período (mês/ano), então os
+        // gols são somados direto ao placar, sem o multiplicador de 1,5x de
+        // julho (não dá pra saber quanto do total foi em julho). Se os
+        // totais da aba não forem só do período Jun-Ago da Copa, os gols
+        // ficam inflados.
+        const outros = DB.outrosIndicadores || { cartoes: {}, seguros: {} };
+
+        for (let nome in (outros.cartoes || {})) {
+          const chave = encontrarChaveGerente(nome, placarGerentes);
+          if (!chave) continue; // pessoa não está no placar (excluída ou fora de agência oficial)
+          placarGerentes[chave].gols += (outros.cartoes[nome] || 0) * 1;
+        }
+
+        for (let nome in (outros.seguros || {})) {
+          const chave = encontrarChaveGerente(nome, placarGerentes);
+          if (!chave) continue;
+          const s = outros.seguros[nome];
+          const unidadesFaixa4 = (s.automoveis || 0) + (s.frota || 0) + (s.empresarial || 0) + (s.rural || 0);
+          const unidadesFaixa2 = (s.diversos || 0);
+          placarGerentes[chave].gols += (unidadesFaixa4 * 4) + (unidadesFaixa2 * 2);
+        }
 
         // SOMAR GOLS DOS GERENTES PARA AS AGÊNCIAS
         // Gerentes com gols negativos (ex.: indicador Inad 15 com queda forte)
