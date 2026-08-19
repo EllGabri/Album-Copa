@@ -344,7 +344,7 @@
       "Major Vieira": "Sinergia",
       "Bom Jardim Da Serra": "Real Cooperativo",
       "Timbó Grande": "Golaço Tg",
-      "Monte Castelo": "Craques da cooperação",
+      "Monte Castelo": "Craques da Cooperação",
       "Ponte Alta": "Morangueiros",
       "Bela Vista Do Toldo": "Esquadrão Excelência",
       "Santa Cruz Do Timbo": "Artilheiros da Meta"
@@ -1305,10 +1305,16 @@
       ];
 
       [1, 2, 3].forEach(grupo => {
-        let agsDesteGrupo = agenciasRank.filter(a => a.group == grupo).map(a => normalizarString(a.nome));
+        // Resolve a agência OFICIAL do gerente ANTES de comparar, em vez de
+        // procurar o nome oficial dentro da grafia crua da base. Comparar por
+        // substring colocava "Pac Porto Uniao D. Sta Cruz Do Timbo" (que é
+        // SANTA CRUZ DO TIMBÓ) no grupo 1, porque contém "porto uniao" — e
+        // nunca no grupo 3, porque a base abrevia "Sta" e o nome oficial é
+        // "Santa". Mesmo motivo já documentado em APELIDOS_AGENCIA.
+        let agsDesteGrupo = agenciasRank.filter(a => a.group == grupo).map(a => a.nome);
         let gerentesDesteGrupo = gerentesRank.filter(g => {
-          let gAgLimpa = normalizarString(g.ag);
-          return agsDesteGrupo.some(agOficial => gAgLimpa.includes(agOficial)); 
+          const oficial = encontrarAgenciaOficial(g.ag);
+          return oficial !== null && agsDesteGrupo.indexOf(oficial) !== -1;
         });
         
         let top3 = gerentesDesteGrupo.slice(0, 3);
