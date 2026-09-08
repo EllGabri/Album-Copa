@@ -1,0 +1,209 @@
+function FiltroMesesCampanha() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  spreadsheet.getRange('B1').activate();
+  var criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['01/2026', '02/2026', '2/2026', '03/2026', '3/2026', '04/2026', '4/2026', '05/2026', '5/2026', '09/2026', '9/2026', '10/2026', '11/2026', '12/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Agencia'), true);
+  spreadsheet.getRange('B1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['', '01/2026', '1/2026', '02/2026', '2/2026', '03/2026', '3/2026', '04/2026', '4/2026', '05/2026', '5/2026', '09/2026', '9/2026', '10/2026', '11/2026', '12/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Gerente'), true);
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['01/2026', '1/2026', '02/2026', '2/2026', '3/2026', '03/2026', '04/2026', '4/2026', '05/2026', '5/2026', '09/2026', '9/2026', '10/2026', '11/2026', '12/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Carteira'), true);
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['01/2026', '1/2026', '02/2026', '2/2026', '03/2026', '3/2026', '04/2026', '4/2026', '05/2026', '5/2026', '09/2026', '9/2026', '10/2026', '11/2026', '12/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+};
+
+function Limpadados() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  spreadsheet.getRange('B1').activate();
+  var criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['06/2026', '6/2026', '07/2026', '7/2026', '8/2026', '08/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.getRange('A2').activate();
+  var currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  spreadsheet.getRange('2:199').activate();
+  spreadsheet.setCurrentCell(spreadsheet.getRange('A199'));
+  spreadsheet.getActiveSheet().deleteRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+  spreadsheet.getRange('B1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Agencia'), true);
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['06/2026', '6/2026', '07/2026', '7/2026', '08/2026', '8/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.getRange('A2').activate();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  spreadsheet.getRange('2:2899').activate();
+  spreadsheet.setCurrentCell(spreadsheet.getRange('A2899'));
+  spreadsheet.getActiveSheet().deleteRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+  spreadsheet.getRange('B1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Gerente'), true);
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['06/2026', '6/2026', '07/2026', '7/2026', '08/2026', '8/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.getRange('A2').activate();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  spreadsheet.getRange('2:10224').activate();
+  spreadsheet.setCurrentCell(spreadsheet.getRange('A10224'));
+  spreadsheet.getActiveSheet().deleteRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+  spreadsheet.getRange('B1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Carteira'), true);
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['06/2026', '6/2026', '07/2026', '7/2026', '08/2026', '8/2026'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+  spreadsheet.getRange('A2').activate();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  spreadsheet.getRange('2:11246').activate();
+  spreadsheet.setCurrentCell(spreadsheet.getRange('A11246'));
+  spreadsheet.getActiveSheet().deleteRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+  spreadsheet.getRange('B1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(2, criteria);
+};
+
+function myFunction() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  spreadsheet.getRange('E1').activate();
+  var criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['Ativo Comercial', 'Ativos Totais', 'Capital Social', 'Cartão', 'Consórcio', 'Cooperados', 'Crédito Comercial', 'Depósitos Totais', 'Indicador Geral', 'Liberação de Custeio', 'Patrimônio Comercial', 'Provisão PRV', 'Receita de Produtos e Serviços', 'Resultado Financeiro', 'Saldo Médio de Uso de Cheque Especial', 'Seguro de Vida'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(5, criteria);
+  spreadsheet.getRange('F7:H53').activate();
+  spreadsheet.getActiveRangeList().setNumberFormat('0.00%');
+  spreadsheet.getRange('E1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(5, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Agencia'), true);
+  spreadsheet.getRange('G1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['Ativo Comercial', 'Ativos Totais', 'Capital Social', 'Cartão', 'Consórcio', 'Cooperados', 'Crédito Comercial', 'Depósitos Totais', 'Indicador Geral', 'Liberação de Custeio', 'Provisão PRV', 'Receita de Produtos e Serviços', 'Resultado Financeiro', 'Saldo Médio de Uso de Cheque Especial', 'Seguro de Vida'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(7, criteria);
+  spreadsheet.getRange('H13:J13').activate();
+  var currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().setNumberFormat('0.00%');
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.UP).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getRange('G1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(7, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Gerente'), true);
+  spreadsheet.getRange('H1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['Ativo Comercial', 'Capital Social', 'Cartão', 'Consórcio', 'Cooperados', 'Crédito Comercial', 'Depósitos Totais', 'Indicador Geral', 'Liberação de Custeio', 'Receita de Produtos e Serviços', 'Resultado Financeiro', 'Saldo Médio de Uso de Cheque Especial', 'Seguro de Vida'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(8, criteria);
+  spreadsheet.getRange('I2').activate();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().setNumberFormat('0.00%');
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.UP).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getRange('H1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(8, criteria);
+  spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Store_Carteira'), true);
+  spreadsheet.getRange('J1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['Ativo Comercial', 'Capital Social', 'Cartão', 'Consórcio', 'Cooperados', 'Crédito Comercial', 'Depósitos Totais', 'Indicador Geral', 'Liberação de Custeio', 'Receita de Produtos e Serviços', 'Resultado Financeiro', 'Saldo Médio de Uso de Cheque Especial', 'Seguro de Vida'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(10, criteria);
+  spreadsheet.getRange('K8').activate();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().setNumberFormat('0.00%');
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.UP).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getRange('J1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(10, criteria);
+};
+
+function Limpa_carteiras() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  spreadsheet.getRange('I1').activate();
+  var criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues(['', 'Agricola', 'Agro', 'Agro E Pf', 'Agro Familiar I', 'Agro Familiar Ii, Médio, Grande', 'Agro Geral E Pf Varejo', 'Agro I', 'Agro I Ii Iii', 'Agro Ii', 'Agro Iii', 'Carteira Mista', 'Empresarial', 'Empresarial I', 'Mista Pf Pj', 'Pf', 'Pf Agro', 'Pf Agro I', 'Pf Agro Ii', 'Pf E Pj Geral', 'Pf Geral', 'Pf Geral I', 'Pf Urbano', 'Pf Urbano I', 'Pf Urbano Ii'])
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(9, criteria);
+  spreadsheet.getRange('A32').activate();
+  var currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate();
+  currentCell.activateAsCurrentCell();
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  currentCell = spreadsheet.getCurrentCell();
+  spreadsheet.getSelection().getNextDataRange(SpreadsheetApp.Direction.UP).activate();
+  currentCell.activateAsCurrentCell();
+  spreadsheet.getRange('32:2932').activate();
+  spreadsheet.getActiveSheet().deleteRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+  spreadsheet.getRange('I1').activate();
+  criteria = SpreadsheetApp.newFilterCriteria()
+  .build();
+  spreadsheet.getActiveSheet().getFilter().setColumnFilterCriteria(9, criteria);
+};
