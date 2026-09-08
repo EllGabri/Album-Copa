@@ -918,7 +918,11 @@
       let hasAgosto = false, hasJulho = false, hasJunho = false;
       rawAgencias.forEach(d => {
         if(!d.ds_periodo) return;
-        let m = parseInt(getProp(d, 'ds_periodo').toString().split('/')[1], 10);
+        // ds_periodo é "MM/AAAA": split('/')[1] devolvia o ANO (2026), então
+        // nenhuma das comparações abaixo casava e o badge caía sempre no
+        // "SEM DADOS DA COPA". mesDoPeriodo() extrai o mês corretamente e
+        // ainda aceita o formato "DD/MM/AAAA".
+        let m = mesDoPeriodo(getProp(d, 'ds_periodo'));
         if (m === 8) hasAgosto = true;
         if (m === 7) hasJulho = true;
         if (m === 6) hasJunho = true;
