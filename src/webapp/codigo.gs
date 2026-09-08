@@ -72,12 +72,25 @@ function obterDadosCompletos() {
     if (configSheet) {
       try {
         // LER EXCLUSÕES (Coluna A) - A1 é cabeçalho ("Colaboradores
-        // Excluídos"); os nomes vão de A2 até A16.
-        var excValues = configSheet.getRange("A2:A16").getValues();
-        for (var i = 0; i < excValues.length; i++) {
-          var exc = excValues[i][0];
-          if (exc && exc.toString().trim() !== "") {
-            usuariosExcluidos.push(exc.toString().trim());
+        // Excluídos"); os nomes vão de A2 até o fim da coluna.
+        //
+        // A lista JÁ passou de 15 nomes (hoje são 38), então o range fixo
+        // "A2:A16" que existia aqui truncava silenciosamente a partir do
+        // 16º nome. Usa getLastRow() para acompanhar o crescimento da aba.
+        //
+        // Os nomes são normalizados (minúsculas, sem acento) porque o
+        // consumidor — processarCalculosCopa em Index.html — compara com
+        // normalizarString(Gerente). Empurrar a grafia crua daqui
+        // ("LUAN NUNES DA SILVA") fazia o includes() nunca casar e NENHUM
+        // colaborador era de fato excluído do placar.
+        var ultimaLinhaExc = configSheet.getLastRow();
+        if (ultimaLinhaExc >= 2) {
+          var excValues = configSheet.getRange(2, 1, ultimaLinhaExc - 1, 1).getValues();
+          for (var i = 0; i < excValues.length; i++) {
+            var exc = excValues[i][0];
+            if (exc && exc.toString().trim() !== "") {
+              usuariosExcluidos.push(normalizarString(exc));
+            }
           }
         }
         
@@ -588,7 +601,12 @@ function obterUsuariosExcluidos() {
     
     if (!configDash) return [];
     
-    const exclusoes = configDash.getRange("A2:A15").getValues();
+    // Range dinâmico: a lista de excluídos já ultrapassou as 14 linhas do
+    // range fixo "A2:A15" que existia aqui (hoje são 38 nomes), e o excedente
+    // era ignorado em silêncio.
+    const ultimaLinha = configDash.getLastRow();
+    if (ultimaLinha < 2) return [];
+    const exclusoes = configDash.getRange(2, 1, ultimaLinha - 1, 1).getValues();
     return exclusoes.filter(row => row[0]).map(row => normalizarString(row[0]));
   } catch (e) {
     console.log("Erro ao obter exclusões:", e);
